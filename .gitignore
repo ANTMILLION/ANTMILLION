@@ -36,5 +36,8 @@ build/
 ### VS Code ###
 .vscode/
 
+### 설정 파일 ###
+*.properties
+
 ### Mac OS ###
 .DS_Store
