@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-
+<link rel="stylesheet"
+	href="${pageContext.request.contextPath}/resources/css/header.css" />
 <header class="header">
     <input class="search"
            type="text"
