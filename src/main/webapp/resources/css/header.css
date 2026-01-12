@@ -1,4 +1,4 @@
-/* 메인 콘텐츠 */
+/* 硫붿씤 肄섑뀗痢� */
 .main-content {
     margin-left: 260px;
     padding: 30px 50px;
@@ -7,7 +7,7 @@
     min-height: 100vh;
 }
 
-/* 헤더 */
+/* �뿤�뜑 */
 .header {
     display: flex;
     justify-content: space-between;
@@ -16,7 +16,7 @@
     margin-bottom: 30px;
 }
 
-/* 검색 박스 */
+/* 寃��깋 諛뺤뒪 */
 .search-box {
     display: flex;
     align-items: center;
@@ -61,14 +61,14 @@
     object-fit: contain;
 }
 
-/* 사용자 정보 영역 */
+/* �궗�슜�옄 �젙蹂� �쁺�뿭 */
 .user-info {
     display: flex;
     align-items: center;
     gap: 20px;
 }
 
-/* 알림 버튼 */
+/* �븣由� 踰꾪듉 */
 .notification-btn {
     position: relative;
     background: white;
@@ -105,12 +105,12 @@
     border: 2px solid white;
 }
 
-/* 사용자 프로필 래퍼 */
+/* �궗�슜�옄 �봽濡쒗븘 �옒�띁 */
 .user-profile-wrapper {
     position: relative;
 }
 
-/* 사용자 프로필 */
+/* �궗�슜�옄 �봽濡쒗븘 */
 .user-profile {
     display: flex;
     align-items: center;
@@ -139,12 +139,12 @@
     color: #757575;
 }
 
-/* 프로필 모달 오버레이 - 제거 */
+/* �봽濡쒗븘 紐⑤떖 �삤踰꾨젅�씠 - �젣嫄� */
 .profile-modal-overlay {
     display: none !important;
 }
 
-/* 프로필 모달 - 작은 드롭다운 */
+/* �봽濡쒗븘 紐⑤떖 - �옉�� �뱶濡��떎�슫 */
 .profile-modal {
     position: absolute;
     top: calc(100% + 8px);
@@ -175,7 +175,7 @@
     }
 }
 
-/* 모달 헤더 */
+/* 紐⑤떖 �뿤�뜑 */
 .profile-modal-header {
     position: relative;
     padding: 16px;
@@ -206,7 +206,7 @@
     color: #333;
 }
 
-/* 프로필 컨텐츠 */
+/* �봽濡쒗븘 而⑦뀗痢� */
 .profile-modal-content {
     padding: 24px 20px;
     text-align: center;
@@ -242,7 +242,7 @@
     margin-bottom: 20px;
 }
 
-/* 모달 푸터 */
+/* 紐⑤떖 �뫖�꽣 */
 .profile-modal-footer {
     padding: 16px 20px;
     border-top: 1px solid #f5f5f5;
@@ -266,7 +266,7 @@
     color: #333;
 }
 
-/* 반응형 */
+/* 諛섏쓳�삎 */
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
