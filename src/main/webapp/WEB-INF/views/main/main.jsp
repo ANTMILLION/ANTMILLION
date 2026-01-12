@@ -15,12 +15,12 @@
 <body>
 <div class="app-container">
     <!-- 사이드바 include -->
-    <%@ include file="../common/sidebar.jsp" %>
+    <%--<%@ include file="사이드바" %>--%>
 
     <!-- 메인 콘텐츠 영역 -->
     <main class="main-content">
         <!-- 헤더 include -->
-        <%@ include file="../common/header.jsp" %>
+        <%--<%@ include file="헤더" %>--%>
 
         <!-- 콘텐츠 그리드 -->
         <div class="content-grid">
@@ -230,7 +230,7 @@
     </main>
 </div>
 
-<script src="${pageContext.request.contextPath}/resources/js/common/common.js"></script>
-<script src="${pageContext.request.contextPath}/resources/js/main/main.js"></script>
+<!-- <script src="${pageContext.request.contextPath}/resources/js/common/common.js"></script> -->
+<!-- <script src="${pageContext.request.contextPath}/resources/js/main/main.js"></script> -->
 </body>
 </html>
