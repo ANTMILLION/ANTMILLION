@@ -1,5 +1,5 @@
 /* ===========================
-   메인 페이지 JavaScript (main.js)
+   메인 페이지 JavaScript (com.antmillion.main.js)
    =========================== */
 
 // 차트 인스턴스 저장
