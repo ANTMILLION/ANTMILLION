@@ -2,7 +2,7 @@
 <!-- 헤더 -->
 <header class="header">
     <div class="search-box">
-        <input type="text" placeholder="중목을 검색하세요">
+        <input type="text" placeholder="종목을 검색하세요">
         <button class="search-btn">
             <img src="<%=request.getContextPath()%>/resources/images/icon/search.png" alt="검색" class="search-icon">
         </button>
