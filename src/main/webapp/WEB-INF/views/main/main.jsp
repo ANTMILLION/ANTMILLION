@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>똑똑한개미 - 메인</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common/sidebar.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/main/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
 <body>
 <div class="app-container">
     <!-- 사이드바 include -->
-    <%--<%@ include file="사이드바" %>--%>
+    <%@ include file="../common/sidebar.jsp" %>
 
     <!-- 메인 콘텐츠 영역 -->
     <main class="main-content">
@@ -230,7 +230,6 @@
     </main>
 </div>
 
-<!-- <script src="${pageContext.request.contextPath}/resources/js/common/common.js"></script> -->
-<!-- <script src="${pageContext.request.contextPath}/resources/js/main/main.js"></script> -->
+<script src="${pageContext.request.contextPath}/resources/js/main/main.js"></script>
 </body>
 </html>

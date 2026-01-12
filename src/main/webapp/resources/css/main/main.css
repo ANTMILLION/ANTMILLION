@@ -2,6 +2,36 @@
    메인 페이지 스타일 (main.css)
    =========================== */
 
+/* main.css 최상단에 추가 */
+:root {
+    --primary-bg: #F5F7FB;
+    --secondary-bg: #FFFFFF;
+    --border-color: #E5E7EB;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --color-positive: #10B981;
+    --color-negative: #EF4444;
+    --accent-blue: rgba(59, 130, 246, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+    --font-english: 'Poppins', sans-serif;
+}
+
+/* 최상단에 추가 필요 */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f5f7fb;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 260px;  /* 사이드바 너비만큼 여백 */
+    min-height: 100vh;
+}
+
 .content-grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
