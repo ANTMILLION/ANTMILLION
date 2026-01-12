@@ -1,14 +1,14 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+	<%@ include file="/WEB-INF/views/common/common.jsp" %>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>종목 상세 페이지</title>
 <link rel="stylesheet" type="text/css"
-	href="${pageContext.request.contextPath}/resources/css/detail.css">
+	href="${cpath}/resources/css/detail.css">
 <link rel="stylesheet" type="text/css"
-	href="${pageContext.request.contextPath}/resources/css/sidebar.css">
+	href="${cpath}/resources/css/sidebar.css">
 </head>
 <body>
 	<jsp:include page="/WEB-INF/views/common/sidebar.jsp" />
