@@ -1,4 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/views/common/common.jsp" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,8 +9,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ANTMILLION</title>
   <link rel="stylesheet"
-  href="${pageContext.request.contextPath}/resources/css/common/sidebar.css" />
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/login/sign.css" />
+  href="${cpath}/resources/css/common/sidebar.css" />
+  <link rel="stylesheet" href="${cpath}/resources/css/login/sign.css" />
 </head>
 <body>
     <div class="shell">
@@ -19,7 +21,7 @@
   <h1 class="title-top">ANTMILLION</h1>
   <div class="hr"></div>
 
-  <form class="form" method="post" action="${pageContext.request.contextPath}/signup/step2">
+  <form class="form" method="post" action="${cpath}/signup/step2">
     <div class="row">
       <input type="text" name="nickname" placeholder="닉네임을 입력하세요" />
       <button class="btn small primary" type="button">중복 확인</button>
