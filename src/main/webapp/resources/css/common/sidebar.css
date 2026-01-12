@@ -5,12 +5,6 @@
     font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
 }
 
-body {
-    background-color: #f5f7fb;
-    display: flex;
-    min-height: 100vh;
-}
-
 .sidebar {
     width: 260px;
     background-color: #ffffff;
