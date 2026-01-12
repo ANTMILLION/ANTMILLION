@@ -6,11 +6,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ANTMILLION</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/sign.css" />
+  <link rel="stylesheet"
+  href="${pageContext.request.contextPath}/resources/css/common/sidebar.css" />
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/login/sign.css" />
 </head>
 <body>
     <div class="shell">
-      <%@ include file="common/sidebar.jsp" %>
+      <%@ include file="../common/sidebar.jsp" %>
       <div class="content">
         
 <div class="card">
