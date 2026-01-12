@@ -1,0 +1,293 @@
+@import
+	url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background-color: #f5f5f5;
+	font-family: 'Noto Sans KR', sans-serif;
+}
+
+.stock-container {
+	display: flex;
+	gap: 20px;
+	max-width: 1440px;
+	margin: 40px auto;
+	padding: 0 20px;
+	align-items: stretch;
+}
+
+.left-panel {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.right-panel {
+	width: 380px;
+	position: sticky;
+	top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.stock-header, .chart-area, .hoga-box, .community-box {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.stock-header, .star-icon {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 10px;
+	height: auto;
+	padding: 20px;
+}
+
+.text-col {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 4px;
+}
+
+.header-left {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.stock-name {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.stock-code {
+	color: #999;
+	font-weight: normal;
+	font-size: 16px;
+	margin-left: 5px;
+}
+
+.header-down {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-left: 0;
+	padding-left: 0;
+}
+
+.current-price {
+	font-size: 24px;
+	font-weight: bold;
+}
+
+.chart-area {
+	height: 350px;
+}
+
+.bottom-split {
+	display: flex;
+	gap: 20px;
+	height: 350px;
+}
+
+.hoga-box, .community-box {
+	flex: 1;
+}
+
+.hoga-box h3, .community-box h3 {
+	font-size: 18px;
+	margin-bottom: 10px;
+}
+
+.right-panel {
+	width: 380px;
+	position: sticky;
+	top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	height: auto;
+}
+
+.order-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	font-size: 20px;
+	font-weight: bold;
+	color: #000;
+	margin-top: 2px;
+}
+
+.change-link {
+	font-size: 12px;
+	color: #888;
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+.tab-group {
+	display: flex;
+	background: #f0f0f0;
+	border-radius: 8px;
+	padding: 4px;
+	gap: 4px;
+}
+
+.tab {
+	flex: 1;
+	padding: 10px;
+	border: none;
+	background: transparent;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: bold;
+	color: #666;
+}
+
+.tab.active {
+	background: #fff;
+	color: #000;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.input-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 15px;
+	padding: 20px;
+	background: #f9f9f9;
+	border: 1px solid #eee;
+	border-radius: 8px;
+	height: auto;
+}
+
+.active-type {
+	color: #000;
+	font-weight: bold;
+}
+
+.strong, .big-price, .money, .total-money {
+	font-size: 20px;
+	font-weight: bold;
+	color: #000;
+	margin-top: 2px;
+}
+
+.row {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	font-size: 14px;
+	color: #555;
+}
+
+.card-label {
+	display: flex;
+	gap: 5px;
+	font-size: 14px;
+	color: #555;
+	margin-bottom: 0;
+}
+
+.order-result {
+	background: #f9f9f9;
+	border: 1px solid #eee;
+	border-radius: 8px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	height: auto;
+}
+
+.row.total-row {
+	padding-top: 15px;
+	border-top: 1px solid #e0e0e0;
+}
+
+.sentiment-section {
+	text-align: relative;
+	margin-top: auto;
+}
+
+.sentiment-text {
+	font-size: 13px;
+	font-weight: bold;
+	margin-bottom: 10px;
+	width: 100%;
+	text-align: center;
+}
+
+.red-text {
+	color: #ff4e4e;
+}
+
+.progress-bar {
+	display: flex;
+	height: 12px;
+	border-radius: 6px;
+	overflow: hidden;
+	background-color: #eee;
+}
+
+.fill-buy {
+	background: #ff4e4e;
+	color: transparent;
+}
+
+.fill-sell {
+	background: #39b1fb;
+	color: transparent;
+}
+
+.percent-labels {
+	display: flex;
+	width: 100%;
+	margin-bottom: 5px;
+}
+
+.percent-labels div {
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+	white-space: nowrap;
+	min-width: fit-content;
+}
+
+.btn-submit {
+	background: #ff4e4e;
+	color: #fff;
+	border: none;
+	border-radius: 10px;
+	padding: 18px;
+	font-size: 22px;
+	font-weight: bold;
+	cursor: pointer;
+	margin-top: auto;
+}
+
+.btn-submit:hover {
+	background: #e04040;
+}
