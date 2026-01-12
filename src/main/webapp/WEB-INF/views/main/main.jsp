@@ -1,12 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ include file="/WEB-INF/views/common/common.jsp" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>똑똑한개미 - 메인</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common/sidebar.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/main/main.css">
+    <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
+    <link rel="stylesheet" href="${cpath}/resources/css/main/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap"
@@ -29,7 +31,7 @@
                 <h2 class="card-title">나의 랭크</h2>
                 <div class="rank-image-container">
                     <!-- 랭크 이미지를 추가할 수 있는 영역 -->
-                    <img src="${pageContext.request.contextPath}/resources/image/rank/rank_bronze.png" alt="랭크 이미지" class="rank-image" id="rankImage">
+                    <img src="${cpath}/resources/image/rank/rank_bronze.png" alt="랭크 이미지" class="rank-image" id="rankImage">
                     <div class="rank-image-placeholder">
                         <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                             <path d="M40 10L50 30H70L54 42L60 62L40 50L20 62L26 42L10 30H30L40 10Z" fill="#E0E0E0"/>
@@ -230,6 +232,6 @@
     </main>
 </div>
 
-<script src="${pageContext.request.contextPath}/resources/js/main/main.js"></script>
+<script src="${cpath}/resources/js/main/main.js"></script>
 </body>
 </html>
