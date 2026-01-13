@@ -13,18 +13,14 @@
 </head>
 <body class="detail-body">
 	<div class="app-container">
-		<%@ include file="WEB-INF/views/common/sidebar.jsp"%>
-		<%-- 파일 위치 변경하면 아래 코드로 바꿔주세요
-		<%@ include file="../common/sidebar.jsp"%> --%>
+		<%@ include file="../common/sidebar.jsp"%>
 		<main class="main-content">
-			<%@ include file="WEB-INF/views/common/header.jsp"%>
-			<%-- 파일 위치 변경하면 아래 코드로 바꿔주세요
-			<%@ include file="../common/header.jsp"%> --%>
+			<%@ include file="../common/header.jsp"%>
 			
 			<div class="stock-container">
 				<div class="left-panel">
 					<section class="stock-header">
-						<img src="resources/images/icon/samsung.png" alt="삼성전자">
+						<img src="${cpath}/resources/images/icon/samsung.png" alt="삼성전자">
 						<div class="text-col">
 							<div class="name-row">
 								<h2 class="stock-name">
@@ -36,7 +32,7 @@
 							</div>
 						</div>
 						<div class="star-icon">
-							<img src="resources/images/icon/star.png" alt="즐겨찾기">
+							<img src="${cpath}/resources/images/icon/star.png" alt="즐겨찾기">
 						</div>
 					</section>
 					<section class="chart-area"></section>
