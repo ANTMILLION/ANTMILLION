@@ -39,6 +39,15 @@
                     <!-- 랭크 이미지를 추가할 수 있는 영역 -->
                     <img src="${cpath}/resources/images/profile/gold-ant.png" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
                 </div>
+                <!-- 경험치 바 -->
+                <div class="main-exp-bar-container">
+                    <div class="main-exp-bar" style="width: 68%;"></div>
+                    <div class="main-exp-text">
+                        <span class="main-exp-current">680</span>
+                        <span class="main-exp-divider">/</span>
+                        <span class="main-exp-max">1000</span>
+                    </div>
+                </div>
             </div>
 
             <!-- 코스피 카드 -->
