@@ -1,16 +1,17 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/views/common/common.jsp" %>
 <!-- 헤더 -->
 <header class="header">
     <div class="search-box">
         <input type="text" placeholder="종목을 검색하세요">
         <button class="search-btn">
-            <img src="<%=request.getContextPath()%>/resources/images/icon/search.png" alt="검색" class="search-icon">
+            <img src="${cpath}/resources/images/icon/search.png" alt="검색" class="search-icon">
         </button>
     </div>
     
     <div class="user-info">
         <button class="notification-btn">
-            <img src="<%=request.getContextPath()%>/resources/images/icon/alarm.png" alt="알림" class="alarm-icon">
+            <img src="${cpath}/resources/images/icon/alarm.png" alt="알림" class="alarm-icon">
         </button>
         <div class="user-profile-wrapper">
             <div class="user-profile" id="userProfile">
@@ -26,7 +27,7 @@
                 
                 <div class="profile-modal-content">
                     <!-- via 제거 버전 -->
-<img src="<%=request.getContextPath()%>/resources/images/profile/gold-ant.png" alt="프로필" class="profile-avatar" onerror="this.style.display='none'">
+<img src="${cpath}/resources/images/profile/gold-ant.png" alt="프로필" class="profile-avatar" onerror="this.style.display='none'">
                     <div class="profile-tier">골드 티어</div>
                     <div class="profile-nickname">John Doe</div>
                 </div>
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function logout() {
     if (confirm('로그아웃 하시겠습니까?')) {
-        location.href = '<%=request.getContextPath()%>/logout.jsp';
+        location.href = '${cpath}/logout.jsp';
     }
 }
 </script>
