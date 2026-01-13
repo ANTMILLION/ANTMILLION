@@ -1,17 +1,21 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-	<%@ include file="/WEB-INF/views/common/common.jsp" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/views/common/common.jsp"%>
+<%@ include file="/WEB-INF/views/common/sidebar.jsp"%>
+<%@ include file="/WEB-INF/views/common/header.jsp"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>종목 상세 페이지</title>
 <link rel="stylesheet" type="text/css"
-	href="${cpath}/resources/css/detail.css">
+	href="${cpath}/resources/css/detail/detail.css">
 <link rel="stylesheet" type="text/css"
-	href="${cpath}/resources/css/sidebar.css">
+	href="${cpath}/resources/css/common/sidebar.css">
+	<link rel="stylesheet" type="text/css"
+	href="${cpath}/resources/css/common/header.css">
 </head>
 <body>
-	<jsp:include page="/WEB-INF/views/common/sidebar.jsp" />
 	<main>
 		<div class="stock-container">
 			<div class="left-panel">
