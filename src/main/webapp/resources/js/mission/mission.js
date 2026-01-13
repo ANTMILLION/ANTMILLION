@@ -89,15 +89,18 @@ function handleCorrectAnswer(buttonElement, optionId) {
     // 서버에 정답 전송 (AJAX)
     submitAnswer(quizData[currentQuizIndex].id, optionId, true);
 
-    // 2초 후 자동으로 다음 문제로 이동 (클릭하면 즉시)
-    let autoNextTimeout = setTimeout(goToNextQuiz, 2000);
-
     // 화면 클릭 시 즉시 다음 문제로
     const skipHandler = function () {
         clearTimeout(autoNextTimeout);
-        goToNextQuiz();
         document.removeEventListener('click', skipHandler);
+        goToNextQuiz();
     };
+
+    // 1초 후 자동으로 다음 문제로 이동
+    let autoNextTimeout = setTimeout(() => {
+        document.removeEventListener('click', skipHandler); // 2초가 지나면 클릭 리스너도 제거
+        goToNextQuiz();
+    }, 1000);
 
     setTimeout(() => {
         document.addEventListener('click', skipHandler);
@@ -131,7 +134,7 @@ function showPointsMessage() {
 
     setTimeout(() => {
         message.style.display = 'none';
-    }, 2000);
+    }, 1000);
 }
 
 // 진행률 업데이트
