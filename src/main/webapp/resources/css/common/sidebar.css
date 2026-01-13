@@ -99,7 +99,6 @@ nav {
     margin-right: 12px;
 }
 
-/* 반응형 */
 @media (max-width: 768px) {
     .sidebar {
         width: 60px;
