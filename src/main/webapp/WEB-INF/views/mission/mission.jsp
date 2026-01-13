@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>똑똑한개미 - 미션</title>
     <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
-    <link rel="stylesheet" href="${cpath}/resources/css/header.css">
+    <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
     <link rel="stylesheet" href="${cpath}/resources/css/mission/mission.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
