@@ -2,19 +2,19 @@
 <%@ include file="/WEB-INF/views/common/common.jsp" %>
 <!-- 헤더 -->
 <header class="header">
-	<div class="search-box">
+	<div class="header-search-box">
 		<input type="text" placeholder="종목을 검색하세요">
-		<button class="search-btn">
+		<button class="header-search-btn">
 			<img
 				src="${cpath}/resources/images/icon/search.png"
-				alt="검색" class="search-icon">
+				alt="검색" class="header-search-icon">
 		</button>
 	</div>
 
-	<div class="user-info">
-		<button class="notification-btn" onclick="toggleNotifications(event)">
+	<div class="header-user-info">
+		<button class="header-notification-btn" onclick="toggleNotifications(event)">
 			<img
-				src="${cpath}/resources/images/icon/alarm.png" alt="알림" class="alarm-icon">
+				src="${cpath}/resources/images/icon/alarm.png" alt="알림" class="header-alarm-icon">
 		</button>
 
 		<div id="notifBox" class="header-notif-dropdown">
@@ -46,31 +46,29 @@
 			</div>
 		</div>
 
-
-
-		<div class="user-profile-wrapper">
-			<div class="user-profile" id="userProfile">
-				<span class="user-name">John Doe</span> <span class="dropdown-arrow">▼</span>
+		<div class="header-user-profile-wrapper">
+			<div class="header-user-profile" id="userProfile">
+				<span class="header-user-name">John Doe</span> <span class="header-dropdown-arrow">▼</span>
 			</div>
 
 			<!-- 프로필 모달 -->
-			<div class="profile-modal" id="profileModal">
-				<div class="profile-modal-header">
-					<button class="profile-modal-close" onclick="closeProfile()">×</button>
+			<div class="header-profile-modal" id="profileModal">
+				<div class="header-profile-modal-header">
+					<button class="header-profile-modal-close" onclick="closeProfile()">×</button>
 				</div>
 
-				<div class="profile-modal-content">
+				<div class="header-profile-modal-content">
 					<!-- via 제거 버전 -->
 					<img
 						src="${cpath}/resources/images/profile/gold-ant.png"
-						alt="프로필" class="profile-avatar"
+						alt="프로필" class="header-profile-avatar"
 						onerror="this.style.display='none'">
-					<div class="profile-tier">골드 티어</div>
-					<div class="profile-nickname">John Doe</div>
+					<div class="header-profile-tier">골드 티어</div>
+					<div class="header-profile-nickname">John Doe</div>
 				</div>
 
-				<div class="profile-modal-footer">
-					<button class="logout-btn" onclick="logout()">로그아웃</button>
+				<div class="header-profile-modal-footer">
+					<button class="header-logout-btn" onclick="logout()">로그아웃</button>
 				</div>
 			</div>
 		</div>
