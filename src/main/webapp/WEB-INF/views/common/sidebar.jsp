@@ -9,25 +9,25 @@
         <span>똑똑한개미</span>
     </div>
     <nav>
-        <div class="menu-item" onclick="location.href='${cpath}/main.jsp'">
+        <div class="menu-item" onclick="location.href='${cpath}/'">
             <span><img src="${cpath}/resources/images/icon/main.png" class="menu-icon" alt="메인"></span>
             <span>메인</span>
         </div>
-        <div class="menu-item" onclick="location.href='${cpath}/stock.jsp'">
+        <div class="menu-item" onclick="location.href='${cpath}/detail'">
             <span><img src="${cpath}/resources/images/icon/assert.png" class="menu-icon" alt="종목"></span>
             <span>종목</span>
         </div>
-        <div class="menu-item" onclick="location.href='${cpath}/mypage.jsp'">
+        <div class="menu-item" onclick="location.href='${cpath}/mypage'">
             <span><img src="${cpath}/resources/images/icon/my.png" class="menu-icon" alt="마이"></span>
             <span>마이페이지</span>
         </div>
-        <div class="menu-item active" onclick="location.href='${cpath}/mission.jsp'">
+        <div class="menu-item active" onclick="location.href='${cpath}/mission'">
             <span><img src="${cpath}/resources/images/icon/mission.png" class="menu-icon" alt="미션"></span>
             <span>미션</span>
         </div>
     </nav>
     <div class="menu-bottom">
-        <div class="menu-item" onclick="location.href='${cpath}/history.jsp'">
+        <div class="menu-item" onclick="location.href='${cpath}/history'">
             <span><img src="${cpath}/resources/images/icon/history.png" alt="히스토리"></span>
             <span>히스토리</span>
         </div>
