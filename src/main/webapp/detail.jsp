@@ -7,6 +7,7 @@
 <title>종목 상세 페이지</title>
 <%@ include file="/WEB-INF/views/common/common.jsp"%>
 <link rel="stylesheet" href="${cpath}/resources/css/detail/detail.css">
+<link rel="stylesheet" href="${cpath}/resources/css/detail/community.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
 </head>
@@ -38,7 +39,6 @@
 							<img src="resources/images/icon/star.png" alt="즐겨찾기">
 						</div>
 					</section>
-
 					<section class="chart-area"></section>
 					<section class="bottom-split">
 						<section class="hoga-box">
@@ -50,9 +50,12 @@
 							<div class="strong">
 								<h3>커뮤니티</h3>
 							</div>
+							
+							<!-- 커뮤니티 내용 include -->
+					<%@ include file="/WEB-INF/community.jsp" %>
+							
 						</section>
 					</section>
-
 				</div>
 				<aside class="right-panel">
 					<div class="order-top">
@@ -64,7 +67,6 @@
 						<button class="tab">매도</button>
 						<button class="tab">대기</button>
 					</div>
-
 					<div class="order-inputs">
 						<div class="input-card">
 							<div class="row">
@@ -77,7 +79,6 @@
 							</div>
 						</div>
 					</div>
-
 					<div class="order-result">
 						<div class="row">
 							<span>구매 가능 금액</span> <span class="big-price" class="money">1,293,000원</span>
@@ -97,9 +98,7 @@
 							<div class="label-buy" style="width: 78%;">78%</div>
 							<div class="label-sell" style="width: 22%;">22%</div>
 						</div>
-
 						<div>
-
 							<div class="progress-bar">
 								<div class="fill-buy" style="width: 78%;"></div>
 								<div class="fill-sell" style="width: 22%;"></div>
@@ -108,7 +107,6 @@
 					</div>
 					<button class="btn-submit">매수</button>
 				</aside>
-
 			</div>
 		</main>
 	</div>
