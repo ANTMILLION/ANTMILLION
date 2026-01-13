@@ -17,13 +17,13 @@
 				src="${cpath}/resources/images/icon/alarm.png" alt="알림" class="alarm-icon">
 		</button>
 
-		<div id="notifBox" class="notif-dropdown">
+		<div id="notifBox" class="header-notif-dropdown">
 			<div
 				style="padding: 20px; font-weight: bold; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
 				<span>알림 메시지</span> <span style="color: #ccc; cursor: pointer;"
 					onclick="toggleNotif()">✕</span>
 			</div>
-			<div class="notif-list-item">
+			<div class="header-notif-list-item">
 				<div class="stock-img-box">SAMSUNG</div>
 				<div>
 					<div style="font-size: 13px; font-weight: bold;">(005930)
@@ -34,8 +34,8 @@
 						10:30:22</div>
 				</div>
 			</div>
-			<div class="notif-list-item">
-				<div class="stock-img-box" style="background: #444;">HYUNDAI</div>
+			<div class="header-notif-list-item">
+				<div class="header-stock-img-box" style="background: #444;">HYUNDAI</div>
 				<div>
 					<div style="font-size: 13px; font-weight: bold;">(005380) 현대차</div>
 					<div style="font-size: 13px; color: #333;">새로운 분석 리포트가
