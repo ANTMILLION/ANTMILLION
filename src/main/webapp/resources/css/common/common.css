@@ -104,23 +104,9 @@
 	}
 
 	/* login */
-	:root { -
-		-primary-bg: #F5F7FB; -
-		-secondary-bg: #FFFFFF; -
-		-border-color: #E5E7EB; -
-		-text-primary: #1F2937; -
-		-text-secondary: #6B7280; -
-		-text-tertiary: #9CA3AF; -
-		-color-positive: #10B981; -
-		-color-negative: #EF4444; -
-		-accent-blue: rgba(59, 130, 246, 0.08); -
-		-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05); -
-		-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08); -
-		-font-korean: 'Noto Sans KR', 'Pretendard', sans-serif; -
-		-font-english: 'Poppins', sans-serif;
-	}
-	:root { -
-		-sidebar-w: 60px;
+	.shell {
+		padding: 20px;
+		gap: 20px;
 	}
 
 	/* mission */
