@@ -5,7 +5,7 @@
     font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
 }
 
-.sidebar {
+.sidebar-sidebar {
     width: 260px;
     background-color: #ffffff;
     height: 100vh;
@@ -19,7 +19,7 @@
     z-index: 1000;
 }
 
-.logo {
+.sidebar-logo {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -30,20 +30,20 @@
     color: #1a1a1a;
 }
 
-.logo-icon img {
+.sidebar-logo-icon img {
     width: 32px;
     height: 32px;
     object-fit: contain;
 }
 
-nav {
+.sidebar-sidebar nav {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.menu-item {
+.sidebar-menu-item {
     display: flex;
     align-items: center;
     padding: 0.8rem 1rem;
@@ -54,37 +54,37 @@ nav {
     transition: all 0.2s ease;
 }
 
-.menu-item:hover {
+.sidebar-menu-item:hover {
     background-color: #f8f9fa;
 }
 
-.menu-item.active {
+.sidebar-menu-item.active {
     background-color: #e8f1ff;
     color: #2970ff;
     font-weight: 700;
 }
 
-.menu-item span:first-child {
+.sidebar-menu-item span:first-child {
     font-size: 18px;
 }
 
-.menu-icon {
+.sidebar-menu-icon {
     width: 20px;
     height: 20px;
     margin-right: 12px;
 }
 
-.menu-item.active .menu-icon {
+.sidebar-menu-item.active .sidebar-menu-icon {
     opacity: 1;
     filter: invert(46%) sepia(68%) saturate(3033%) hue-rotate(201deg) brightness(96%) contrast(96%);
 }
 
-.menu-item.active span {
+.sidebar-menu-item.active span {
     color: #4285F4;
     font-weight: bold;
 }
 
-.menu-bottom {
+.sidebar-menu-bottom {
     margin-top: auto;
     border-top: 1px solid #f0f0f0;
     padding-top: 1rem;
@@ -93,27 +93,27 @@ nav {
     gap: 0.5rem;
 }
 
-.menu-bottom .menu-item img {
+.sidebar-menu-bottom .sidebar-menu-item img {
     width: 20px;
     height: 20px;
     margin-right: 12px;
 }
 
 @media (max-width: 768px) {
-    .sidebar {
+    .sidebar-sidebar {
         width: 60px;
     }
 
-    .sidebar .logo span,
-    .sidebar .menu-item span:last-child {
+    .sidebar-sidebar .sidebar-logo span,
+    .sidebar-sidebar .sidebar-menu-item span:last-child {
         display: none;
     }
 
-    .logo {
+    .sidebar-logo {
         justify-content: center;
     }
 
-    .menu-item {
+    .sidebar-menu-item {
         justify-content: center;
     }
 }
