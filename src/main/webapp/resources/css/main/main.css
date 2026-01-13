@@ -26,18 +26,21 @@
     background-color: #f5f7fb;
 }
 
+/* .main-content에 padding 추가 */
 .main-content {
     flex: 1;
-    margin-left: 260px;  /* 사이드바 너비만큼 여백 */
+    margin-left: 260px;
     min-height: 100vh;
+    padding: 80px 50px;  /* 추가 */
 }
 
+/* .content-grid의 padding 제거 */
 .content-grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
     grid-auto-rows: auto;
     gap: 28px;
-    padding: 32px 40px;
+    padding: 0;  /* 변경 */
     max-width: 1800px;
     margin: 0 auto;
 }
