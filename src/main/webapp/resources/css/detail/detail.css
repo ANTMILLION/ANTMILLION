@@ -7,9 +7,22 @@
 	padding: 0;
 }
 
-body {
+.detail-body {
 	background-color: #f5f5f5;
 	font-family: 'Noto Sans KR', sans-serif;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f5f7fb;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+    padding: 80px 50px;
 }
 
 .stock-container {
