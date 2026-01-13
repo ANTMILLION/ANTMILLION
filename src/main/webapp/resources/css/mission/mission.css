@@ -1,0 +1,466 @@
+:root {
+    --primary-bg: #F5F7FB;
+    --secondary-bg: #FFFFFF;
+    --border-color: #E5E7EB;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --color-positive: #10B981;
+    --color-negative: #EF4444;
+    --accent-blue: rgba(59, 130, 246, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+    --font-english: 'Poppins', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-korean);
+}
+
+body {
+    background-color: var(--primary-bg);
+    overflow-x: hidden;
+}
+
+/* main.css와 레이아웃 통일 */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--primary-bg);
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+    padding: 80px 50px; /* main.css와 동일한 패딩 */
+}
+
+/* 진행률 카드 */
+.progress-card {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.progress-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.progress-title {
+    font-size: 18px; /* 20px -> 18px (main.css 카드 타이틀과 균형 맞춤) */
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+}
+
+.progress-status {
+    font-size: 20px; /* 22px -> 20px */
+    font-weight: 700;
+    color: #2970ff; /* 강조색 유지 */
+    font-family: var(--font-english);
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 16px; /* 48px -> 16px (너무 두꺼웠던 바 축소) */
+    background-color: #e8f1ff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #2970ff;
+    border-radius: 8px;
+    transition: width 0.5s ease-in-out;
+}
+
+/* 퀴즈 카드 */
+.quiz-card {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    position: relative;
+    min-height: 500px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    animation-delay: 0.1s;
+}
+
+.quiz-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.quiz-date {
+    font-size: 14px; /* 18px -> 14px (보조 텍스트 크기로 변경) */
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--primary-bg);
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.quiz-question {
+    font-size: 24px; /* 28px -> 24px (과도하게 큰 폰트 조정) */
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 50px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    word-break: keep-all;
+    letter-spacing: -0.5px;
+}
+
+.quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.option-btn {
+    padding: 24px; /* 32px -> 24px */
+    font-size: 16px; /* 20px -> 16px (일반적인 버튼 텍스트 크기) */
+    font-weight: 600;
+    background-color: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+    box-shadow: none;
+}
+
+.option-btn:hover {
+    background-color: #e8f1ff;
+    border-color: #2970ff;
+    color: #2970ff;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.option-btn.correct {
+    background-color: #ecfdf5; /* color-positive 배경색 (연한 초록) */
+    border: 2px solid var(--color-positive);
+    color: var(--color-positive);
+    box-shadow: none;
+}
+
+.option-btn.wrong {
+    background-color: #fef2f2; /* color-negative 배경색 (연한 빨강) */
+    border: 2px solid var(--color-negative);
+    color: var(--color-negative);
+    animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* 포인트 메시지 */
+.points-message {
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-color: #2970ff;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(41, 112, 255, 0.3);
+    animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* 모달 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: var(--secondary-bg);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    position: relative;
+    max-width: 400px; /* 사이즈 조정 */
+    width: 90%;
+    box-shadow: var(--shadow-md);
+    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    background: var(--primary-bg);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal-title {
+    font-size: 22px; /* 28px -> 22px */
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.modal-message {
+    font-size: 15px; /* 18px -> 15px */
+    color: var(--text-secondary);
+    line-height: 1.5;
+    word-break: keep-all;
+}
+
+/* 완료 화면 */
+.completion-screen {
+    display: none;
+    text-align: center;
+    padding: 2rem 20px;
+}
+
+.completion-screen.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ant-ranks {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.ant-ranks img {
+    width: 100px; /* 고정 크기로 변경하여 안정감 부여 */
+    height: 100px;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+.ant-ranks img:nth-child(3) {
+    transform: scale(1.2); /* 현재 랭크 강조 */
+}
+
+.ant-ranks img:not(:nth-child(3)) {
+    opacity: 0.3;
+    filter: grayscale(100%);
+}
+
+.reward-info {
+    max-width: 600px;
+    margin: 0 auto;
+    padding-top: 10px;
+}
+
+.next-level {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.next-level strong {
+    color: #f9a825;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* 포인트 바 */
+.points-progress {
+    position: relative;
+    height: 24px; /* 36px -> 24px (슬림하게) */
+    background-color: var(--primary-bg);
+    border-radius: 12px;
+    margin-top: 30px; /* 라벨 공간 확보 */
+    margin-bottom: 20px;
+    overflow: visible;
+    border: 1px solid var(--border-color);
+}
+
+.points-bar {
+    width: 68%;
+    height: 100%;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #ffd54f 0%, #ffc107 50%, #ff8f00 100%);
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
+    transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.points-label:nth-of-type(1) {
+    position: absolute;
+    top: -34px; /* 위치 조정 */
+    left: 68%;
+    transform: translateX(-50%);
+    background-color: var(--text-primary);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.points-label:nth-of-type(1)::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px 4px 0;
+    border-style: solid;
+    border-color: var(--text-primary) transparent transparent transparent;
+}
+
+.points-label:nth-of-type(2) {
+    position: absolute;
+    right: 0;
+    top: -24px; /* 바 위로 올림 */
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+/* 애니메이션 */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 반응형 */
+@media (max-width: 1400px) {
+    .main-content {
+        padding: 80px 32px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .main-content {
+        padding: 80px 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+        padding-top: 100px; /* 헤더 공간 */
+    }
+
+    .progress-card,
+    .quiz-card {
+        padding: 20px;
+    }
+
+    .quiz-card {
+        min-height: auto;
+    }
+
+    .quiz-question {
+        font-size: 20px;
+        margin-bottom: 30px;
+    }
+
+    .quiz-options {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .option-btn {
+        padding: 16px;
+        font-size: 15px;
+    }
+
+    .modal-content {
+        padding: 30px 20px;
+    }
+
+    .ant-ranks img {
+        width: 40px;
+        height: 40px;
+    }
+}
