@@ -2,7 +2,6 @@
    메인 페이지 스타일 (main.css)
    =========================== */
 
-/* com.antmillion.main.css 최상단에 추가 */
 :root {
     --primary-bg: #F5F7FB;
     --secondary-bg: #FFFFFF;
@@ -19,50 +18,63 @@
     --font-english: 'Poppins', sans-serif;
 }
 
-/* 최상단에 추가 필요 */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--primary-bg);
+    overflow-x: hidden;
+}
+
+/* mission.css와 동일한 레이아웃 구조 */
 .main-app-container {
     display: flex;
     min-height: 100vh;
-    background-color: #f5f7fb;
+    background-color: var(--primary-bg);
 }
 
-/* .main-content에 padding 추가 */
 .main-main-content {
     flex: 1;
     margin-left: 260px;
     min-height: 100vh;
-    padding: 80px 50px;  /* 추가 */
+    padding: 80px 50px;
 }
 
-/* .main-content-grid의 padding 제거 */
 .main-content-grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
     grid-auto-rows: auto;
     gap: 28px;
-    padding: 0;  /* 변경 */
     max-width: 1800px;
     margin: 0 auto;
 }
 
-.main-grid-rank {
-    grid-column: 1;
-}
+@media (min-width: 1401px) {
+    .main-content-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+    }
+    
+    .main-grid-rank {
+        grid-column: 1;
+    }
 
-.main-grid-kospi {
-    grid-column: 2;
-}
+    .main-grid-kospi {
+        grid-column: 2;
+    }
 
-.main-grid-mission {
-    grid-column: 1;
-}
+    .main-grid-mission {
+        grid-column: 1;
+    }
 
-.main-grid-kosdaq {
-    grid-column: 2;
-}
+    .main-grid-kosdaq {
+        grid-column: 2;
+    }
 
-.main-grid-table {
-    grid-column: 1 / -1; /* 이것만 있으면 됨 */
+    .main-grid-table {
+        grid-column: 1 / -1;
+    }
 }
 
 /* 카드 공통 스타일 */
@@ -78,11 +90,14 @@
     height: 200px;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .main-rank-card,
 .main-mission-card {
-    flex-direction: column; /* rank와 mission은 세로 방향 유지 */
+    flex-direction: column;
     gap: 0;
 }
 
@@ -108,7 +123,6 @@
     flex: 1;
     border-radius: 12px;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -147,7 +161,7 @@
     animation: main-float 3s ease-in-out infinite;
 }
 
-@keyframes float {
+@keyframes main-float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
 }
@@ -356,6 +370,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 28px;
+    min-width: 0;
+    width: 100%;
 }
 
 .main-stock-table-card {
@@ -364,6 +380,8 @@
     padding: 28px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    min-width: 0;
+    overflow: hidden;
 }
 
 .main-stock-chart-card {
@@ -372,6 +390,8 @@
     padding: 28px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    min-width: 0;
+    overflow: hidden;
 }
 
 .main-chart-header {
@@ -462,7 +482,7 @@
     background-color: var(--accent-blue);
 }
 
-.main-stock-table tbody tr.active {
+.main-stock-table tbody tr.main-active {
     background-color: rgba(59, 130, 246, 0.15);
 }
 
@@ -593,11 +613,15 @@
 }
 
 .main-mini-bar-chart .main-bar:first-child {
-    background-color: #4A90E2 !important; /* 매수 - 파란색 */
+    background-color: #4A90E2 !important;
 }
 
 .main-mini-bar-chart .main-bar:last-child {
+<<<<<<< Updated upstream
     background-color: #FF6B6B !important; /* 매도 - 빨간색 */
+=======
+    background-color: #FF6B6B !important;
+>>>>>>> Stashed changes
 }
 
 /* ===========================
@@ -640,4 +664,247 @@
 
 .main-stock-table-card {
     animation-delay: 0.2s;
+}
+
+/* ===========================
+   반응형 디자인 (mypage.css 구조 참고)
+   =========================== */
+
+@media (max-width: 1400px) {
+    .main-main-content {
+        padding: 80px 32px;
+        min-width: 0;
+    }
+
+    .main-content-grid {
+        display: flex !important;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* 모든 그리드 아이템을 flex 아이템으로 */
+    .main-grid-rank,
+    .main-grid-kospi,
+    .main-grid-mission,
+    .main-grid-kosdaq,
+    .main-grid-table {
+        grid-column: auto;
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* 축소 시 카드 순서 변경 */
+    .main-grid-rank {
+        order: 1;
+    }
+
+    .main-grid-mission {
+        order: 2;
+    }
+
+    .main-grid-kospi {
+        order: 3;
+    }
+
+    .main-grid-kosdaq {
+        order: 4;
+    }
+
+    .main-grid-table {
+        order: 5;
+    }
+
+    .main-rank-card,
+    .main-mission-card,
+    .main-crypto-card {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .main-stock-section {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .main-stock-table-card,
+    .main-stock-chart-card {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 1200px) {
+    .main-main-content {
+        padding: 80px 24px;
+    }
+
+    .main-content-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* 축소 시 카드 순서 변경 */
+    .main-grid-rank {
+        order: 1;
+    }
+
+    .main-grid-mission {
+        order: 2;
+    }
+
+    .main-grid-kospi {
+        order: 3;
+    }
+
+    .main-grid-kosdaq {
+        order: 4;
+    }
+
+    .main-grid-table {
+        order: 5;
+    }
+
+    .main-stock-section {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-main-content {
+        margin-left: 50px;
+        padding: 20px;
+        padding-top: 120px;
+        min-width: 0;
+    }
+
+    .main-content-grid {
+        gap: 20px;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* 카드 순서 */
+    .main-grid-rank {
+        order: 1;
+    }
+
+    .main-grid-mission {
+        order: 2;
+    }
+
+    .main-grid-kospi {
+        order: 3;
+    }
+
+    .main-grid-kosdaq {
+        order: 4;
+    }
+
+    .main-grid-table {
+        order: 5;
+    }
+
+    .main-rank-card,
+    .main-mission-card,
+    .main-crypto-card {
+        height: auto;
+        min-height: 200px;
+        padding: 20px;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .main-stock-section {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .main-stock-table-card,
+    .main-stock-chart-card {
+        padding: 20px;
+        min-width: 0;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .main-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .main-stock-chart-container {
+        height: 300px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .main-stock-table {
+        font-size: 13px;
+        min-width: 500px;
+    }
+
+    .main-stock-table td {
+        padding: 12px 8px;
+    }
+
+    .main-company-logo {
+        width: 28px;
+        height: 28px;
+    }
+
+    .main-crypto-price {
+        font-size: 20px;
+    }
+
+    .main-card-title {
+        font-size: 16px;
+    }
+
+    .main-crypto-header {
+        gap: 8px;
+    }
+
+    .main-crypto-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .main-crypto-chart {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-main-content {
+        padding: 15px;
+        padding-top: 120px;
+    }
+
+    .main-rank-card,
+    .main-mission-card,
+    .main-crypto-card,
+    .main-stock-table-card,
+    .main-stock-chart-card {
+        padding: 16px;
+    }
+
+    .main-crypto-price {
+        font-size: 18px;
+    }
+
+    .main-stock-table {
+        font-size: 12px;
+    }
 }
