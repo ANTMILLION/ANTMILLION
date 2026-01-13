@@ -24,7 +24,7 @@
 					onclick="toggleNotif()">✕</span>
 			</div>
 			<div class="header-notif-list-item">
-				<div class="stock-img-box">SAMSUNG</div>
+				<div class="header-stock-img-box">SAMSUNG</div>
 				<div>
 					<div style="font-size: 13px; font-weight: bold;">(005930)
 						삼성전자</div>
