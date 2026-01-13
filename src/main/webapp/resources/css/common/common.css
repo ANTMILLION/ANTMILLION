@@ -1,7 +1,37 @@
 @charset "UTF-8";
 
 @media ( max-width : 768px) {
+	/* mypage */
+	.mypage-main-content {
+		margin-left: 50px;
+		padding: 20px;
+		padding-top: 120px;
+	}
+	.mypage-grid {
+		gap: 20px;
+	}
+	.mypage-total-card, .mypage-stocks-card, .mypage-history-card {
+		padding: 20px;
+	}
+	.mypage-total-amount {
+		font-size: 28px;
+	}
+	.mypage-profit-amount {
+		font-size: 18px;
+	}
+	.mypage-stock-details {
+		grid-template-columns: 1fr;
+	}
+	.mypage-history-tabs {
+		flex-wrap: wrap;
+	}
+
 	/* detail */
+	.detail-container {
+		margin-left: 50px;
+		padding: 20px;
+		padding-top: 120px;
+	}
 	.detail-container, .detail-stock-container, .detail-left-panel,
 		.detail-right-panel, .detail-bottom-split, .detail-stock-header {
 		display: flex;
@@ -111,9 +141,9 @@
 
 	/* mission */
 	.mission-main-content {
-		margin-left: 0;
+		margin-left: 50px;
 		padding: 20px;
-		padding-top: 100px; /* 헤더 공간 */
+		padding-top: 120px;
 	}
 	.mission-progress-card, .mission-quiz-card {
 		padding: 20px;
@@ -140,47 +170,70 @@
 		width: 40px;
 		height: 40px;
 	}
+}
 
-	/***********************************************************/
-	@media ( max-width : 1400px) {
-		/* mission */
-		.mission-main-content {
-			padding: 80px 32px;
-		}
-
-		/* main */
-		.main-content-grid {
-			grid-template-columns: 380px 1fr;
-			gap: 24px;
-			padding: 24px 32px;
-		}
+/***********************************************************/
+@media ( max-width : 1400px) {
+	/* mission */
+	.mission-main-content {
+		padding: 80px 32px;
 	}
-	@media ( max-width : 1200px) {
-		/* mission */
-		.mission-main-content {
-			padding: 80px 24px;
-		}
 
-		/* main */
-		.main-content-grid {
-			grid-template-columns: 1fr;
-		}
+	/* main */
+	.main-content-grid {
+		grid-template-columns: 380px 1fr;
+		gap: 24px;
+		padding: 24px 32px;
 	}
-	@media ( max-width : 480px) {
-		/* main */
-		.main-rank-card, .main-mission-card, .main-crypto-card,
-			.main-stock-table-card {
-			padding: 20px;
-		}
-		.main-card-title {
-			font-size: 18px;
-		}
-		.main-crypto-header {
-			gap: 10px;
-		}
-		.main-crypto-icon {
-			width: 40px;
-			height: 40px;
-		}
+}
+
+@media ( max-width : 1200px) {
+	/* mission */
+	.mission-main-content {
+		padding: 80px 24px;
+	}
+
+	/* main */
+	.main-content-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media ( max-width : 480px) {
+	/* main */
+	.main-rank-card, .main-mission-card, .main-crypto-card,
+		.main-stock-table-card {
+		padding: 20px;
+	}
+	.main-card-title {
+		font-size: 18px;
+	}
+	.main-crypto-header {
+		gap: 10px;
+	}
+	.main-crypto-icon {
+		width: 40px;
+		height: 40px;
+	}
+}
+
+@media ( max-width : 1400px) {
+	.mypage-main-content {
+		padding: 80px 32px;
+	}
+	.mypage-grid {
+		grid-template-columns: 1fr 350px;
+	}
+}
+
+@media ( max-width : 1200px) {
+	.mypage-main-content {
+		padding: 80px 24px;
+	}
+	.mypage-grid {
+		grid-template-columns: 1fr;
+	}
+	.mypage-history-card {
+		max-height: 600px;
 	}
 }
