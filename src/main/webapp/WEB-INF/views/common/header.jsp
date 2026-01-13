@@ -13,8 +13,7 @@
 	<div class="user-info">
 		<button class="notification-btn" onclick="toggleNotifications(event)">
 			<img
-				src="<%=request.getContextPath()%>/resources/images/icon/alarm.png"
-				alt="알림" class="alarm-icon">
+				src="<%=request.getContextPath()%>/resources/images/icon/alarm.png" alt="알림" class="alarm-icon">
 		</button>
 
 		<div id="notifBox" class="notif-dropdown">
