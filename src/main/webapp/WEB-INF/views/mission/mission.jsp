@@ -1,13 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
-<%@ include file="/WEB-INF/views/common/common.jsp" %>
-
-<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>똑똑한개미 - 미션</title>
+    <%@ include file="/WEB-INF/views/common/common.jsp" %>
     <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
     <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
     <link rel="stylesheet" href="${cpath}/resources/css/mission/mission.css">
