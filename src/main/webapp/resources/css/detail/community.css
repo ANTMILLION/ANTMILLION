@@ -1,0 +1,133 @@
+/* 커뮤니티 박스 설정 */
+.community-box {
+    position: relative; /* 내부 absolute 요소의 기준 */
+    height: 100%; /* 부모(bottom-split)의 350px에 맞춤 */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 커뮤니티 박스 내부 스타일 */
+.community-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 제목 높이 여유있게 */
+    position: relative; /* absolute 기준점 - 중요! */
+    overflow: hidden; /* 내부 overflow 제어 */
+}
+
+/* 게시글 목록 */
+.community-post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 16px 60px 16px; /* 아래쪽 여백 추가 */
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* 개별 게시글 */
+.community-post-item {
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 16px;
+    transition: box-shadow 0.2s;
+}
+
+.community-post-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.community-post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.community-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.community-username {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+}
+
+.community-shareholder-badge {
+    background-color: #fff3e0;
+    color: #ff9800;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.community-post-time {
+    font-size: 12px;
+    color: #adb5bd;
+}
+
+.community-post-content {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #333;
+    word-break: break-word;
+}
+
+/* 글쓰기 영역 */
+.community-write-section {
+    position: absolute; /* 다시 absolute */
+    bottom: -10px; /* 10px 아래로 이동 (약 1cm) */
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border-top: 1px solid #e9ecef;
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.community-write-input {
+    flex: 1;
+    padding: 8px 12px; /* 패딩 줄임 */
+    border: 1px solid #dee2e6;
+    border-radius: 18px; /* 약간 작게 */
+    font-size: 12px; /* 폰트 작게 */
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.community-write-input:focus {
+    border-color: #495057;
+}
+
+.community-write-input::placeholder {
+    color: #adb5bd;
+}
+
+.community-send-btn {
+    padding: 8px 16px; /* 패딩 줄임 */
+    background-color: #343a40;
+    color: #fff;
+    border: none;
+    border-radius: 18px; /* 약간 작게 */
+    font-size: 12px; /* 폰트 작게 */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.community-send-btn:hover {
+    background-color: #212529;
+}
+
+.community-send-btn:active {
+    transform: scale(0.98);
+}
