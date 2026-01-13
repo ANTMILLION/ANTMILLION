@@ -106,9 +106,7 @@ input:focus{
 .center-links a{color:#2563eb; text-decoration:none;}
 .center-links a:hover{text-decoration:underline;}
 
-@media (max-width: 768px){
-  :root{ --sidebar-w: 60px; }
-}
+
 
 .complete{
   text-align: center;
