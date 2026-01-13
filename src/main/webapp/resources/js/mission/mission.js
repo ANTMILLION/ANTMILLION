@@ -50,7 +50,7 @@ function loadQuiz(index) {
 
     quiz.options.forEach(option => {
         const button = document.createElement('button');
-        button.className = 'option-btn';
+        button.className = 'mission-option-btn';
         button.textContent = option.text;
         button.setAttribute('data-option-id', option.id);
         button.setAttribute('data-is-correct', option.isCorrect);
@@ -156,7 +156,7 @@ function showCompletion() {
     document.getElementById('quizContent').style.display = 'none';
     document.getElementById('completionScreen').classList.add('active');
 
-    const quizTitle = document.querySelector('.quiz-date');
+    const quizTitle = document.querySelector('.mission-quiz-date');
     if (quizTitle) {
         quizTitle.textContent = '개미 랭크 시스템';
     }
@@ -167,15 +167,6 @@ function showCompletion() {
 
     // 서버에 완료 전송
     submitCompletion();
-}
-
-// 퀴즈 닫기
-function closeQuiz() {
-    if (confirm('퀴즈를 종료하시겠습니까?')) {
-        const contextPath = document.querySelector('script[src*="mission.js"]')
-            .src.split('/js/')[0].replace(window.location.origin, '');
-        location.href = contextPath + '/main.jsp';
-    }
 }
 
 // 정답 제출 (AJAX)
