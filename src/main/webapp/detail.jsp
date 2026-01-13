@@ -7,6 +7,7 @@
 <title>종목 상세 페이지</title>
 <%@ include file="/WEB-INF/views/common/common.jsp"%>
 <link rel="stylesheet" href="${cpath}/resources/css/detail/detail.css">
+<link rel="stylesheet" href="${cpath}/resources/css/detail/community.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/common.css">
@@ -51,6 +52,10 @@
 							<div class="detail-strong">
 								<h3>커뮤니티</h3>
 							</div>
+							
+							<!-- 커뮤니티 내용 include -->
+					<%@ include file="/WEB-INF/community.jsp" %>
+							
 						</section>
 					</section>
 				</div>
@@ -64,7 +69,6 @@
 						<button class="detail-tab">매도</button>
 						<button class="detail-tab">대기</button>
 					</div>
-
 					<div class="detail-input-card">
 						<div class="detail-row">
 							<span class="detail-card-label"> <span
