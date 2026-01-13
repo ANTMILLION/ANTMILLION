@@ -1,0 +1,189 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.error-body {
+    background: #f5f7fb;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.error-container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 40px; /* 80px → 40px */
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* 24px → 12px */
+}
+
+.error-ant {
+    margin: 0 auto;
+    margin-bottom: 10px; /* 20px → 10px */
+    animation: float 3s ease-in-out infinite;
+}
+
+.error-ant img {
+    width: 300px; /* 유지 */
+    height: 300px; /* 유지 */
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.error-code {
+    font-size: 80px; /* 140px → 80px */
+    font-weight: 900;
+    color: #667eea;
+    line-height: 1;
+    letter-spacing: -5px;
+    text-shadow: 3px 3px 0px rgba(102, 126, 234, 0.2);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.error-code.error-500 {
+    color: #ff4e4e;
+    text-shadow: 3px 3px 0px rgba(255, 78, 78, 0.2);
+}
+
+.error-title {
+    font-size: 24px; /* 32px → 24px */
+    font-weight: 700;
+    color: #333;
+    margin-top: 8px; /* 20px → 8px */
+}
+
+.error-message {
+    font-size: 14px; /* 16px → 14px */
+    color: #666;
+    line-height: 1.5; /* 1.8 → 1.5 */
+    margin-top: 6px; /* 12px → 6px */
+}
+
+.error-actions {
+    display: flex;
+    gap: 12px; /* 16px → 12px */
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px; /* 40px → 20px */
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 12px 28px; /* 16px 36px → 12px 28px */
+    font-size: 14px; /* 16px → 14px */
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+}
+
+.btn-primary:hover {
+    background: #F57C00;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.6);
+}
+
+.btn-secondary {
+    background: #f5f5f5;
+    color: #333;
+    border: 2px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+    background: #e8e8e8;
+    border-color: #d0d0d0;
+    transform: translateY(-3px);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+    transform: translateY(0);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .error-container {
+        padding: 30px 24px;
+    }
+    
+    .error-ant img {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .error-code {
+        font-size: 60px;
+    }
+    
+    .error-title {
+        font-size: 20px;
+    }
+    
+    .error-message {
+        font-size: 13px;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+}
