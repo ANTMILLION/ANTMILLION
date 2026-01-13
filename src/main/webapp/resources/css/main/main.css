@@ -80,6 +80,12 @@
     flex-direction: column;
 }
 
+.rank-card,
+.mission-card {
+    flex-direction: column; /* rank와 mission은 세로 방향 유지 */
+    gap: 0;
+}
+
 .rank-card:hover,
 .mission-card:hover,
 .crypto-card:hover {
@@ -209,28 +215,26 @@
     transform: translateY(0);
 }
 
-.crypto-card {
-    background: var(--secondary-bg);
-    border-radius: 20px;
-    padding: 16px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-}
-
 .crypto-card:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
+}
+
+.crypto-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto 1fr;
+    gap: 0;
+    column-gap: 12px;
 }
 
 .crypto-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    grid-column: 1;
+    grid-row: 1;
 }
 
 .crypto-icon {
@@ -273,17 +277,21 @@
     font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-family: var(--font-english);
     letter-spacing: -0.5px;
+    grid-column: 1;
+    grid-row: 2;
 }
 
 .crypto-change {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
     flex-wrap: wrap;
+    grid-column: 1;
+    grid-row: 3;
 }
 
 .change-label {
@@ -328,6 +336,11 @@
     flex: 1;
     position: relative;
     min-height: 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    grid-column: 2;
+    grid-row: 1 / 5;
 }
 
 .crypto-chart canvas {
