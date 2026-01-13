@@ -21,33 +21,33 @@
         <div class="mission-progress-card">
             <div class="mission-progress-header">
                 <h2 class="mission-progress-title">오늘의 미션 달성률</h2>
-                <div class="mission-progress-status" id="progressStatus">0% 달성!</div>
+                <div class="mission-progress-status" id="mission-progressStatus">0% 달성!</div>
             </div>
             <div class="mission-progress-bar-container">
-                <div class="mission-progress-bar" id="progressBar" style="width: 0%"></div>
+                <div class="mission-progress-bar" id="mission-progressBar" style="width: 0%"></div>
             </div>
         </div>
 
         <!-- 퀴즈 카드 -->
-        <div class="mission-quiz-card" id="quizCard">
+        <div class="mission-quiz-card" id="mission-quizCard">
             <div class="mission-quiz-header">
                 <h3 class="mission-quiz-date">1월 2일 금요일 경제 퀴즈</h3>
                 <!-- 포인트 메시지 -->
-                <div class="mission-points-message" id="pointsMessage" style="display: none;">
+                <div class="mission-points-message" id="mission-pointsMessage" style="display: none;">
                     100 포인트 획득하였습니다.
                 </div>
             </div>
             <div id="mission-quizContent">
-                <div class="mission-quiz-question" id="quizQuestion">
+                <div class="mission-quiz-question" id="mission-quizQuestion">
                     위험을 줄이기 위해 자산을 여러 곳에 나누어 투자하는 원칙을 분산투자라고 한다.
                 </div>
-                <div class="mission-quiz-options" id="quizOptions">
+                <div class="mission-quiz-options" id="mission-quizOptions">
                     <!-- 동적으로 생성됨 -->
                 </div>
             </div>
 
             <!-- 완료 화면 -->
-            <div class="mission-completion-screen" id="completionScreen">
+            <div class="mission-completion-screen" id="mission-completionScreen">
                 <div class="mission-ant-ranks">
                     <img src="${cpath}/resources/images/profile/bronze-ant.png" alt="브론즈"/>
                     <img src="${cpath}/resources/images/profile/silver-ant.png" alt="실버"/>
@@ -68,7 +68,7 @@
     </main>
 
     <!-- 오답 모달 -->
-    <div class="mission-modal" id="wrongModal">
+    <div class="mission-modal" id="mission-wrongModal">
         <div class="mission-modal-content">
             <button class="mission-modal-close" onclick="closeModal()">✕</button>
             <h2 class="mission-modal-title">다시 한번 생각해보세요.</h2>

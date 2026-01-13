@@ -43,9 +43,9 @@ function loadQuiz(index) {
     }
 
     const quiz = quizData[index];
-    document.getElementById('quizQuestion').textContent = quiz.question;
+    document.getElementById('mission-quizQuestion').textContent = quiz.question;
 
-    const optionsContainer = document.getElementById('quizOptions');
+    const optionsContainer = document.getElementById('mission-quizOptions');
     optionsContainer.innerHTML = '';
 
     quiz.options.forEach(option => {
@@ -126,7 +126,7 @@ function goToNextQuiz() {
 
 // 포인트 메시지 표시
 function showPointsMessage() {
-    const message = document.getElementById('pointsMessage');
+    const message = document.getElementById('mission-pointsMessage');
     message.style.display = 'block';
 
     setTimeout(() => {
@@ -137,24 +137,24 @@ function showPointsMessage() {
 // 진행률 업데이트
 function updateProgress() {
     const progress = Math.round((correctAnswers / quizData.length) * 100);
-    document.getElementById('progressBar').style.width = progress + '%';
-    document.getElementById('progressStatus').textContent = progress + '% 달성!';
+    document.getElementById('mission-progressBar').style.width = progress + '%';
+    document.getElementById('mission-progressStatus').textContent = progress + '% 달성!';
 }
 
 // 오답 모달 표시
 function showWrongModal() {
-    document.getElementById('wrongModal').classList.add('active');
+    document.getElementById('mission-wrongModal').classList.add('active');
 }
 
 // 모달 닫기
 function closeModal() {
-    document.getElementById('wrongModal').classList.remove('active');
+    document.getElementById('mission-wrongModal').classList.remove('active');
 }
 
 // 완료 화면 표시
 function showCompletion() {
-    document.getElementById('quizContent').style.display = 'none';
-    document.getElementById('completionScreen').classList.add('active');
+    document.getElementById('mission-quizContent').style.display = 'none';
+    document.getElementById('mission-completionScreen').classList.add('active');
 
     const quizTitle = document.querySelector('.mission-quiz-date');
     if (quizTitle) {
@@ -162,8 +162,8 @@ function showCompletion() {
     }
 
     // 진행률 100%로
-    document.getElementById('progressBar').style.width = '100%';
-    document.getElementById('progressStatus').textContent = '100% 달성!';
+    document.getElementById('mission-progressBar').style.width = '100%';
+    document.getElementById('mission-progressStatus').textContent = '100% 달성!';
 
     // 서버에 완료 전송
     submitCompletion();
@@ -185,7 +185,7 @@ function submitCompletion() {
 
 // 모달 외부 클릭 시 닫기
 window.onclick = function (event) {
-    const modal = document.getElementById('wrongModal');
+    const modal = document.getElementById('mission-wrongModal');
     if (event.target === modal) {
         closeModal();
     }
