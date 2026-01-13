@@ -1,0 +1,130 @@
+/* 1. 메인 레이아웃: 사이드바와 헤더 공간을 고려한 중앙 정렬 설정 */
+.history-main-content {
+    margin-left: 260px; /* 사이드바 고정 너비 */
+    padding-top: 80px;  /* 헤더 고정 높이 */
+    background-color: #f5f7fb;
+    min-height: 100vh;
+    
+    /* 정중앙 배치를 위한 설정 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* 수평 중앙 */
+/*     justify-content: center;  수직 중앙
+ */}
+
+/* 2. 컨테이너: 카드들을 감싸는 영역 */
+.history-container {
+    width: 100%;
+    max-width: 1000px;
+    padding: 40px 20px;
+    /* 수직 중앙 정렬 시 헤더 높이만큼 아래로 밀려보일 수 있으므로 미세 조정 */
+    margin-top: -40px; 
+}
+
+/*  */
+
+/* 3. 필터 박스 스타일 */
+.history-filter-box {
+    background: #fff;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    margin-bottom: 24px;
+    border: 1px solid #eef0f5;
+}
+
+.history-filter-group-header {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.history-filter-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap; /* 반응형 대응 */
+}
+
+/* 커스텀 셀렉트 박스 */
+.history-select-custom {
+    border: 2px solid #2970ff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    width: 240px;
+    color: #2970ff;
+    font-weight: 700;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%232970ff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") no-repeat right 15px center;
+    appearance: none;
+    cursor: pointer;
+}
+
+.history-search-bar {
+    background: #f1f3f7;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 20px;
+    width: 260px;
+    font-size: 14px;
+    outline: none;
+}
+
+/* 4. 상세 내역 카드 */
+.history-content-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border: 1px solid #eef0f5;
+}
+
+/* 리스트 아이템 및 상세 정보 스타일 (기존과 동일) */
+.history-title { font-size: 20px; font-weight: 800; margin-bottom: 15px; }
+.history-text { line-height: 1.8; color: #4a5568; margin-bottom: 35px; }
+.history-date-label { color: #94a3b8; font-size: 14px; font-weight: 600; display: block; margin-bottom: 10px; }
+.history-stock-detail-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border: 1px solid #f0f2f5;
+    border-radius: 12px;
+    background: #fafbfc;
+}
+.history-stock-name { font-weight: 800; font-size: 17px; display: block; margin-bottom: 4px; }
+.history-buy-tag { color: #ef4444; font-weight: 700; margin-right: 6px; }
+.history-amount-text { color: #64748b; font-size: 14px; }
+.history-stock-info-right { text-align: right; }
+.history-price-main { font-weight: 800; font-size: 17px; }
+.history-price-change { color: #2970ff; font-size: 14px; font-weight: 600; margin-left: 8px; }
+
+/* 5. 반응형 충돌 해결 (sidebar.css와 연동) */
+@media (max-width: 1024px) {
+    .history-main-content {
+        margin-left: 80px; /* 사이드바가 줄어드는 너비에 맞춤 */
+    }
+    .history-container {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .history-main-content {
+        margin-left: 0; /* 모바일 모드 시 사이드바가 숨겨진다면 여백 제거 */
+        justify-content: flex-start; /* 모바일은 스크롤이 편하게 상단부터 배치 */
+    }
+    .history-container {
+        margin-top: 20px;
+    }
+    .history-filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .history-select-custom, .history-search-bar {
+        width: 100%;
+    }
+    .history-content-card {
+        padding: 25px;
+    }
+}
