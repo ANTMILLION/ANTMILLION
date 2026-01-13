@@ -9,6 +9,7 @@
     <title>똑똑한개미 - 메인</title>
     <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
     <link rel="stylesheet" href="${cpath}/resources/css/main/main.css">
+    <link rel="stylesheet" href="${cpath}/resources/css/header.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap"
@@ -22,7 +23,7 @@
     <!-- 메인 콘텐츠 영역 -->
     <main class="main-content">
         <!-- 헤더 include -->
-        <%--<%@ include file="헤더" %>--%>
+        <%@ include file="../common/header.jsp" %>
 
         <!-- 콘텐츠 그리드 -->
         <div class="content-grid">
@@ -231,7 +232,17 @@
         </div>
     </main>
 </div>
+<script>
+    // 페이지 로드 시 스크롤을 맨 위로 이동
+    window.onload = function() {
+        window.scrollTo(0, 0);
+    };
 
+    // 페이지 진입 시 즉시 스크롤 초기화 (더 빠른 실행)
+    if (history.scrollRestoration) {
+        history.scrollRestoration = 'manual';
+    }
+</script>
 <script src="${cpath}/resources/js/main/main.js"></script>
 </body>
 </html>
