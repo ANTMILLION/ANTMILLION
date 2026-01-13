@@ -15,12 +15,12 @@
     <%@ include file="../common/sidebar.jsp" %>
     <%@ include file="../common/header.jsp" %>
 
-	<main class="main-content">
+	<main class="history-main-content">
         <div class="history-container">
-            <section class="filter-box">
-                <div class="filter-group-header">카테고리 별 조회</div>
-                <div class="filter-controls">
-                    <select class="select-custom">
+            <section class="history-filter-box">
+                <div class="history-filter-group-header">카테고리 별 조회</div>
+                <div class="history-filter-controls">
+                    <select class="history-select-custom">
                         <option value="all">전체</option>
                         <option value="sunk-cost" selected>매몰비용 오류</option>
                         <option value="loss-aversion">손실회피</option>
@@ -31,8 +31,8 @@
                 </div>
             </section>
 
-            <section class="content-card">
-                <div class="card-header">
+            <section class="history-content-card">
+                <div class="history-card-header">
                     <h2 class="history-title">매몰비용 오류 내역</h2>
                     <p class="history-text">
                         신한지주 종목의 추세가 하향(이동평균선 역배열 등)인데, 계속해서 추가 매수를 진행하여 비중이 지나치게 커지고 있음.<br>
@@ -41,18 +41,18 @@
                 </div>
 
                 <div class="history-list">
-                    <span class="date-label">2026.01.02</span>
-                    <div class="stock-detail-card">
-                        <div class="stock-info-left">
-                            <span class="stock-name">신한지주</span>
-                            <div class="trade-info">
-                                <span class="buy-tag">매수</span>
-                                <span class="amount-text">10주</span>
+                    <span class="history-date-label">2026.01.02</span>
+                    <div class="history-stock-detail-card">
+                        <div class="history-stock-info-left">
+                            <span class="history-stock-name">신한지주</span>
+                            <div class="history-trade-info">
+                                <span class="history-buy-tag">매수</span>
+                                <span class="history-amount-text">10주</span>
                             </div>
                         </div>
-                        <div class="stock-info-right">
-                            <div class="price-main">700,000원</div>
-                            <div class="price-change">(-10%)</div>
+                        <div class="history-stock-info-right">
+                            <div class="history-price-main">700,000원</div>
+                            <div class="history-price-change">(-10%)</div>
                         </div>
                     </div>
                 </div>

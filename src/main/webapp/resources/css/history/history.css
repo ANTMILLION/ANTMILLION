@@ -1,5 +1,5 @@
 /* 1. 메인 레이아웃: 사이드바와 헤더 공간을 고려한 중앙 정렬 설정 */
-.main-content {
+.history-main-content {
     margin-left: 260px; /* 사이드바 고정 너비 */
     padding-top: 80px;  /* 헤더 고정 높이 */
     background-color: #f5f7fb;
@@ -24,7 +24,7 @@
 /*  */
 
 /* 3. 필터 박스 스타일 */
-.filter-box {
+.history-filter-box {
     background: #fff;
     padding: 24px;
     border-radius: 16px;
@@ -33,14 +33,14 @@
     border: 1px solid #eef0f5;
 }
 
-.filter-group-header {
+.history-filter-group-header {
     font-weight: 700;
     font-size: 14px;
     margin-bottom: 12px;
     color: #333;
 }
 
-.filter-controls {
+.history-filter-controls {
     display: flex;
     gap: 15px;
     align-items: center;
@@ -48,7 +48,7 @@
 }
 
 /* 커스텀 셀렉트 박스 */
-.select-custom {
+.history-select-custom {
     border: 2px solid #2970ff;
     padding: 10px 15px;
     border-radius: 8px;
@@ -71,7 +71,7 @@
 }
 
 /* 4. 상세 내역 카드 */
-.content-card {
+.history-content-card {
     background: #fff;
     padding: 40px;
     border-radius: 20px;
@@ -82,8 +82,8 @@
 /* 리스트 아이템 및 상세 정보 스타일 (기존과 동일) */
 .history-title { font-size: 20px; font-weight: 800; margin-bottom: 15px; }
 .history-text { line-height: 1.8; color: #4a5568; margin-bottom: 35px; }
-.date-label { color: #94a3b8; font-size: 14px; font-weight: 600; display: block; margin-bottom: 10px; }
-.stock-detail-card {
+.history-date-label { color: #94a3b8; font-size: 14px; font-weight: 600; display: block; margin-bottom: 10px; }
+.history-stock-detail-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -92,16 +92,16 @@
     border-radius: 12px;
     background: #fafbfc;
 }
-.stock-name { font-weight: 800; font-size: 17px; display: block; margin-bottom: 4px; }
-.buy-tag { color: #ef4444; font-weight: 700; margin-right: 6px; }
-.amount-text { color: #64748b; font-size: 14px; }
-.stock-info-right { text-align: right; }
-.price-main { font-weight: 800; font-size: 17px; }
-.price-change { color: #2970ff; font-size: 14px; font-weight: 600; margin-left: 8px; }
+.history-stock-name { font-weight: 800; font-size: 17px; display: block; margin-bottom: 4px; }
+.history-buy-tag { color: #ef4444; font-weight: 700; margin-right: 6px; }
+.history-amount-text { color: #64748b; font-size: 14px; }
+.history-stock-info-right { text-align: right; }
+.history-price-main { font-weight: 800; font-size: 17px; }
+.history-price-change { color: #2970ff; font-size: 14px; font-weight: 600; margin-left: 8px; }
 
 /* 5. 반응형 충돌 해결 (sidebar.css와 연동) */
 @media (max-width: 1024px) {
-    .main-content {
+    .history-main-content {
         margin-left: 80px; /* 사이드바가 줄어드는 너비에 맞춤 */
     }
     .history-container {
@@ -110,21 +110,21 @@
 }
 
 @media (max-width: 768px) {
-    .main-content {
+    .history-main-content {
         margin-left: 0; /* 모바일 모드 시 사이드바가 숨겨진다면 여백 제거 */
         justify-content: flex-start; /* 모바일은 스크롤이 편하게 상단부터 배치 */
     }
     .history-container {
         margin-top: 20px;
     }
-    .filter-controls {
+    .history-filter-controls {
         flex-direction: column;
         align-items: stretch;
     }
-    .select-custom, .history-search-bar {
+    .history-select-custom, .history-search-bar {
         width: 100%;
     }
-    .content-card {
+    .history-content-card {
         padding: 25px;
     }
 }
