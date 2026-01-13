@@ -1,0 +1,428 @@
+/* ===========================
+   종목 리스트 페이지 스타일
+   =========================== */
+
+:root {
+    --primary-bg: #F5F7FB;
+    --secondary-bg: #FFFFFF;
+    --border-color: #E5E7EB;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --color-positive: #EF4444;
+    --color-negative: #3B82F6;
+    --accent-blue: rgba(59, 130, 246, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+    --font-english: 'Poppins', sans-serif;
+}
+
+/* 전체 배경색 변경 */
+.main-content {
+    background-color: #f5f7fb;
+    padding-top: 100px; /* 헤더 높이만큼 여백 추가 */
+    padding-left: 50px;
+    padding-right: 50px;
+    margin-left: 260px; /* 사이드바 너비만큼 왼쪽 여백 */
+    min-height: 100vh; /* 화면 전체 높이 최소값 설정 */
+}
+
+.stocklist-container {
+    max-width: 1200px; /* 900px에서 1200px로 증가 */
+    width: 100%;
+    margin: 0 auto; /* 중앙 정렬 */
+    padding: 20px;
+}
+
+/* 탭 토글 스위치 */
+.stocklist-tabs {
+    display: inline-flex;
+    background: var(--secondary-bg);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.stocklist-tab-btn {
+    padding: 8px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-korean);
+}
+
+.stocklist-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.stocklist-tab-btn.active {
+    background: #f3f5f9;
+    color: var(--text-secondary);
+}
+
+/* 업데이트 시간 헤더 */
+.stocklist-update-time {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.stocklist-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stocklist-info-group {
+    display: flex;
+    gap: 75px;
+    align-items: center;
+    padding-right: 16px;
+}
+
+.stocklist-info-label {
+    color: var(--text-tertiary);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.stocklist-info-label:nth-child(1) {
+    width: 120px;
+    text-align: right;
+}
+
+.stocklist-info-label:nth-child(2) {
+    width: 80px;
+    text-align: center;
+}
+
+.stocklist-info-label:nth-child(3) {
+    width: 240px;
+    text-align: center;
+    padding-left: 90px;
+}
+
+.stocklist-info-icon {
+    cursor: help;
+}
+
+/* 종목 리스트 */
+.stocklist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stocklist-items.hidden {
+    display: none;
+}
+
+/* 종목 아이템 */
+.stocklist-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.stocklist-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* 좌측 영역 (하트 + 순위 + 회사정보) */
+.stocklist-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+}
+
+.stocklist-favorite-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.stocklist-favorite-btn svg {
+    width: 20px;
+    height: 20px;
+    transition: all 0.2s;
+}
+
+.stocklist-favorite-btn:hover svg {
+    transform: scale(1.1);
+}
+
+.stocklist-favorite-btn.active svg {
+    fill: #EF4444;
+    stroke: #EF4444;
+}
+
+.stocklist-rank {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 30px;
+    text-align: center;
+}
+
+.stocklist-company {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.stocklist-company-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    color: white;
+}
+
+.stocklist-company-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.stocklist-company-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 우측 영역 (가격 + 등락률 + 비율) */
+.stocklist-right {
+    display: flex;
+    align-items: center;
+    gap: 120px;
+}
+
+.stocklist-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-english);
+    width: 120px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.stocklist-change {
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font-english);
+    width: 80px;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.stocklist-change.positive {
+    color: var(--color-positive);
+    background-color: rgba(239, 68, 68, 0.08);
+}
+
+.stocklist-change.negative {
+    color: var(--color-negative);
+    background-color: rgba(59, 130, 246, 0.08);
+}
+
+/* 토스증권 거래 비율 바 */
+.stocklist-ratio-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 240px;
+    flex-shrink: 0;
+}
+
+.stocklist-ratio-bar-container {
+    flex: 1;
+    display: flex;
+    height: 4px;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #E5E7EB;
+}
+
+.stocklist-ratio-bar-buy {
+    background-color: #3B82F6;
+    height: 100%;
+    transition: width 0.3s;
+}
+
+.stocklist-ratio-bar-sell {
+    background-color: #EF4444;
+    height: 100%;
+    transition: width 0.3s;
+}
+
+.stocklist-ratio-value-buy {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3B82F6;
+    min-width: 28px;
+}
+
+.stocklist-ratio-value-sell {
+    font-size: 13px;
+    font-weight: 600;
+    color: #EF4444;
+    min-width: 28px;
+    text-align: right;
+}
+
+/* 회사 로고 색상 */
+.stocklist-company-logo.samsung {
+    background: linear-gradient(135deg, #0C4DA2 0%, #1565C0 100%);
+}
+
+.stocklist-company-logo.sk {
+    background: linear-gradient(135deg, #EA1917 0%, #FF5252 100%);
+}
+
+.stocklist-company-logo.hyundai {
+    background: linear-gradient(135deg, #00263E 0%, #003D5C 100%);
+}
+
+.stocklist-company-logo.hanmi {
+    background: linear-gradient(135deg, #DC3545 0%, #E57373 100%);
+}
+
+.stocklist-company-logo.kodex {
+    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+}
+
+.stocklist-company-logo.doosan {
+    background: linear-gradient(135deg, #005BAA 0%, #42A5F5 100%);
+}
+
+.stocklist-company-logo.hanwha {
+    background: linear-gradient(135deg, #FF6F00 0%, #FFA726 100%);
+}
+
+.stocklist-company-logo.hyundai-motor {
+    background: linear-gradient(135deg, #002C5F 0%, #004B87 100%);
+}
+
+.stocklist-company-logo.naver {
+    background: linear-gradient(135deg, #03C75A 0%, #2DD881 100%);
+}
+
+.stocklist-company-logo.sfa {
+    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+    .stocklist-container {
+        max-width: 1000px; /* 800px에서 1000px로 증가 */
+    }
+
+    .stocklist-right {
+        gap: 60px;
+    }
+
+    .stocklist-info-group {
+        gap: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding-top: 100px;
+        padding-left: 20px;
+        padding-right: 20px;
+        margin-left: 60px; /* 반응형 사이드바 너비 */
+    }
+
+    .stocklist-container {
+        max-width: 100%;
+        padding: 16px;
+    }
+
+    .stocklist-right {
+        gap: 24px;
+    }
+
+    .stocklist-ratio-bar {
+        min-width: 140px;
+    }
+
+    .stocklist-price {
+        min-width: 80px;
+        font-size: 14px;
+    }
+
+    .stocklist-change {
+        min-width: 70px;
+        font-size: 14px;
+    }
+
+    .stocklist-info-group {
+        gap: 40px;
+    }
+}
+
+/* 애니메이션 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stocklist-item {
+    animation: fadeInUp 0.3s ease-out backwards;
+}
+
+.stocklist-item:nth-child(1) { animation-delay: 0.05s; }
+.stocklist-item:nth-child(2) { animation-delay: 0.1s; }
+.stocklist-item:nth-child(3) { animation-delay: 0.15s; }
+.stocklist-item:nth-child(4) { animation-delay: 0.2s; }
+.stocklist-item:nth-child(5) { animation-delay: 0.25s; }
+.stocklist-item:nth-child(6) { animation-delay: 0.3s; }
+.stocklist-item:nth-child(7) { animation-delay: 0.35s; }
+.stocklist-item:nth-child(8) { animation-delay: 0.4s; }
+.stocklist-item:nth-child(9) { animation-delay: 0.45s; }
+.stocklist-item:nth-child(10) { animation-delay: 0.5s; }
