@@ -33,13 +33,13 @@ function initializeCharts() {
     // Chart.js가 로드되어 있는지 확인
     if (typeof Chart === 'undefined') {
         // Chart.js가 없으면 간단한 SVG 차트로 대체
-        drawSimpleChart('ethereumChart', generateChartData(30, 20000, 25000, true));
-        drawSimpleChart('bitcoinChart', generateChartData(30, 20000, 25000, false));
+        drawSimpleChart('main-ethereumChart', generateChartData(30, 20000, 25000, true));
+        drawSimpleChart('main-bitcoinChart', generateChartData(30, 20000, 25000, false));
         return;
     }
     
     // Ethereum 차트
-    const ethCanvas = document.getElementById('ethereumChart');
+    const ethCanvas = document.getElementById('main-ethereumChart');
     if (ethCanvas) {
         ethereumChart = createCryptoChart(ethCanvas, {
             color: '#8B9FFF',
@@ -50,7 +50,7 @@ function initializeCharts() {
     }
     
     // Bitcoin 차트
-    const btcCanvas = document.getElementById('bitcoinChart');
+    const btcCanvas = document.getElementById('main-bitcoinChart');
     if (btcCanvas) {
         bitcoinChart = createCryptoChart(btcCanvas, {
             color: '#FFB347',
@@ -170,13 +170,13 @@ function drawSimpleChart(canvasId, data) {
     
     const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
     stop1.setAttribute('offset', '0%');
-    stop1.setAttribute('style', canvasId === 'ethereumChart' 
+    stop1.setAttribute('style', canvasId === 'main-ethereumChart'
         ? 'stop-color:rgba(139, 159, 255, 0.4);stop-opacity:1' 
         : 'stop-color:rgba(255, 179, 71, 0.4);stop-opacity:1');
     
     const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
     stop2.setAttribute('offset', '100%');
-    stop2.setAttribute('style', canvasId === 'ethereumChart' 
+    stop2.setAttribute('style', canvasId === 'main-ethereumChart'
         ? 'stop-color:rgba(139, 159, 255, 0);stop-opacity:1' 
         : 'stop-color:rgba(255, 179, 71, 0);stop-opacity:1');
     
@@ -196,7 +196,7 @@ function drawSimpleChart(canvasId, data) {
     const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     linePath.setAttribute('d', pathData);
     linePath.setAttribute('fill', 'none');
-    linePath.setAttribute('stroke', canvasId === 'ethereumChart' ? '#8B9FFF' : '#FFB347');
+    linePath.setAttribute('stroke', canvasId === 'main-ethereumChart' ? '#8B9FFF' : '#FFB347');
     linePath.setAttribute('stroke-width', '2');
     svg.appendChild(linePath);
     
@@ -231,7 +231,7 @@ function generateChartData(points, min, max, isIncreasing) {
 // 랭크 이미지 업로드 기능
 function initializeRankImageUpload() {
     const rankImageContainer = document.querySelector('.rank-image-container');
-    const rankImage = document.getElementById('rankImage');
+    const rankImage = document.getElementById('main-rankImage');
     
     if (rankImageContainer && rankImage) {
         // 클릭 시 파일 선택 다이얼로그 표시
@@ -289,7 +289,7 @@ function initializeRankImageUpload() {
 
 // 미션 버튼 이벤트
 function initializeMissionButton() {
-    const missionButton = document.querySelector('.mission-button');
+    const missionButton = document.querySelector('.main-mission-button');
     
     if (missionButton) {
         missionButton.addEventListener('click', function() {
@@ -306,7 +306,7 @@ function initializeMissionButton() {
 
 // 주식 테이블 인터랙션
 function initializeStockTable() {
-    const tableRows = document.querySelectorAll('.stock-row');
+    const tableRows = document.querySelectorAll('.main-stock-row');
     let stockChart = null;
     
     // 주식 차트 데이터 (임시)
@@ -320,12 +320,12 @@ function initializeStockTable() {
     };
     
     // 초기 차트 생성 (삼성전자)
-    const stockCanvas = document.getElementById('stockChart');
+    const stockCanvas = document.getElementById('main-stockChart');
     if (stockCanvas) {
         if (typeof Chart !== 'undefined') {
             stockChart = createStockChart(stockCanvas, stockChartsData['삼성전자']);
         } else {
-            drawSimpleStockChart('stockChart', stockChartsData['삼성전자']);
+            drawSimpleStockChart('main-stockChart', stockChartsData['삼성전자']);
         }
     }
     
@@ -347,7 +347,7 @@ function initializeStockTable() {
             const stockName = this.getAttribute('data-stock');
             
             // 차트 헤더 업데이트
-            const chartStockName = document.querySelector('.chart-stock-name');
+            const chartStockName = document.querySelector('.main-chart-stock-name');
             if (chartStockName) {
                 chartStockName.textContent = stockName;
             }
@@ -357,7 +357,7 @@ function initializeStockTable() {
                 updateStockChart(stockChart, stockChartsData[stockName]);
             } else if (stockChartsData[stockName]) {
                 // SVG 차트 업데이트
-                drawSimpleStockChart('stockChart', stockChartsData[stockName]);
+                drawSimpleStockChart('main-stockChart', stockChartsData[stockName]);
             }
         });
         
@@ -561,7 +561,7 @@ function drawSimpleStockChart(canvasId, data) {
 
 // 미니 차트 애니메이션
 function animateMiniCharts() {
-    const bars = document.querySelectorAll('.mini-bar-chart .bar');
+    const bars = document.querySelectorAll('.main-mini-bar-chart .main-bar');
     
     bars.forEach((bar, index) => {
         // 초기 높이 0으로 설정
@@ -585,12 +585,12 @@ function startRealtimeUpdates() {
 
 function updateCryptoPrices() {
     // 실제로는 API에서 데이터를 가져옴
-    const cryptoCards = document.querySelectorAll('.crypto-card');
+    const cryptoCards = document.querySelectorAll('.main-crypto-card');
     
     cryptoCards.forEach(card => {
-        const priceElement = card.querySelector('.crypto-price');
-        const changeValueElement = card.querySelector('.change-value');
-        const changePercentElement = card.querySelector('.change-percent');
+        const priceElement = card.querySelector('.main-crypto-price');
+        const changeValueElement = card.querySelector('.main-change-value');
+        const changePercentElement = card.querySelector('.main-change-percent');
         
         if (priceElement) {
             // 가격 업데이트 시뮬레이션
@@ -604,11 +604,11 @@ function updateCryptoPrices() {
             if (changeValueElement && changePercentElement) {
                 const isPositive = change > 0;
                 changeValueElement.textContent = (isPositive ? '+' : '') + window.Utils.formatPrice(Math.abs(Math.round(change)));
-                changeValueElement.className = 'change-value ' + (isPositive ? 'positive' : 'negative');
+                changeValueElement.className = 'main-change-value ' + (isPositive ? 'main-positive' : 'main-negative');
                 
                 const percent = (change / currentPrice) * 100;
                 changePercentElement.textContent = window.Utils.formatPercent(percent);
-                changePercentElement.className = 'change-percent ' + (isPositive ? 'positive' : 'negative');
+                changePercentElement.className = 'main-change-percent ' + (isPositive ? 'main-positive' : 'main-negative');
             }
         }
     });
@@ -616,11 +616,11 @@ function updateCryptoPrices() {
 
 function updateStockPrices() {
     // 주식 가격 업데이트 로직
-    const rows = document.querySelectorAll('.stock-table tbody tr');
+    const rows = document.querySelectorAll('.main-stock-table tbody tr');
     
     rows.forEach(row => {
-        const priceElement = row.querySelector('.price');
-        const changeElement = row.querySelector('.change');
+        const priceElement = row.querySelector('.main-price');
+        const changeElement = row.querySelector('.main-change');
         
         if (priceElement && Math.random() > 0.7) { // 30% 확률로 업데이트
             // 가격 변경 애니메이션
