@@ -1,5 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -10,47 +9,45 @@
     <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
     <link rel="stylesheet" href="${cpath}/resources/css/stocklist/stocklist.css">
     <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
+    <link rel="stylesheet" href="${cpath}/resources/css/common/common.css">
 </head>
 <body>
-<div class="app-container">
-    <!-- 사이드바 include -->
+<div class="stocklist-app-container">
     <%@ include file="../common/sidebar.jsp" %>
+    <%@ include file="../common/header.jsp" %>
 
-    <!-- 메인 콘텐츠 영역 -->
-    <main class="main-content">
-        <!-- 헤더 include -->
-        <%@ include file="../common/header.jsp" %>
-
-        <!-- 종목 리스트 컨텐츠 -->
-        <div class="stocklist-container">
-            <!-- 탭 버튼 -->
+    <main class="stocklist-main-content">
+        <div class="stocklist-card">
             <div class="stocklist-tabs">
-                <button class="stocklist-tab-btn active" data-tab="all">전체종목</button>
-                <button class="stocklist-tab-btn" data-tab="favorite">관심종목</button>
+                <button class="stocklist-tab-btn active">전체종목</button>
+                <button class="stocklist-tab-btn">관심종목</button>
             </div>
-
-            <!-- 업데이트 시간 -->
-            <div class="stocklist-update-time">
-                <span class="stocklist-label">순위·오늘 09:27 기준</span>
-                <div class="stocklist-info-group">
-                    <span class="stocklist-info-label">현재가</span>
-                    <span class="stocklist-info-label">등락률</span>
-                    <span class="stocklist-info-label">매수/매도 비율</span>
+            <div class="stocklist-header">
+                <div class="stocklist-time">순위·오늘 09:27 기준</div>
+                <div class="stocklist-view-options">
+                    <span class="stocklist-view-label">거래 비율</span>
+                    <div class="stocklist-sentiment-toggle">
+                        <input type="checkbox" id="stocklist-sentimentToggle" checked>
+                        <label for="stocklist-sentimentToggle" class="stocklist-toggle-slider"></label>
+                    </div>
+                    <span class="stocklist-help-icon">?</span>
                 </div>
+            </div>
+            <div class="stocklist-table-header">
+                <div class="stocklist-header-cell"></div>
+                <div class="stocklist-header-cell">종목명</div>
+                <div class="stocklist-header-cell">현재가</div>
+                <div class="stocklist-header-cell">등락률</div>
+                <div class="stocklist-header-cell">거래 비율</div>
             </div>
 
             <!-- 종목 리스트 -->
-            <div class="stocklist-items" id="stocklist-all">
-                <!-- JavaScript로 동적 생성 -->
-            </div>
-
-            <!-- 관심종목 리스트 (초기에는 숨김) -->
-            <div class="stocklist-items hidden" id="stocklist-favorite">
-                <!-- JavaScript로 동적 생성 -->
+            <div class="stocklist-list" id="stocklist-Container">
             </div>
         </div>
     </main>
 </div>
+<script> const contextPath = '${cpath}'; </script>
 <script src="${cpath}/resources/js/stocklist/stocklist.js"></script>
 </body>
 </html>
