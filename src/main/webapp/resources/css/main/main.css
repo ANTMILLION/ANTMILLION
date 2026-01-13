@@ -20,22 +20,22 @@
 }
 
 /* 최상단에 추가 필요 */
-.app-container {
+.main-app-container {
     display: flex;
     min-height: 100vh;
     background-color: #f5f7fb;
 }
 
 /* .main-content에 padding 추가 */
-.main-content {
+.main-main-content {
     flex: 1;
     margin-left: 260px;
     min-height: 100vh;
     padding: 80px 50px;  /* 추가 */
 }
 
-/* .content-grid의 padding 제거 */
-.content-grid {
+/* .main-content-grid의 padding 제거 */
+.main-content-grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
     grid-auto-rows: auto;
@@ -45,30 +45,30 @@
     margin: 0 auto;
 }
 
-.grid-rank {
+.main-grid-rank {
     grid-column: 1;
 }
 
-.grid-kospi {
+.main-grid-kospi {
     grid-column: 2;
 }
 
-.grid-mission {
+.main-grid-mission {
     grid-column: 1;
 }
 
-.grid-kosdaq {
+.main-grid-kosdaq {
     grid-column: 2;
 }
 
-.grid-table {
+.main-grid-table {
     grid-column: 1 / -1; /* 이것만 있으면 됨 */
 }
 
 /* 카드 공통 스타일 */
-.rank-card,
-.mission-card,
-.crypto-card {
+.main-rank-card,
+.main-mission-card,
+.main-crypto-card {
     background: var(--secondary-bg);
     border-radius: 20px;
     padding: 16px;
@@ -80,20 +80,20 @@
     flex-direction: column;
 }
 
-.rank-card,
-.mission-card {
+.main-rank-card,
+.main-mission-card {
     flex-direction: column; /* rank와 mission은 세로 방향 유지 */
     gap: 0;
 }
 
-.rank-card:hover,
-.mission-card:hover,
-.crypto-card:hover {
+.main-rank-card:hover,
+.main-mission-card:hover,
+.main-crypto-card:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
-.card-title {
+.main-card-title {
     font-size: 16px;
     font-weight: 700;
     color: var(--text-primary);
@@ -102,7 +102,7 @@
 }
 
 /* 랭크 카드 */
-.rank-image-container {
+.main-rank-image-container {
     position: relative;
     width: 100%;
     flex: 1;
@@ -115,22 +115,22 @@
     min-height: 0;
 }
 
-.rank-image {
+.main-rank-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: none;
 }
 
-.rank-image[src]:not([src=""]) {
+.main-rank-image[src]:not([src=""]) {
     display: block;
 }
 
-.rank-image[src]:not([src=""]) ~ .rank-image-placeholder {
+.main-rank-image[src]:not([src=""]) ~ .main-rank-image-placeholder {
     display: none;
 }
 
-.rank-image-placeholder {
+.main-rank-image-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -140,11 +140,11 @@
     text-align: center;
 }
 
-.rank-image-placeholder svg {
+.main-rank-image-placeholder svg {
     width: 50px;
     height: 50px;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-    animation: float 3s ease-in-out infinite;
+    animation: main-float 3s ease-in-out infinite;
 }
 
 @keyframes float {
@@ -152,38 +152,38 @@
     50% { transform: translateY(-8px); }
 }
 
-.rank-image-placeholder p {
+.main-rank-image-placeholder p {
     font-size: 12px;
     font-weight: 500;
     opacity: 0.9;
 }
 
 /* 미션 카드 */
-.mission-card {
+.main-mission-card {
     background: linear-gradient(135deg, #FFF5F7 0%, #FFF 100%);
     border: 1px solid #FFE0E9;
 }
 
-.mission-header {
+.main-mission-header {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
 }
 
-.mission-header svg {
+.main-mission-header svg {
     width: 18px;
     height: 18px;
 }
 
-.mission-header h3 {
+.main-mission-header h3 {
     font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.3px;
 }
 
-.mission-description {
+.main-mission-description {
     font-size: 13px;
     color: var(--text-secondary);
     margin-bottom: 12px;
@@ -191,7 +191,7 @@
     flex: 1;
 }
 
-.mission-button {
+.main-mission-button {
     width: 100%;
     padding: 10px 20px;
     background: linear-gradient(135deg, #FF3366 0%, #FF6B9D 100%);
@@ -206,21 +206,21 @@
     box-shadow: 0 4px 12px rgba(255, 51, 102, 0.2);
 }
 
-.mission-button:hover {
+.main-mission-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 51, 102, 0.3);
 }
 
-.mission-button:active {
+.main-mission-button:active {
     transform: translateY(0);
 }
 
-.crypto-card:hover {
+.main-crypto-card:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
-.crypto-card {
+.main-crypto-card {
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto auto 1fr;
@@ -228,7 +228,7 @@
     column-gap: 12px;
 }
 
-.crypto-header {
+.main-crypto-header {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -237,7 +237,7 @@
     grid-row: 1;
 }
 
-.crypto-icon {
+.main-crypto-icon {
     width: 36px;
     height: 36px;
     border-radius: 10px;
@@ -247,33 +247,33 @@
     flex-shrink: 0;
 }
 
-.crypto-icon svg {
+.main-crypto-icon svg {
     width: 18px;
     height: 18px;
 }
 
-.crypto-icon.ethereum {
+.main-crypto-icon.main-ethereum {
     background: linear-gradient(135deg, #627EEA 0%, #8B9FFF 100%);
 }
 
-.crypto-icon.bitcoin {
+.main-crypto-icon.main-bitcoin {
     background: linear-gradient(135deg, #F7931A 0%, #FFB347 100%);
 }
 
-.crypto-info h3 {
+.main-crypto-info h3 {
     font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 2px;
 }
 
-.crypto-symbol {
+.main-crypto-symbol {
     font-size: 11px;
     color: var(--text-tertiary);
     font-family: var(--font-english);
 }
 
-.crypto-price {
+.main-crypto-price {
     font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);
@@ -284,7 +284,7 @@
     grid-row: 2;
 }
 
-.crypto-change {
+.main-crypto-change {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -294,27 +294,27 @@
     grid-row: 3;
 }
 
-.change-label {
+.main-change-label {
     font-size: 11px;
     color: var(--text-tertiary);
     font-family: var(--font-english);
 }
 
-.change-value {
+.main-change-value {
     font-size: 12px;
     font-weight: 600;
     font-family: var(--font-english);
 }
 
-.change-value.positive {
+.main-change-value.main-positive {
     color: var(--color-positive);
 }
 
-.change-value.negative {
+.main-change-value.main-negative {
     color: var(--color-negative);
 }
 
-.change-percent {
+.main-change-percent {
     font-size: 12px;
     font-weight: 600;
     padding: 3px 8px;
@@ -322,17 +322,17 @@
     font-family: var(--font-english);
 }
 
-.change-percent.positive {
+.main-change-percent.main-positive {
     background-color: rgba(16, 185, 129, 0.1);
     color: var(--color-positive);
 }
 
-.change-percent.negative {
+.main-change-percent.main-negative {
     background-color: rgba(239, 68, 68, 0.1);
     color: var(--color-negative);
 }
 
-.crypto-chart {
+.main-crypto-chart {
     flex: 1;
     position: relative;
     min-height: 0;
@@ -343,7 +343,7 @@
     grid-row: 1 / 5;
 }
 
-.crypto-chart canvas {
+.main-crypto-chart canvas {
     width: 100% !important;
     height: 100% !important;
 }
@@ -352,13 +352,13 @@
    주식 테이블과 차트 섹션
    =========================== */
 
-.stock-section {
+.main-stock-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 28px;
 }
 
-.stock-table-card {
+.main-stock-table-card {
     background: var(--secondary-bg);
     border-radius: 20px;
     padding: 28px;
@@ -366,7 +366,7 @@
     border: 1px solid var(--border-color);
 }
 
-.stock-chart-card {
+.main-stock-chart-card {
     background: var(--secondary-bg);
     border-radius: 20px;
     padding: 28px;
@@ -374,44 +374,44 @@
     border: 1px solid var(--border-color);
 }
 
-.chart-header {
+.main-chart-header {
     margin-bottom: 20px;
 }
 
-.chart-stock-name {
+.main-chart-stock-name {
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 4px;
 }
 
-.chart-stock-code {
+.main-chart-stock-code {
     font-size: 14px;
     color: var(--text-secondary);
     font-family: var(--font-english);
 }
 
-.stock-chart-container {
+.main-stock-chart-container {
     height: 400px;
     position: relative;
 }
 
-.stock-chart-container canvas {
+.main-stock-chart-container canvas {
     width: 100% !important;
     height: 100% !important;
 }
 
-.table-wrapper {
+.main-table-wrapper {
     overflow-x: auto;
 }
 
-.stock-table {
+.main-stock-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
 
-.stock-table th {
+.main-stock-table th {
     padding: 12px 12px;
     font-size: 13px;
     font-weight: 600 !important;
@@ -422,13 +422,13 @@
     white-space: nowrap;
 }
 
-.stock-table th.rank-company {
+.main-stock-table th.main-rank-company {
     font-weight: 600 !important;
     color: var(--text-secondary) !important;
     font-family: var(--font-korean) !important;
 }
 
-.stock-table th.price {
+.main-stock-table th.main-price {
     text-align: center;
     padding-right: 30px;
     font-weight: 600 !important;
@@ -436,7 +436,7 @@
     font-family: var(--font-korean) !important;
 }
 
-.stock-table th.change {
+.main-stock-table th.main-change {
     text-align: center;
     padding-right: 30px;
     font-weight: 600 !important;
@@ -444,7 +444,7 @@
     font-family: var(--font-korean) !important;
 }
 
-.stock-table th.chart-mini {
+.main-stock-table th.main-chart-mini {
     text-align: left;
     padding-left: 12px;
     min-width: 120px;
@@ -453,95 +453,95 @@
     font-family: var(--font-korean) !important;
 }
 
-.stock-table tbody tr {
+.main-stock-table tbody tr {
     transition: background-color 0.2s;
     cursor: pointer;
 }
 
-.stock-table tbody tr:hover {
+.main-stock-table tbody tr:hover {
     background-color: var(--accent-blue);
 }
 
-.stock-table tbody tr.active {
+.main-stock-table tbody tr.active {
     background-color: rgba(59, 130, 246, 0.15);
 }
 
-.stock-table td {
+.main-stock-table td {
     padding: 16px 12px;
     border-bottom: 1px solid var(--border-color);
     font-size: 14px;
 }
 
-.stock-table tbody tr:last-child td {
+.main-stock-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.stock-table .rank {
+.main-stock-table .main-rank {
     color: var(--text-tertiary);
     font-weight: 500;
     width: 40px;
     text-align: center;
 }
 
-.stock-table .company {
+.main-stock-table .main-company {
     font-weight: 500;
     color: var(--text-primary);
 }
 
-.company {
+.main-company {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.company-logo {
+.main-company-logo {
     width: 32px;
     height: 32px;
     border-radius: 8px;
     flex-shrink: 0;
 }
 
-.company-logo.samsung {
+.main-company-logo.main-samsung {
     background: linear-gradient(135deg, #0C4DA2 0%, #1565C0 100%);
 }
 
-.company-logo.sk {
+.main-company-logo.main-sk {
     background: linear-gradient(135deg, #EA1917 0%, #FF5252 100%);
 }
 
-.company-logo.doosan {
+.main-company-logo.main-doosan {
     background: linear-gradient(135deg, #005BAA 0%, #42A5F5 100%);
 }
 
-.company-logo.hyundai {
+.main-company-logo.main-hyundai {
     background: linear-gradient(135deg, #00263E 0%, #003D5C 100%);
 }
 
-.company-logo.tsll {
+.main-company-logo.main-tsll {
     background: linear-gradient(135deg, #DC3545 0%, #E57373 100%);
 }
 
-.company-logo.hyundai-motor {
+.main-company-logo.main-hyundai-motor {
     background: linear-gradient(135deg, #002C5F 0%, #004B87 100%);
 }
 
-.company-logo.celltrion {
+.main-company-logo.main-celltrion {
     background: linear-gradient(135deg, #7CB342 0%, #9CCC65 100%);
 }
 
-.company-logo.miraeasset {
+.main-company-logo.main-miraeasset {
     background: linear-gradient(135deg, #FF6F00 0%, #FFA726 100%);
 }
 
-.company-logo.soxl {
+.main-company-logo.main-soxl {
     background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
 }
 
-.company-logo.lg {
+.main-company-logo.main-lg {
     background: linear-gradient(135deg, #0047AB 0%, #1976D2 100%);
 }
 
-.stock-table .price {
+.main-stock-table .main-price {
     font-weight: 600;
     color: var(--text-primary);
     font-family: var(--font-english);
@@ -549,7 +549,7 @@
     padding-right: 30px;
 }
 
-.stock-table .change {
+.main-stock-table .main-change {
     font-weight: 600;
     font-family: var(--font-english);
     text-align: center;
@@ -557,15 +557,15 @@
     min-width: 80px;
 }
 
-.stock-table .change.positive {
+.main-stock-table .main-change.main-positive {
     color: var(--color-positive);
 }
 
-.stock-table .change.negative {
+.main-stock-table .main-change.main-negative {
     color: var(--color-negative);
 }
 
-.stock-table .chart-mini {
+.main-stock-table .main-chart-mini {
     text-align: left;
     width: 120px;
     min-width: 120px;
@@ -574,7 +574,7 @@
 }
 
 /* 미니 바 차트 - 매수/매도 비율 */
-.mini-bar-chart {
+.main-mini-bar-chart {
     display: flex;
     width: 100%;
     height: 4px;
@@ -583,7 +583,7 @@
     background-color: #E5E7EB;
 }
 
-.mini-bar-chart .bar {
+.main-mini-bar-chart .main-bar {
     height: 4px !important;
     min-height: 4px;
     max-height: 4px;
@@ -592,11 +592,11 @@
     flex-shrink: 0;
 }
 
-.mini-bar-chart .bar:first-child {
+.main-mini-bar-chart .main-bar:first-child {
     background-color: #4A90E2 !important; /* 매수 - 파란색 */
 }
 
-.mini-bar-chart .bar:last-child {
+.main-mini-bar-chart .main-bar:last-child {
     background-color: #FF6B6B !important; /* 매도 - 빨간색 */
 }
 
@@ -605,7 +605,7 @@
    =========================== */
 
 @media (max-width: 1400px) {
-    .content-grid {
+    .main-content-grid {
         grid-template-columns: 380px 1fr;
         gap: 24px;
         padding: 24px 32px;
@@ -613,56 +613,56 @@
 }
 
 @media (max-width: 1200px) {
-    .content-grid {
+    .main-content-grid {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 768px) {
-    .content-grid {
+    .main-content-grid {
         padding: 20px;
         gap: 20px;
     }
-    
-    .crypto-cards {
+
+    .main-crypto-cards {
         grid-template-columns: 1fr;
     }
-    
-    .stock-table {
+
+    .main-stock-table {
         font-size: 13px;
     }
-    
-    .stock-table td {
+
+    .main-stock-table td {
         padding: 12px 8px;
     }
-    
-    .company-logo {
+
+    .main-company-logo {
         width: 28px;
         height: 28px;
     }
-    
-    .crypto-price {
+
+    .main-crypto-price {
         font-size: 24px;
     }
 }
 
 @media (max-width: 480px) {
-    .rank-card,
-    .mission-card,
-    .crypto-card,
-    .stock-table-card {
+    .main-rank-card,
+    .main-mission-card,
+    .main-crypto-card,
+    .main-stock-table-card {
         padding: 20px;
     }
-    
-    .card-title {
+
+    .main-card-title {
         font-size: 18px;
     }
-    
-    .crypto-header {
+
+    .main-crypto-header {
         gap: 10px;
     }
-    
-    .crypto-icon {
+
+    .main-crypto-icon {
         width: 40px;
         height: 40px;
     }
@@ -672,7 +672,7 @@
    애니메이션
    =========================== */
 
-@keyframes fadeInUp {
+@keyframes main-fadeInUp {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -683,30 +683,29 @@
     }
 }
 
-.rank-card,
-.mission-card,
-.crypto-card,
-.stock-table-card {
-    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+.main-rank-card,
+.main-mission-card,
+.main-crypto-card,
+.main-stock-table-card {
+    animation: main-fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
 }
 
-.rank-card {
+.main-rank-card {
     animation-delay: 0.1s;
 }
 
-.mission-card {
+.main-mission-card {
     animation-delay: 0.15s;
 }
 
-.crypto-card:nth-child(1) {
+.main-crypto-card:nth-child(1) {
     animation-delay: 0.1s;
 }
 
-.crypto-card:nth-child(2) {
+.main-crypto-card:nth-child(2) {
     animation-delay: 0.15s;
 }
 
-.stock-table-card {
+.main-stock-table-card {
     animation-delay: 0.2s;
 }
-
