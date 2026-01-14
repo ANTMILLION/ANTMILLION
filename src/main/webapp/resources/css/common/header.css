@@ -7,10 +7,10 @@
 	height: 80px;
 	position: fixed;
 	top: 0;
-	left: 260px; /* ← 추가: 사이드바 너비만큼 왼쪽 여백 */
-	right: 0; /* ← 추가: 오른쪽 끝까지 */
+	left: 260px;
+	right: 0;
 	background: #f5f7fb;
-	padding: 40px 50px; /* ← main-content의 padding과 동일하게 변경 */
+	padding: 40px 50px;
 	z-index: 100;
 }
 
@@ -153,7 +153,8 @@
 	overflow: hidden;
 }
 
-@keyframes dropdownFadeIn {from { opacity:0;
+@
+keyframes dropdownFadeIn {from { opacity:0;
 	transform: translateY(-10px);
 }
 
@@ -259,7 +260,7 @@ to {
 	color: #333;
 }
 
-/* 5. 알림창(Dropdown) 스타일 */
+/* 알림창(Dropdown) 스타일 */
 .header-notif-dropdown {
 	position: absolute;
 	top: 80px;
@@ -275,7 +276,8 @@ to {
 	animation: fadeInDown 0.3s ease;
 }
 
-@keyframes fadeInDown {from { opacity:0;
+@
+keyframes fadeInDown {from { opacity:0;
 	transform: translateY(-15px);
 }
 
@@ -309,4 +311,251 @@ to {
 	font-size: 10px;
 	margin-right: 15px;
 	flex-shrink: 0;
+}
+
+
+@media (max-width: 1024px) {
+    .header {
+        left: 200px;
+        padding: 30px 30px 30px 70px; 
+        height: 70px;
+    }
+    
+    .header-search-box {
+        max-width: 360px; 
+    }
+    
+    .header-user-info {
+        gap: 15px;
+    }
+    
+    .header-notif-dropdown {
+        right: 120px;
+        width: 340px;
+    }
+}
+
+/* 모바일 (768px 이하) */
+@media (max-width: 768px) {
+    .header {
+        left: 0 !important;
+        padding: 20px 12px !important;
+        height: 60px !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    /* 검색창 */
+    .header-search-box {
+        display: flex !important;
+        align-items: center !important;
+        background: white !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        padding: 0 10px !important;
+        width: 170px !important; 
+        height: 40px !important;
+        margin-left: 50px !important;
+        margin-right: 0 !important;
+        flex-shrink: 1 !important;
+    }
+    
+    .header-search-btn {
+        flex-shrink: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .header-search-icon {
+        width: 18px !important; 
+        height: 18px !important;
+    }
+    
+    .header-search-box input {
+        font-size: 13px !important; 
+        padding: 0 6px !important; 
+        min-width: 0 !important;
+    }
+    
+    .header-search-btn {
+        flex-shrink: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .header-search-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    
+    .header-search-box input {
+        font-size: 13px !important;
+        padding: 0 4px !important;
+    }
+    
+    /* 알림 + 프로필 영역 */
+    .header-user-info {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+        margin-left: auto !important;
+        position: relative !important;
+        top: -30px !important; 
+    }
+    
+    /* 알림 버튼 */
+    .header-notification-btn {
+        display: flex !important;
+        width: 38px !important; 
+        height: 38px !important;
+        position: relative !important;
+        background: white !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 50% !important;
+        flex-shrink: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .header-alarm-icon {
+        width: 18px !important; 
+        height: 18px !important;
+    }
+    
+    .header-notification-btn::after {
+        width: 6px !important;
+        height: 6px !important;
+        top: 7px !important; 
+        right: 7px !important;
+    }
+    
+    /* 알림창 */
+    .header-notif-dropdown {
+        position: fixed !important;
+        top: 65px !important;
+        right: 12px !important;
+        left: auto !important;
+        width: 320px !important;
+        max-width: calc(100vw - 24px) !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+        z-index: 99999 !important;
+       
+    }
+    
+    .header-notif-list-item {
+        padding: 15px !important;
+    }
+    
+    .header-stock-img-box {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 9px !important;
+    }
+    
+    /* 프로필 */
+    .header-user-profile {
+        padding: 6px 12px !important; 
+        height: 38px !important; 
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    .header-user-name {
+        display: none !important;
+    }
+    
+    .header-dropdown-arrow {
+        display: block !important;
+    }
+    
+    /* 프로필 모달 */
+    .header-profile-modal {
+        width: 200px !important;
+        right: 12px !important;
+        left: auto !important;
+    }
+    
+    .header-profile-modal-content {
+        padding: 16px 12px !important;
+    }
+    
+    .header-profile-modal .header-profile-avatar {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .header-profile-modal .header-profile-nickname {
+        font-size: 15px !important;
+    }
+}
+
+/* 작은 모바일 (480px 이하) */
+@media (max-width: 480px) {
+    .header {
+        padding: 15px 12px !important;
+        height: 56px !important;
+    }
+    
+    .header-search-box {
+        flex: 1;
+        max-width: none;
+        height: 36px;
+        padding: 0 12px;
+    }
+    
+    .header-search-box input {
+        font-size: 12px;
+    }
+    
+    .header-search-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .header-user-info {
+        gap: 8px;
+    }
+    
+    /* 알림 버튼 보이기 */
+    .header-notification-btn {
+        display: flex !important;
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    .header-alarm-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    
+    .header-notification-btn::after {
+        width: 6px !important;
+        height: 6px !important;
+        top: 8px !important;
+        right: 8px !important;
+    }
+    
+    .header-notif-dropdown {
+        top: 56px !important;
+        border-radius: 16px;
+    }
+    
+    .header-user-profile {
+        padding: 4px 8px;
+        height: 36px;
+    }
+    
+    .header-dropdown-arrow {
+        font-size: 8px;
+    }
+    
+    .header-profile-modal {
+        width: calc(100vw - 32px); 
+        right: 16px;
+        left: 16px;
+    }
 }

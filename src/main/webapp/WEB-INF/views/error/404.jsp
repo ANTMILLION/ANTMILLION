@@ -21,7 +21,7 @@
                 삭제되었거나 주소가 변경되었습니다.
             </p>
             <div class="error-actions">
-                <button class="btn-primary" onclick="location.href='${cpath}/main'">
+                <button class="btn-primary" onclick="location.href='${cpath}/'">
                     홈으로 가기
                 </button>
                 <button class="btn-secondary" onclick="history.back()">
