@@ -432,3 +432,48 @@ to {
 	transform: translateY(0);
 }
 }
+
+@media ( max-width : 1400px) {
+	.mission-main-content {
+		padding: 80px 32px;
+	}
+}
+
+@media ( max-width : 1200px) {
+	.mission-main-content {
+		padding: 80px 24px;
+	}
+}
+
+@media ( max-width : 768px) {
+	.mission-main-content {
+		margin-left: 50px;
+		padding: 20px;
+		padding-top: 120px;
+	}
+	.mission-progress-card, .mission-quiz-card {
+		padding: 20px;
+	}
+	.mission-quiz-card {
+		min-height: auto;
+	}
+	.mission-quiz-question {
+		font-size: 20px;
+		margin-bottom: 30px;
+	}
+	.mission-quiz-options {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+	.mission-option-btn {
+		padding: 16px;
+		font-size: 15px;
+	}
+	.mission-modal-content {
+		padding: 30px 20px;
+	}
+	.mission-ant-ranks img {
+		width: 40px;
+		height: 40px;
+	}
+}
