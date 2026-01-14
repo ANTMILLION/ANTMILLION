@@ -4,9 +4,9 @@
 <aside class="sidebar-sidebar">
     <div class="sidebar-logo" style="cursor: pointer">
         <div class="sidebar-logo-icon">
-            <img src="${cpath}/resources/images/defaultant.png">
+            <img src="${cpath}/resources/images/icontmp.png">
         </div>
-        <span>똑똑한개미</span>
+        <span>ANTMILLION</span>
     </div>
     <nav>
         <a href="${cpath}/" class="sidebar-menu-item" data-path="/">
