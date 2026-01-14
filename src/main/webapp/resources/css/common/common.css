@@ -1,28 +1,6 @@
 @charset "UTF-8";
 
 @media ( max-width : 768px) {
-	/* detail */
-
-	.sidebar {
-		padding: 15px;
-	}
-
-
-	/* sidebar */
-	.sidebar-sidebar {
-		width: 60px;
-	}
-	.sidebar-sidebar .sidebar-logo span, .sidebar-sidebar .sidebar-menu-item span:last-child
-		{
-		display: none;
-	}
-	.sidebar-logo {
-		justify-content: center;
-	}
-	.sidebar-menu-item {
-		justify-content: center;
-	}
-
 	/* main */
 	.main-content-grid {
 		padding: 20px;
