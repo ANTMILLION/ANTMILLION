@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>똑똑한개미 - 종목</title>
+    
     <%@ include file="/WEB-INF/views/common/common.jsp" %>
     <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
     <link rel="stylesheet" href="${cpath}/resources/css/stocklist/stocklist.css">
@@ -25,11 +26,6 @@
             <div class="stocklist-header">
                 <div class="stocklist-time">순위·오늘 09:27 기준</div>
                 <div class="stocklist-view-options">
-                    <span class="stocklist-view-label">거래 비율</span>
-                    <div class="stocklist-sentiment-toggle">
-                        <input type="checkbox" id="stocklist-sentimentToggle" checked>
-                        <label for="stocklist-sentimentToggle" class="stocklist-toggle-slider"></label>
-                    </div>
                     <span class="stocklist-help-icon">?</span>
                 </div>
             </div>

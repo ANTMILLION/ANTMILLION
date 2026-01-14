@@ -132,14 +132,6 @@ document.querySelectorAll('.stocklist-tab-btn').forEach((btn, index) => {
     });
 });
 
-// 거래 비율 토글
-const sentimentToggle = document.getElementById('stocklist-sentimentToggle');
-sentimentToggle.addEventListener('change', function() {
-    const sentimentBars = document.querySelectorAll('.stocklist-sentiment');
-    sentimentBars.forEach(bar => {
-        bar.style.display = this.checked ? 'flex' : 'none';
-    });
-});
 
 // 초기 렌더링
 document.addEventListener('DOMContentLoaded', function() {
