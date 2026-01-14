@@ -359,39 +359,67 @@ body {
 .mypage-executed-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .mypage-executed-table thead {
     background: var(--primary-bg);
 }
 
-.mypage-executed-table th {
-    padding: 14px 16px;
+.mypage-executed-table thead tr th {
+    padding: 14px 12px;
     font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
     white-space: nowrap;
+    background: var(--primary-bg);
 }
 
-.mypage-executed-table tbody tr {
-    transition: background-color 0.2s;
+.mypage-executed-table thead tr th:last-child {
+    border-right: none;
 }
 
-.mypage-executed-table tbody tr:hover {
+.mypage-executed-table tbody tr.mypage-main-row {
+    background: var(--secondary-bg);
+}
+
+.mypage-executed-table tbody tr.mypage-main-row:hover,
+.mypage-executed-table tbody tr.mypage-sub-row:hover {
     background: var(--accent-blue-light);
 }
 
-.mypage-executed-table td {
-    padding: 16px;
+.mypage-executed-table tbody tr.mypage-main-row td {
+    padding: 14px 12px;
     font-size: 14px;
     color: var(--text-primary);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: none;
+    text-align: center;
+    font-weight: 600;
+    border-right: 1px solid var(--border-color);
 }
 
-.mypage-executed-table tbody tr:last-child td {
-    border-bottom: none;
+.mypage-executed-table tbody tr.mypage-main-row td:last-child {
+    border-right: none;
+}
+
+.mypage-executed-table tbody tr.mypage-sub-row {
+    background: var(--secondary-bg);
+}
+
+.mypage-executed-table tbody tr.mypage-sub-row td {
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    border-right: 1px solid var(--border-color);
+}
+
+.mypage-executed-table tbody tr.mypage-sub-row td:last-child {
+    border-right: none;
 }
 
 .mypage-stock-name-cell {
@@ -563,6 +591,37 @@ body {
     padding: 28px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    max-height: 500px;
+}
+
+/* 심리경고 카드 스크롤바 스타일 */
+.mypage-alert-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+.mypage-alert-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.mypage-alert-content::-webkit-scrollbar-track {
+    background: var(--primary-bg);
+    border-radius: 10px;
+}
+
+.mypage-alert-content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.mypage-alert-content::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
 }
 
 .mypage-alert-header {
@@ -570,6 +629,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .mypage-alert-title {
@@ -599,12 +659,6 @@ body {
 .mypage-alert-filter:focus {
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 3px var(--accent-blue-light);
-}
-
-.mypage-alert-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
 }
 
 .mypage-alert-section-title {

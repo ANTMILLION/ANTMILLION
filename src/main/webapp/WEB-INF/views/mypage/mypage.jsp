@@ -78,6 +78,14 @@
                                         <th>미체결금액</th>
                                         <th>주문시간</th>
                                     </tr>
+                                    <tr>
+                                        <th>매매구분</th>
+                                        <th>주문단가</th>
+                                        <th>체결단가</th>
+                                        <th>주문금액</th>
+                                        <th>종목코드</th>
+                                        <th>체결시간</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     <!-- JavaScript로 동적 생성 -->
@@ -123,19 +131,19 @@
                         <h3 class="mypage-alert-title">심리경고</h3>
                         <select class="mypage-alert-filter" id="alertFilter">
                             <option value="all">전체</option>
-                            <option value="sell">매물비율 오류</option>
+                            <option value="sell">매몰비용 오류</option>
                             <option value="buy">손실회피</option>
                         </select>
                     </div>
                     
                     <div class="mypage-alert-content">
-                        <h4 class="mypage-alert-section-title">매물비율 오류 내역</h4>
+                        <h4 class="mypage-alert-section-title">매몰비용 오류 내역</h4>
                         <p class="mypage-alert-description">
-                            신한지주 종목의 주세가 하향(이동평균선 역배열 등)인데, 계속해서 추가 매수를 진행하여 
+                            종목의 주세가 하향(이동평균선 역배열 등)인데, 계속해서 추가 매수를 진행하여
                             비중이 지나치게 커지고 있음
                         </p>
                         <p class="mypage-alert-tip">
-                            단순히 매입 단가를 낮추기 위한 매물 비율 오류에 빠진 것은 아닌가요?
+                            단순히 매입 단가를 낮추기 위한 매몰비용 오류에 빠진 것은 아닌가요?
                         </p>
 
                         <!-- 알림 목록 -->

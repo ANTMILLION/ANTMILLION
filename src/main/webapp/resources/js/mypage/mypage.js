@@ -125,7 +125,43 @@ const sampleData = {
                 executedQty: 20,
                 unexecutedQty: 0,
                 unexecutedAmount: 0,
-                time: '12:20:11'
+                time: '11:20:11',
+                // 서브 정보
+                orderPrice: 77000,
+                executedPrice: 77000,
+                orderAmount: 0,
+                stockCode: '055550',
+                executedTime: '11:20:11'
+            },
+            {
+                stock: '신한지주',
+                type: 'sell',
+                orderQty: 20,
+                executedQty: 20,
+                unexecutedQty: 0,
+                unexecutedAmount: 0,
+                time: '11:20:11',
+                // 서브 정보
+                orderPrice: 77000,
+                executedPrice: 77000,
+                orderAmount: 0,
+                stockCode: '055550',
+                executedTime: '11:20:11'
+            },
+            {
+                stock: '신한지주',
+                type: 'buy',
+                orderQty: 20,
+                executedQty: 20,
+                unexecutedQty: 0,
+                unexecutedAmount: 0,
+                time: '11:20:11',
+                // 서브 정보
+                orderPrice: 77000,
+                executedPrice: 77000,
+                orderAmount: 0,
+                stockCode: '055550',
+                executedTime: '11:20:11'
             },
             {
                 stock: '삼성전자',
@@ -134,7 +170,13 @@ const sampleData = {
                 executedQty: 10,
                 unexecutedQty: 0,
                 unexecutedAmount: 0,
-                time: '11:20:11'
+                time: '10:54:01',
+                // 서브 정보
+                orderPrice: 77000,
+                executedPrice: 77000,
+                orderAmount: 0,
+                stockCode: '005930',
+                executedTime: '10:54:01'
             },
             {
                 stock: 'SK하이닉스',
@@ -143,13 +185,51 @@ const sampleData = {
                 executedQty: 0,
                 unexecutedQty: 1,
                 unexecutedAmount: 742000,
-                time: '10:20:11'
+                time: '11:20:11',
+                // 서브 정보
+                orderPrice: 742000,
+                executedPrice: '-',
+                orderAmount: 742000,
+                stockCode: '000660',
+                executedTime: '-'
             }
         ]
     },
     
     // 매매내역 데이터
     tradingHistory: [
+        {
+            date: '2026.01.02',
+            stock: '삼성전자',
+            type: 'sell',
+            shares: 10,
+            amount: 1017000,
+            detail: '77,000원'
+        },
+        {
+            date: '2026.01.02',
+            stock: '삼성전자',
+            type: 'sell',
+            shares: 10,
+            amount: 1017000,
+            detail: '77,000원'
+        },
+        {
+            date: '2026.01.02',
+            stock: '삼성전자',
+            type: 'buy',
+            shares: 10,
+            amount: 1017000,
+            detail: '77,000원'
+        },
+        {
+            date: '2026.01.02',
+            stock: '삼성전자',
+            type: 'buy',
+            shares: 10,
+            amount: 1017000,
+            detail: '77,000원'
+        },
         {
             date: '2026.01.02',
             stock: '삼성전자',
@@ -170,6 +250,30 @@ const sampleData = {
     
     // 심리경고 알림 데이터
     alerts: [
+        {
+            date: '2026.01.02',
+            stock: '신한지주',
+            type: 'buy',
+            shares: 10,
+            price: 700000,
+            changeRate: -10
+        },
+        {
+            date: '2026.01.02',
+            stock: '신한지주',
+            type: 'buy',
+            shares: 10,
+            price: 700000,
+            changeRate: -10
+        },
+        {
+            date: '2026.01.02',
+            stock: '신한지주',
+            type: 'buy',
+            shares: 10,
+            price: 700000,
+            changeRate: -10
+        },
         {
             date: '2026.01.02',
             stock: '신한지주',
@@ -390,16 +494,21 @@ function renderExecutedOrders(filter) {
         const typeText = order.type === 'buy' ? '매수' : '매도';
         
         return `
-            <tr>
-                <td>
-                    <div class="mypage-stock-name-cell">${order.stock}</div>
-                    <span class="${typeClass}">${typeText}</span>
-                </td>
+            <tr class="mypage-main-row">
+                <td>${order.stock}</td>
                 <td>${order.orderQty}</td>
                 <td>${order.executedQty}</td>
                 <td>${order.unexecutedQty}</td>
                 <td>${order.unexecutedAmount === 0 ? '0' : order.unexecutedAmount.toLocaleString()}</td>
                 <td>${order.time}</td>
+            </tr>
+            <tr class="mypage-sub-row">
+                <td><span class="${typeClass}">${typeText}</span></td>
+                <td>${order.orderPrice === '-' ? '-' : order.orderPrice.toLocaleString()}</td>
+                <td>${order.executedPrice === '-' ? '-' : order.executedPrice.toLocaleString()}</td>
+                <td>${order.orderAmount === 0 ? '0' : order.orderAmount.toLocaleString()}</td>
+                <td>${order.stockCode}</td>
+                <td>${order.executedTime}</td>
             </tr>
         `;
     }).join('');
