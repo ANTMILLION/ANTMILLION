@@ -23,26 +23,6 @@
 		justify-content: center;
 	}
 
-	/* header */
-	.header {
-		flex-direction: column;
-		gap: 16px;
-		align-items: stretch;
-	}
-	.header-search-box {
-		max-width: none;
-	}
-	.header-user-info {
-		justify-content: space-between;
-	}
-	.header-user-name {
-		display: none;
-	}
-	.header-profile-modal {
-		width: 90%;
-		max-width: 360px;
-	}
-
 	/* main */
 	.main-content-grid {
 		padding: 20px;
