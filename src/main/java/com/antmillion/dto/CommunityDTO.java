@@ -1,0 +1,21 @@
+package com.antmillion.dto;
+
+import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+public class CommunityDTO {
+	private Long post_id;
+    private Long user_id;
+    private String stock_code;
+    private String content;
+    private LocalDateTime posted_date;
+}
