@@ -58,7 +58,6 @@
 				</div>
 
 				<div class="header-profile-modal-content">
-					<!-- via 제거 버전 -->
 					<img
 						src="${cpath}/resources/images/profile/gold-ant.png"
 						alt="프로필" class="header-profile-avatar"
@@ -88,14 +87,25 @@ document.addEventListener('DOMContentLoaded', function() {
         userProfile.addEventListener('click', function(e) {
             e.stopPropagation();
             profileModal.classList.toggle('show');
+            // 알림창 닫기
+            document.getElementById('notifBox').style.display = 'none';
         });
     }
     
     // 외부 클릭시 닫기
     document.addEventListener('click', function(e) {
         const wrapper = document.querySelector('.header-user-profile-wrapper');
-        if (!wrapper.contains(e.target)) {
+        const notifBtn = document.querySelector('.header-notification-btn');
+        const notifBox = document.getElementById('notifBox');
+        
+        // 프로필 모달 닫기
+        if (wrapper && !wrapper.contains(e.target)) {
             profileModal.classList.remove('show');
+        }
+        
+        // 알림창 닫기
+        if (notifBtn && !notifBtn.contains(e.target) && !notifBox.contains(e.target)) {
+            notifBox.style.display = 'none';
         }
     });
 });
@@ -103,36 +113,23 @@ document.addEventListener('DOMContentLoaded', function() {
 function logout() {
     if (confirm('로그아웃 하시겠습니까?')) {
         location.href = '${cpath}/logout.jsp';
-		}
-	}
+    }
+}
 	
 function toggleNotifications(e) {
-    // 1. 이벤트 전파 방지 (클릭하자마자 window.onclick이 실행되어 닫히는 현상 방지)
     if(e) e.stopPropagation(); 
     
     const notifBox = document.getElementById('notifBox');
-    // 스타일을 직접 체크하기보다 현재 상태를 보고 토글
     const isVisible = notifBox.style.display === 'block';
     
-    // 프로필 창이 열려있다면 닫아주는 센스
+    // 프로필 창 닫기
     document.getElementById('profileModal').classList.remove('show');
     
     notifBox.style.display = isVisible ? 'none' : 'block';
-    console.log('알림창 토글');
+    console.log('알림창 토글:', notifBox.style.display);
 }
 
-// 창 외부 클릭 시 닫기 기능 수정
-window.onclick = function(event) {
-    const notifBox = document.getElementById('notifBox');
-    // .notif-icon 대신 실제 사용 중인 .alarm-icon-img 사용
-    const icon = document.querySelector('.alarm-icon-img');
-    
-    if (event.target !== icon && !notifBox.contains(event.target)) {
-        notifBox.style.display = 'none';
-    }
-}
-
-// ✕ 버튼 클릭 시 닫기 기능
+// ✕ 버튼 클릭 시 닫기
 function toggleNotif() {
     document.getElementById('notifBox').style.display = 'none';
 }
