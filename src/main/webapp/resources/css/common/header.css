@@ -153,8 +153,7 @@
 	overflow: hidden;
 }
 
-@
-keyframes dropdownFadeIn {from { opacity:0;
+@keyframes dropdownFadeIn {from { opacity:0;
 	transform: translateY(-10px);
 }
 
@@ -166,6 +165,10 @@ to {
 }
 
 /* 모달 헤더 */
+.header-profile-modal.show {
+	display: block;
+}
+
 .header-profile-modal-header {
 	position: relative;
 	padding: 16px;
@@ -272,8 +275,7 @@ to {
 	animation: fadeInDown 0.3s ease;
 }
 
-@
-keyframes fadeInDown {from { opacity:0;
+@keyframes fadeInDown {from { opacity:0;
 	transform: translateY(-15px);
 }
 
