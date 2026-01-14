@@ -5,8 +5,8 @@
     --text-primary: #1F2937;
     --text-secondary: #6B7280;
     --text-tertiary: #9CA3AF;
-    --color-positive: #10B981;
-    --color-negative: #EF4444;
+    --color-positive: #fd0000;
+    --color-negative: #1572fc;
     --accent-blue: rgba(59, 130, 246, 0.08);
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -276,7 +276,7 @@ body {
 }
 
 .stocklist-change.positive {
-    color: var(--color-negative);
+    color: #fd0000;
     background-color: #fef2f2;
 }
 
@@ -309,7 +309,7 @@ body {
 }
 
 .stocklist-sentiment-buy {
-    background-color: #2563eb;
+    background-color: #fd0000;
     display: flex;
     align-items: center;
     justify-content: center;
