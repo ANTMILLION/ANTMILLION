@@ -313,20 +313,16 @@ to {
 	flex-shrink: 0;
 }
 
-/* ==========================================
-   반응형 (Responsive)
-   ========================================== */
 
-/* 태블릿 (1024px 이하) */
 @media (max-width: 1024px) {
     .header {
         left: 200px;
-        padding: 30px 30px 30px 70px; /* 60px → 70px */
+        padding: 30px 30px 30px 70px; 
         height: 70px;
     }
     
     .header-search-box {
-        max-width: 360px; /* 370px → 360px */
+        max-width: 360px; 
     }
     
     .header-user-info {
@@ -360,7 +356,7 @@ to {
         border: 1px solid #e0e0e0 !important;
         border-radius: 8px !important;
         padding: 0 10px !important;
-        width: 170px !important; /* calc 제거, 고정 */
+        width: 170px !important; 
         height: 40px !important;
         margin-left: 50px !important;
         margin-right: 0 !important;
@@ -373,13 +369,13 @@ to {
     }
     
     .header-search-icon {
-        width: 18px !important; /* 16px → 18px */
+        width: 18px !important; 
         height: 18px !important;
     }
     
     .header-search-box input {
-        font-size: 13px !important; /* 12px → 13px */
-        padding: 0 6px !important; /* 4px → 6px */
+        font-size: 13px !important; 
+        padding: 0 6px !important; 
         min-width: 0 !important;
     }
     
@@ -406,13 +402,13 @@ to {
         flex-shrink: 0 !important;
         margin-left: auto !important;
         position: relative !important;
-        top: -30px !important; /* 5px 위로 */
+        top: -30px !important; 
     }
     
     /* 알림 버튼 */
     .header-notification-btn {
         display: flex !important;
-        width: 38px !important; /* 36px → 38px */
+        width: 38px !important; 
         height: 38px !important;
         position: relative !important;
         background: white !important;
@@ -424,14 +420,14 @@ to {
     }
     
     .header-alarm-icon {
-        width: 18px !important; /* 16px → 18px */
+        width: 18px !important; 
         height: 18px !important;
     }
     
     .header-notification-btn::after {
         width: 6px !important;
         height: 6px !important;
-        top: 7px !important; /* 6px → 7px */
+        top: 7px !important; 
         right: 7px !important;
     }
     
@@ -446,7 +442,7 @@ to {
         max-height: 70vh !important;
         overflow-y: auto !important;
         z-index: 99999 !important;
-        /* display: none은 JavaScript가 제어 */
+       
     }
     
     .header-notif-list-item {
@@ -461,8 +457,8 @@ to {
     
     /* 프로필 */
     .header-user-profile {
-        padding: 6px 12px !important; /* 4px 10px → 6px 12px */
-        height: 38px !important; /* 36px → 38px */
+        padding: 6px 12px !important; 
+        height: 38px !important; 
         flex-shrink: 0 !important;
         display: flex !important;
         align-items: center !important;
@@ -558,63 +554,8 @@ to {
     }
     
     .header-profile-modal {
-        width: calc(100vw - 32px); /* 좌우 16px 여백 */
+        width: calc(100vw - 32px); 
         right: 16px;
         left: 16px;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
