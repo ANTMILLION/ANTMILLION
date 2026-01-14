@@ -25,12 +25,12 @@
         <div class="main-content-grid">
             <!-- 나의 랭크 카드 -->
             <div class="main-rank-card main-grid-rank">
-                <h2 class="main-card-title">나의 랭크</h2>
-                <div class="main-rank-image-container">
-                    <!-- 랭크 이미지를 추가할 수 있는 영역 -->
-                    <img src="${cpath}/resources/images/profile/gold-ant.png" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+                <div class="main-rank-header">
+                    <h2 class="main-card-title">나의 랭크</h2>
+                    <div class="main-rank-image-container">
+                        <img src="${cpath}/resources/images/profile/gold-ant.png" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+                    </div>
                 </div>
-                <!-- 경험치 바 -->
                 <div class="main-exp-bar-container">
                     <div class="main-exp-bar" style="width: 68%;"></div>
                     <div class="main-exp-text">
@@ -241,6 +241,12 @@
     if (history.scrollRestoration) {
         history.scrollRestoration = 'manual';
     }
+
+    document.querySelectorAll('.main-stock-row').forEach(item => {
+        item.addEventListener('click', function(e) {
+            window.location.href = '${cpath}/stock/detail';
+        })
+    })
 </script>
 <script src="${cpath}/resources/js/main/main.js"></script>
 </body>

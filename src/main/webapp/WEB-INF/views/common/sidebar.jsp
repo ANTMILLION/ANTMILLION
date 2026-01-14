@@ -2,7 +2,7 @@
 <%@ include file="/WEB-INF/views/common/common.jsp" %>
 
 <aside class="sidebar-sidebar">
-    <div class="sidebar-logo">
+    <div class="sidebar-logo" style="cursor: pointer">
         <div class="sidebar-logo-icon">
             <img src="${cpath}/resources/images/defaultant.png">
         </div>
@@ -71,4 +71,11 @@
             }
         });
     });
+
+    const logo = document.querySelector('.sidebar-logo');
+    if (logo) {
+        logo.addEventListener('click', function () {
+            window.location.href = '${cpath}/';
+        });
+    }
 </script>
