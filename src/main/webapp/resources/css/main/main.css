@@ -673,11 +673,9 @@ body {
     }
 
     .main-content-grid {
-        display: flex !important;
-        flex-direction: column;
-        gap: 20px;
-        min-width: 0;
-        width: 100%;
+        grid-template-columns: 380px 1fr;
+        gap: 24px;
+        padding: 24px 32px;
     }
 
     /* 모든 그리드 아이템을 flex 아이템으로 */
@@ -745,6 +743,10 @@ body {
         gap: 20px;
     }
 
+    .main-content-grid {
+        grid-template-columns: 1fr;
+    }
+
     /* 축소 시 카드 순서 변경 */
     .main-grid-rank {
         order: 1;
@@ -773,6 +775,24 @@ body {
 }
 
 @media (max-width: 768px) {
+
+    .main-crypto-cards {
+        grid-template-columns: 1fr;
+    }
+    .main-stock-table {
+        font-size: 13px;
+    }
+    .main-stock-table td {
+        padding: 12px 8px;
+    }
+    .main-company-logo {
+        width: 28px;
+        height: 28px;
+    }
+    .main-crypto-price {
+        font-size: 24px;
+    }
+
     .main-main-content {
         margin-left: 50px;
         padding: 20px;
@@ -886,6 +906,17 @@ body {
     .main-main-content {
         padding: 15px;
         padding-top: 120px;
+    }
+
+    .main-card-title {
+        font-size: 18px;
+    }
+    .main-crypto-header {
+        gap: 10px;
+    }
+    .main-crypto-icon {
+        width: 40px;
+        height: 40px;
     }
 
     .main-rank-card,

@@ -9,9 +9,7 @@
 <link rel="stylesheet" href="${cpath}/resources/css/detail/detail.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
-<link rel="stylesheet"
-	href="${cpath}/resources/css/detail/community.css">
-<link rel="stylesheet" href="${cpath}/resources/css/common/common.css">
+<link rel="stylesheet" href="${cpath}/resources/css/detail/community.css">
 </head>
 <body class="detail-body">
 	<div class="detail-container">

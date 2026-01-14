@@ -1,17 +1,17 @@
-:root { -
-	-primary-bg: #F5F7FB; -
-	-secondary-bg: #FFFFFF; -
-	-border-color: #E5E7EB; -
-	-text-primary: #1F2937; -
-	-text-secondary: #6B7280; -
-	-text-tertiary: #9CA3AF; -
-	-color-positive: #10B981; -
-	-color-negative: #EF4444; -
-	-accent-blue: rgba(59, 130, 246, 0.08); -
-	-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05); -
-	-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08); -
-	-font-korean: 'Noto Sans KR', 'Pretendard', sans-serif; -
-	-font-english: 'Poppins', sans-serif;
+:root {
+	--primary-bg: #F5F7FB;
+	--secondary-bg: #FFFFFF;
+	--border-color: #E5E7EB;
+	--text-primary: #1F2937;
+	--text-secondary: #6B7280;
+	--text-tertiary: #9CA3AF;
+	--color-positive: #10B981;
+	--color-negative: #EF4444;
+	--accent-blue: rgba(59, 130, 246, 0.08);
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+	--font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+	--font-english: 'Poppins', sans-serif;
 }
 
 * {
@@ -21,7 +21,7 @@
 }
 
 body {
-	background-color: var(- -primary-bg);
+	background-color: var(--primary-bg);
 	overflow-x: hidden;
 }
 
@@ -29,30 +29,30 @@ body {
 .mission-app-container {
 	display: flex;
 	min-height: 100vh;
-	background-color: var(- -primary-bg);
+	background-color: var(--primary-bg);
 }
 
 .mission-main-content {
 	flex: 1;
 	margin-left: 260px;
 	min-height: 100vh;
-	padding: 80px 50px; /* main.css와 동일한 패딩 */
+	padding: 80px 50px;
 }
 
 /* 진행률 카드 */
 .mission-progress-card {
-	background: var(- -secondary-bg);
+	background: var(--secondary-bg);
 	border-radius: 20px;
 	padding: 28px;
 	margin-bottom: 28px;
-	box-shadow: var(- -shadow-sm);
-	border: 1px solid var(- -border-color);
+	box-shadow: var(--shadow-sm);
+	border: 1px solid var(--border-color);
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
 }
 
 .mission-progress-card:hover {
-	box-shadow: var(- -shadow-md);
+	box-shadow: var(--shadow-md);
 	transform: translateY(-2px);
 }
 
@@ -64,22 +64,22 @@ body {
 }
 
 .mission-progress-title {
-	font-size: 18px; /* 20px -> 18px (main.css 카드 타이틀과 균형 맞춤) */
+	font-size: 18px;
 	font-weight: 700;
-	color: var(- -text-primary);
+	color: var(--text-primary);
 	letter-spacing: -0.3px;
 }
 
 .mission-progress-status {
-	font-size: 20px; /* 22px -> 20px */
+	font-size: 20px;
 	font-weight: 700;
-	color: #2970ff; /* 강조색 유지 */
-	font-family: var(- -font-english);
+	color: #2970ff;
+	font-family: var(--font-english);
 }
 
 .mission-progress-bar-container {
 	width: 100%;
-	height: 16px; /* 48px -> 16px (너무 두꺼웠던 바 축소) */
+	height: 16px;
 	background-color: #e8f1ff;
 	border-radius: 8px;
 	overflow: hidden;
@@ -94,11 +94,11 @@ body {
 
 /* 퀴즈 카드 */
 .mission-quiz-card {
-	background: var(- -secondary-bg);
+	background: var(--secondary-bg);
 	border-radius: 20px;
 	padding: 40px;
-	box-shadow: var(- -shadow-sm);
-	border: 1px solid var(- -border-color);
+	box-shadow: var(--shadow-sm);
+	border: 1px solid var(--border-color);
 	position: relative;
 	min-height: 500px;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -107,7 +107,7 @@ body {
 }
 
 .mission-quiz-card:hover {
-	box-shadow: var(- -shadow-md);
+	box-shadow: var(--shadow-md);
 }
 
 .mission-quiz-header {
@@ -119,21 +119,21 @@ body {
 }
 
 .mission-quiz-date {
-	font-size: 14px; /* 18px -> 14px (보조 텍스트 크기로 변경) */
+	font-size: 14px;
 	font-weight: 600;
-	color: var(- -text-secondary);
-	background-color: var(- -primary-bg);
+	color: var(--text-secondary);
+	background-color: var(--primary-bg);
 	padding: 6px 12px;
 	border-radius: 8px;
 }
 
 .mission-quiz-question {
-	font-size: 24px; /* 28px -> 24px (과도하게 큰 폰트 조정) */
+	font-size: 24px;
 	font-weight: 700;
 	text-align: center;
 	margin-bottom: 50px;
 	line-height: 1.5;
-	color: var(- -text-primary);
+	color: var(--text-primary);
 	word-break: keep-all;
 	letter-spacing: -0.5px;
 }
@@ -147,15 +147,15 @@ body {
 }
 
 .mission-option-btn {
-	padding: 24px; /* 32px -> 24px */
-	font-size: 16px; /* 20px -> 16px (일반적인 버튼 텍스트 크기) */
+	padding: 24px;
+	font-size: 16px;
 	font-weight: 600;
-	background-color: var(- -primary-bg);
-	border: 1px solid var(- -border-color);
+	background-color: var(--primary-bg);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	cursor: pointer;
 	transition: all 0.2s ease;
-	color: var(- -text-primary);
+	color: var(--text-primary);
 	box-shadow: none;
 }
 
@@ -164,28 +164,28 @@ body {
 	border-color: #2970ff;
 	color: #2970ff;
 	transform: translateY(-2px);
-	box-shadow: var(- -shadow-sm);
+	box-shadow: var(--shadow-sm);
 }
 
 .mission-option-btn.correct {
-	background-color: #ecfdf5; /* color-positive 배경색 (연한 초록) */
-	border: 2px solid var(- -color-positive);
-	color: var(- -color-positive);
+	background-color: #ecfdf5;
+	border: 2px solid var(--color-positive);
+	color: var(--color-positive);
 	box-shadow: none;
 }
 
 .mission-option-btn.wrong {
-	background-color: #fef2f2; /* color-negative 배경색 (연한 빨강) */
-	border: 2px solid var(- -color-negative);
-	color: var(- -color-negative);
+	background-color: #fef2f2;
+	border: 2px solid var(--color-negative);
+	color: var(--color-negative);
 	animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
 }
 
 @keyframes shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(2px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(4px, 0, 0); }
+	10%, 90% { transform: translate3d(-1px, 0, 0); }
+	20%, 80% { transform: translate3d(2px, 0, 0); }
+	30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+	40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 /* 포인트 메시지 */
@@ -204,15 +204,15 @@ body {
 	z-index: 100;
 }
 
-@keyframes slideIn {from { transform:translateX(20px);
-	opacity: 0;
-}
-
-to {
-	transform: translateX(0);
-	opacity: 1;
-}
-
+@keyframes slideIn {
+	from {
+		transform: translateX(20px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 
 /* 모달 */
@@ -235,27 +235,28 @@ to {
 }
 
 .mission-modal-content {
-	background: var(- -secondary-bg);
+	background: var(--secondary-bg);
 	border-radius: 24px;
 	padding: 40px;
 	text-align: center;
 	position: relative;
-	max-width: 400px; /* 사이즈 조정 */
+	max-width: 400px;
 	width: 90%;
-	box-shadow: var(- -shadow-md);
+	box-shadow: var(--shadow-md);
 	animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes modalPop {from { transform:scale(0.95);
-	opacity: 0;
+@keyframes modalPop {
+	from {
+		transform: scale(0.95);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
 }
 
-to {
-	transform: scale(1);
-	opacity: 1;
-}
-
-}
 .mission-modal-close {
 	position: absolute;
 	top: 16px;
@@ -266,8 +267,8 @@ to {
 	border-radius: 50%;
 	cursor: pointer;
 	border: none;
-	background: var(- -primary-bg);
-	color: var(- -text-secondary);
+	background: var(--primary-bg);
+	color: var(--text-secondary);
 	transition: all 0.2s;
 	line-height: 1;
 	display: flex;
@@ -276,20 +277,20 @@ to {
 }
 
 .mission-modal-close:hover {
-	background: var(- -border-color);
-	color: var(- -text-primary);
+	background: var(--border-color);
+	color: var(--text-primary);
 }
 
 .mission-modal-title {
-	font-size: 22px; /* 28px -> 22px */
+	font-size: 22px;
 	font-weight: 700;
 	margin-bottom: 12px;
-	color: var(- -text-primary);
+	color: var(--text-primary);
 }
 
 .mission-modal-message {
-	font-size: 15px; /* 18px -> 15px */
-	color: var(- -text-secondary);
+	font-size: 15px;
+	color: var(--text-secondary);
 	line-height: 1.5;
 	word-break: keep-all;
 }
@@ -306,16 +307,17 @@ to {
 	animation: fadeIn 0.5s ease;
 }
 
-@keyframes fadeIn {from { opacity:0;
-	transform: translateY(10px);
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
-to {
-	opacity: 1;
-	transform: translateY(0);
-}
-
-}
 .mission-ant-ranks {
 	margin-bottom: 2rem;
 	display: flex;
@@ -325,14 +327,14 @@ to {
 }
 
 .mission-ant-ranks img {
-	width: 100px; /* 고정 크기로 변경하여 안정감 부여 */
+	width: 100px;
 	height: 100px;
 	object-fit: contain;
 	transition: all 0.3s ease;
 }
 
 .mission-ant-ranks img:nth-child(3) {
-	transform: scale(1.2); /* 현재 랭크 강조 */
+	transform: scale(1.2);
 }
 
 .mission-ant-ranks img:not(:nth-child(3)) {
@@ -349,7 +351,7 @@ to {
 .mission-next-level {
 	font-size: 15px;
 	font-weight: 600;
-	color: var(- -text-secondary);
+	color: var(--text-secondary);
 	margin-bottom: 12px;
 	display: flex;
 	justify-content: center;
@@ -366,13 +368,13 @@ to {
 /* 포인트 바 */
 .mission-points-progress {
 	position: relative;
-	height: 24px; /* 36px -> 24px (슬림하게) */
-	background-color: var(- -primary-bg);
+	height: 24px;
+	background-color: var(--primary-bg);
 	border-radius: 12px;
-	margin-top: 30px; /* 라벨 공간 확보 */
+	margin-top: 30px;
 	margin-bottom: 20px;
 	overflow: visible;
-	border: 1px solid var(- -border-color);
+	border: 1px solid var(--border-color);
 }
 
 .mission-points-bar {
@@ -388,16 +390,16 @@ to {
 
 .mission-points-label:nth-of-type(1) {
 	position: absolute;
-	top: -34px; /* 위치 조정 */
+	top: -34px;
 	left: 68%;
 	transform: translateX(-50%);
-	background-color: var(- -text-primary);
+	background-color: var(--text-primary);
 	color: #fff;
 	padding: 4px 10px;
 	border-radius: 6px;
 	font-size: 12px;
 	font-weight: 700;
-	box-shadow: var(- -shadow-sm);
+	box-shadow: var(--shadow-sm);
 	white-space: nowrap;
 	z-index: 10;
 }
@@ -410,25 +412,204 @@ to {
 	transform: translateX(-50%);
 	border-width: 4px 4px 0;
 	border-style: solid;
-	border-color: var(- -text-primary) transparent transparent transparent;
+	border-color: var(--text-primary) transparent transparent transparent;
 }
 
 .mission-points-label:nth-of-type(2) {
 	position: absolute;
 	right: 0;
-	top: -24px; /* 바 위로 올림 */
+	top: -24px;
 	font-size: 12px;
 	font-weight: 500;
-	color: var(- -text-tertiary);
+	color: var(--text-tertiary);
 }
 
 /* 애니메이션 */
-@keyframes fadeInUp {from { opacity:0;
-	transform: translateY(20px);
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
-to {
-	opacity: 1;
-	transform: translateY(0);
+/* ===========================
+   반응형 디자인
+   =========================== */
+
+/* 1400px 이하 */
+@media (max-width: 1400px) {
+	.mission-main-content {
+		padding: 80px 32px;
+	}
 }
+
+/* 1200px 이하 */
+@media (max-width: 1200px) {
+	.mission-main-content {
+		padding: 80px 24px;
+	}
+}
+
+/* 768px 이하 (태블릿) */
+@media (max-width: 768px) {
+	.mission-main-content {
+		margin-left: 50px;
+		padding: 20px;
+		padding-top: 120px;
+	}
+
+	.mission-progress-card,
+	.mission-quiz-card {
+		padding: 20px;
+	}
+
+	.mission-quiz-card {
+		min-height: auto;
+	}
+
+	.mission-quiz-question {
+		font-size: 20px;
+		margin-bottom: 30px;
+	}
+
+	.mission-quiz-options {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+
+	.mission-option-btn {
+		padding: 16px;
+		font-size: 15px;
+	}
+
+	.mission-modal-content {
+		padding: 30px 20px;
+	}
+
+	.mission-ant-ranks img {
+		width: 60px;
+		height: 60px;
+	}
+}
+
+/* 480px 이하 (모바일) */
+@media (max-width: 480px) {
+	.mission-main-content {
+		margin-left: 0;
+		padding: 15px;
+		padding-top: 120px;
+	}
+
+	.mission-progress-card,
+	.mission-quiz-card {
+		padding: 16px;
+		border-radius: 16px;
+	}
+
+	.mission-progress-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+		margin-bottom: 16px;
+	}
+
+	.mission-progress-title {
+		font-size: 15px;
+	}
+
+	.mission-progress-status {
+		font-size: 17px;
+	}
+
+	.mission-quiz-card {
+		padding: 20px 16px;
+	}
+
+	.mission-quiz-header {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-bottom: 24px;
+		gap: 8px;
+	}
+
+	.mission-quiz-date {
+		font-size: 12px;
+		padding: 5px 10px;
+	}
+
+	.mission-points-message {
+		position: static;
+		display: inline-block !important;
+		margin-top: 8px;
+		font-size: 12px;
+		padding: 6px 12px;
+	}
+
+	.mission-quiz-question {
+		font-size: 17px;
+		margin-bottom: 24px;
+	}
+
+	.mission-option-btn {
+		padding: 14px;
+		font-size: 14px;
+	}
+
+	.mission-modal-content {
+		padding: 24px 16px;
+		max-width: 300px;
+	}
+
+	.mission-modal-title {
+		font-size: 18px;
+		margin-bottom: 10px;
+	}
+
+	.mission-modal-message {
+		font-size: 14px;
+	}
+
+	.mission-completion-screen {
+		padding: 1.5rem 10px;
+	}
+
+	.mission-ant-ranks {
+		gap: 6px;
+		margin-bottom: 1.5rem;
+	}
+
+	.mission-ant-ranks img {
+		width: 45px;
+		height: 45px;
+	}
+
+	.mission-next-level {
+		font-size: 13px;
+		flex-wrap: wrap;
+		text-align: center;
+	}
+
+	.mission-next-level strong {
+		font-size: 14px;
+	}
+
+	.mission-points-progress {
+		height: 20px;
+		margin-top: 24px;
+	}
+
+	.mission-points-label:nth-of-type(1) {
+		font-size: 10px;
+		padding: 3px 8px;
+		top: -30px;
+	}
+
+	.mission-points-label:nth-of-type(2) {
+		font-size: 10px;
+		top: -22px;
+	}
 }
