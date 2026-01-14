@@ -1,364 +1,441 @@
-.detail-body {
+:root {
+	--primary-bg: #F5F7FB;
+	--secondary-bg: #FFFFFF;
+	--border-color: #E5E7EB;
+	--text-primary: #1F2937;
+	--text-secondary: #6B7280;
+	--text-tertiary: #9CA3AF;
+	--color-positive: #10B981;
+	--color-negative: #EF4444;
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+	--font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+}
+
+* {
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
-	background-color: #f5f5f5;
-	font-family: 'Noto Sans KR', sans-serif;
 }
 
+body {
+	background-color: var(--primary-bg);
+	font-family: var(--font-korean);
+	overflow-x: hidden; /* 가로 스크롤 방지 */
+}
+
+/* =========================================
+   2. 메인 레이아웃 (Sidebar 대응)
+   ========================================= */
 .detail-container {
 	display: flex;
 	min-height: 100vh;
-	background-color: #f5f7fb;
+	background-color: var(--primary-bg);
 }
 
+/* Mission.css와 동일한 여백 구조 */
 .detail-main-content {
 	flex: 1;
-	margin-left: 260px;
+	margin-left: 260px; /* 사이드바 공간 확보 */
 	min-height: 100vh;
 	padding: 80px 50px;
+	width: calc(100% - 260px); /* 명시적 너비 계산 */
 }
 
 .detail-stock-container {
 	display: flex;
 	gap: 20px;
 	max-width: 1440px;
-	margin: 40px auto;
-	padding: 0 20px;
-	align-items: stretch;
+	margin: 0 auto; /* 상하 마진은 padding으로 대체 */
+	align-items: flex-start; /* stretch 대신 start로 변경하여 높이 자연스럽게 */
 }
 
-/* 종목, 호가, 커뮤니티 */
+/* =========================================
+   3. 왼쪽 패널 (종목정보, 차트, 커뮤니티)
+   ========================================= */
 .detail-left-panel {
 	flex: 1;
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
+	min-width: 0; /* Flex 자식 요소 넘침 방지 */
 }
 
-.detail-stock-header {
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 12px;
+/* 공통 카드 스타일 (Mission.css 스타일 적용) */
+.detail-stock-header,
+.detail-chart-area,
+.detail-hoga-box,
+.detail-community-box {
+	background: var(--secondary-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 20px; /* mission.css 처럼 둥글게 */
 	padding: 24px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.detail-stock-header:hover,
+.detail-chart-area:hover,
+.detail-hoga-box:hover,
+.detail-community-box:hover {
+	box-shadow: var(--shadow-md);
+}
+
+/* 헤더 영역 */
+.detail-stock-header {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 10px;
-	height: auto;
-	padding: 20px;
+	gap: 15px;
+}
+
+.detail-stock-header img {
+	width: 48px;
+	height: 48px;
+	object-fit: contain;
 }
 
 .detail-text-col {
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
-	align-items: flex-start;
 	gap: 4px;
+	flex: 1;
 }
 
 .detail-stock-name {
 	font-size: 20px;
-	font-weight: bold;
+	font-weight: 700;
+	color: var(--text-primary);
 }
 
-.detail-current-price {
+.stock-code {
+	font-size: 14px;
+	color: var(--text-secondary);
+	font-weight: 400;
+	margin-left: 8px;
+}
+
+.detail-current-price h3 {
 	font-size: 24px;
-	font-weight: bold;
+	font-weight: 800;
+	color: var(--text-primary);
 }
 
 .detail-star-icon {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 10px;
-	height: auto;
-	padding: 20px;
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 50%;
+	transition: background-color 0.2s;
 }
 
+.detail-star-icon:hover {
+	background-color: #f3f4f6;
+}
+
+/* 차트 영역 */
 .detail-chart-area {
-	height: 350px;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 12px;
-	padding: 24px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+	height: 400px;
+	width: 100%;
 }
 
+/* 하단 분할 영역 (호가/커뮤니티) */
 .detail-bottom-split {
 	display: flex;
 	gap: 20px;
-	height: 350px;
+	height: 400px; /* 높이 고정 혹은 auto */
 }
 
-.detail-hoga-box {
-	flex: 1;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 12px;
-	padding: 24px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-	font-size: 18px;
-	margin-bottom: 10px;
-}
-
-.detail-strong {
-	font-size: 20px;
-	font-weight: bold;
-	color: #000;
-	margin-top: 2px;
-}
-
+.detail-hoga-box,
 .detail-community-box {
 	flex: 1;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 12px;
-	padding: 24px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-	font-size: 18px;
-	margin-bottom: 10px;
+	overflow: hidden; /* 내부 스크롤 시 필요 */
 }
 
-/* 주문하기 */
+.detail-strong h3 {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text-primary);
+	margin-bottom: 16px;
+}
+
+/* =========================================
+   4. 오른쪽 패널 (주문하기)
+   ========================================= */
 .detail-right-panel {
 	width: 380px;
 	position: sticky;
-	top: 20px;
+	top: 100px; /* 헤더 높이 고려 */
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 12px;
+	gap: 20px;
+	background: var(--secondary-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 20px;
 	padding: 24px;
-	height: auto;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
+	z-index: 10;
 }
 
 .detail-order-top {
 	display: flex;
 	justify-content: space-between;
-	align-items: baseline;
-	font-size: 20px;
-	font-weight: bold;
-	color: #000;
-	margin-top: 2px;
+	align-items: center;
+	margin-bottom: 4px;
+}
+
+.detail-order-top h3 {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text-primary);
 }
 
 .detail-change-link {
-	font-size: 12px;
-	color: #888;
+	font-size: 13px;
+	color: var(--text-secondary);
 	cursor: pointer;
 	text-decoration: underline;
 }
 
+/* 탭 그룹 */
 .detail-tab-group {
 	display: flex;
-	background: #f0f0f0;
-	border-radius: 8px;
+	background: #F3F4F6;
+	border-radius: 12px;
 	padding: 4px;
 	gap: 4px;
 }
 
-.detail-tab-active {
+.detail-tab, .detail-tab-active {
 	flex: 1;
 	padding: 10px;
 	border: none;
-	border-radius: 6px;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 600;
 	cursor: pointer;
-	font-weight: bold;
-	background: #fff;
-	color: #000;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	transition: all 0.2s;
+}
+
+.detail-tab-active {
+	background: #FFFFFF;
+	color: var(--text-primary);
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .detail-tab {
-	flex: 1;
-	padding: 10px;
-	border: none;
 	background: transparent;
-	border-radius: 6px;
-	cursor: pointer;
-	font-weight: bold;
-	color: #666;
+	color: var(--text-secondary);
 }
 
+.detail-tab:hover {
+	color: var(--text-primary);
+}
+
+/* 입력 카드 */
 .detail-input-card {
+	background: #F9FAFB;
+	border: 1px solid var(--border-color);
+	border-radius: 16px;
+	padding: 20px;
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
-	justify-content: center;
-	gap: 15px;
-	padding: 20px;
-	background: #f9f9f9;
-	border: 1px solid #eee;
-	border-radius: 8px;
-	height: auto;
+	gap: 16px;
 }
 
 .detail-row {
 	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 16px;
+	justify-content: space-between;
+	align-items: center;
 	font-size: 14px;
-	color: #555;
-}
-
-.detail-total-row {
-	padding-top: 15px;
-	border-top: 1px solid #e0e0e0;
-}
-
-.detail-card-label {
-	display: flex;
-	gap: 5px;
-	font-size: 14px;
-	color: #555;
-	margin-bottom: 0;
+	color: var(--text-secondary);
 }
 
 .detail-active-type {
-	color: #000;
-	font-weight: bold;
+	color: var(--text-primary);
+	font-weight: 700;
 }
 
 .detail-big-price {
-	font-size: 20px;
-	font-weight: bold;
-	color: #000;
-	margin-top: 2px;
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text-primary);
 }
 
+/* 주문 결과 */
 .detail-order-result {
-	background: #f9f9f9;
-	border: 1px solid #eee;
-	border-radius: 8px;
-	padding: 20px;
+	padding: 10px 0;
 	display: flex;
 	flex-direction: column;
-	gap: 15px;
-	height: auto;
+	gap: 12px;
 }
 
-.detail-money, .detail-total-money {
-	font-size: 20px;
-	font-weight: bold;
-	color: #000;
-	margin-top: 2px;
+.detail-total-row {
+	margin-top: 10px;
+	padding-top: 15px;
+	border-top: 1px solid var(--border-color);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
+.detail-total-money {
+	font-size: 22px;
+	color: var(--color-negative); /* 매수일 때 색상 */
+}
+
+/* 감정(Sentiment) 바 */
 .detail-sentiment-section {
-	text-align: relative;
-	margin-top: auto;
+	margin-top: 10px;
 }
 
-.detail-entiment-text {
+.detail-sentiment-text {
 	font-size: 13px;
-	font-weight: bold;
-	margin-bottom: 10px;
-	width: 100%;
+	font-weight: 600;
+	color: var(--text-secondary);
+	margin-bottom: 8px;
 	text-align: center;
 }
 
-.detail-red-text {
-	color: #ff4e4e;
-}
+.detail-red-text { color: var(--color-negative); }
 
 .detail-percent-labels {
 	display: flex;
-	width: 100%;
-	margin-bottom: 5px;
-	text-align: center;
-	font-size: 14px;
-	font-weight: bold;
-	white-space: nowrap;
-	min-width: fit-content;
+	justify-content: space-between;
+	font-size: 12px;
+	font-weight: 700;
+	margin-bottom: 4px;
 }
 
 .detail-progress-bar {
 	display: flex;
-	height: 12px;
-	border-radius: 6px;
+	height: 10px;
+	border-radius: 5px;
 	overflow: hidden;
-	background-color: #eee;
+	background-color: #F3F4F6;
 }
 
-.detail-fill-buy {
-	background: #ff4e4e;
-	color: transparent;
-}
+.detail-fill-buy { background: var(--color-negative); }
+.detail-fill-sell { background: #3B82F6; }
 
-.detail-fill-sell {
-	background: #39b1fb;
-	color: transparent;
-}
-
+/* 매수 버튼 */
 .detail-btn-submit {
-	background: #ff4e4e;
+	width: 100%;
+	background: var(--color-negative);
 	color: #fff;
 	border: none;
-	border-radius: 10px;
+	border-radius: 16px;
 	padding: 18px;
-	font-size: 22px;
-	font-weight: bold;
+	font-size: 18px;
+	font-weight: 700;
 	cursor: pointer;
-	margin-top: auto;
+	transition: background-color 0.2s;
+	margin-top: 10px;
 }
 
 .detail-btn-submit:hover {
-	background: #e04040;
+	background: #DC2626;
+	transform: translateY(-1px);
 }
 
-@media ( max-width : 768px) {
-	.detail-container {
-		margin-left: 50px;
-		padding: 20px;
-		padding-top: 120px;
+/* =========================================
+   5. 반응형 미디어 쿼리 (Mission.css 기준)
+   ========================================= */
+
+/* 1400px 이하 */
+@media (max-width: 1400px) {
+	.detail-main-content {
+		padding: 80px 32px;
 	}
-	.detail-container, .detail-stock-container, .detail-left-panel,
-	.detail-right-panel, .detail-bottom-split, .detail-stock-header {
-		display: flex;
+}
+
+/* 1200px 이하 */
+@media (max-width: 1200px) {
+	.detail-main-content {
+		padding: 80px 24px;
+	}
+
+	/* 화면이 좁아지면 오른쪽 패널 너비 조정 */
+	.detail-right-panel {
+		width: 340px;
+	}
+}
+
+/* 768px 이하 (태블릿) - Sidebar Collapse */
+@media (max-width: 768px) {
+	.detail-main-content {
+		margin-left: 50px; /* Mission.css 처럼 아이콘 바만 남김 */
+		width: calc(100% - 50px);
+		padding: 120px 20px 40px; /* 헤더 공간 확보 */
+	}
+
+	/* 레이아웃 구조 변경: 좌우 패널을 세로로 배치 */
+	.detail-stock-container {
 		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.detail-left-panel {
 		width: 100%;
 	}
-	.detail-body, .detail-container, .sidebar {
+
+	/* 오른쪽 패널(주문창)을 하단(혹은 상단)으로 이동 및 스타일 변경 */
+	.detail-right-panel {
+		width: 100%;
+		position: static; /* sticky 해제 */
+		order: 1; /* 모바일에서는 차트 본 후 주문 */
+	}
+
+	/* 차트 높이 조정 */
+	.detail-chart-area {
+		height: 350px;
+	}
+
+	/* 하단 분할 영역도 세로로 배치할지 결정 (여기선 유지하되 높이 유동적) */
+	.detail-bottom-split {
+		height: auto;
+		min-height: 400px;
+	}
+}
+
+/* 480px 이하 (모바일) */
+@media (max-width: 480px) {
+	.detail-main-content {
+		margin-left: 0; /* 사이드바 완전 숨김 대응 */
+		width: 100%;
+		padding: 120px 16px 40px;
+	}
+
+	.detail-stock-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.detail-text-col {
+		width: 100%;
+	}
+
+	.detail-stock-header img {
+		width: 40px;
+		height: 40px;
+	}
+
+	/* 하단 호가/커뮤니티를 세로로 배치 */
+	.detail-bottom-split {
+		flex-direction: column;
 		height: auto;
 	}
-	.detail-body {
-		overflow-y: auto;
+
+	.detail-hoga-box,
+	.detail-community-box {
+		min-height: 300px;
 	}
-	.detail-main-content {
-		width: 100%;
-		margin-left: 0;
-		padding: 20px 15px;
+
+	/* 주문창 글씨 크기 조정 */
+	.detail-big-price {
+		font-size: 16px;
 	}
-	.detail-stock-container, .detail-left-panel, .detail-right-panel {
-		gap: 15px;
-	}
-	.detail-bottom-split {
-		gap: 20px;
-	}
-	.detail-stock-header {
-		align-items: flex-start;
-		padding: 15px;
-	}
-	.detail-chart-area {
-		width: 100%;
-		height: 300px;
-		padding: 10px;
-	}
-	.detail-hoga-box, .detail-community-box {
-		width: 100% !important;
-		margin: 0;
-		padding: 15px;
-	}
-	.detail-stock-header h1 {
-		font-size: 1.2rem;
+	.detail-total-money {
+		font-size: 20px;
 	}
 }
