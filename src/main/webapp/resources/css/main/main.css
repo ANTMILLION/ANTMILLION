@@ -617,11 +617,7 @@ body {
 }
 
 .main-mini-bar-chart .main-bar:last-child {
-<<<<<<< Updated upstream
-    background-color: #FF6B6B !important; /* 매도 - 빨간색 */
-=======
     background-color: #FF6B6B !important;
->>>>>>> Stashed changes
 }
 
 /* ===========================

@@ -7,18 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>똑똑한개미 - 메인</title>
     <%@ include file="/WEB-INF/views/common/common.jsp" %>
-<<<<<<< Updated upstream
-=======
-    <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
->>>>>>> Stashed changes
     <link rel="stylesheet" href="${cpath}/resources/css/main/main.css">
     <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
     <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
-<<<<<<< Updated upstream
     <link rel="stylesheet" href="${cpath}/resources/css/common/common.css">
-
-=======
->>>>>>> Stashed changes
 </head>
 <body>
 <div class="main-app-container">
