@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
     <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
     <link rel="stylesheet" href="${cpath}/resources/css/common/common.css">
-
 </head>
 <body>
 <div class="main-app-container">
@@ -30,12 +29,15 @@
                 <h2 class="main-card-title">나의 랭크</h2>
                 <div class="main-rank-image-container">
                     <!-- 랭크 이미지를 추가할 수 있는 영역 -->
-                    <img src="${cpath}/resources/image/rank/rank_bronze.png" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
-                    <div class="main-rank-image-placeholder">
-                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-                            <path d="M40 10L50 30H70L54 42L60 62L40 50L20 62L26 42L10 30H30L40 10Z" fill="#E0E0E0"/>
-                        </svg>
-                        <p>이미지를 추가하세요</p>
+                    <img src="${cpath}/resources/images/profile/gold-ant.png" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+                </div>
+                <!-- 경험치 바 -->
+                <div class="main-exp-bar-container">
+                    <div class="main-exp-bar" style="width: 68%;"></div>
+                    <div class="main-exp-text">
+                        <span class="main-exp-current">680</span>
+                        <span class="main-exp-divider">/</span>
+                        <span class="main-exp-max">1000</span>
                     </div>
                 </div>
             </div>
@@ -232,7 +234,7 @@
                         </table>
                     </div>
                 </div>
-
+                
                 <!-- 주식 차트 -->
                 <div class="main-stock-chart-card">
                     <div class="main-chart-header">

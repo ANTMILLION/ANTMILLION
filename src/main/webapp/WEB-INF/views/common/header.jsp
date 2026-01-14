@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 외부 클릭시 닫기
     document.addEventListener('click', function(e) {
-        const wrapper = document.querySelector('.user-profile-wrapper');
+        const wrapper = document.querySelector('.header-user-profile-wrapper');
         if (!wrapper.contains(e.target)) {
             profileModal.classList.remove('show');
         }
