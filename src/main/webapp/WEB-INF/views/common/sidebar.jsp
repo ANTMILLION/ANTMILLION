@@ -13,7 +13,7 @@
             <span><img src="${cpath}/resources/images/icon/main.png" class="sidebar-menu-icon" alt="메인"></span>
             <span>메인</span>
         </a>
-        <a href="${cpath}/stocklist" class="sidebar-menu-item" data-path="/stocklist">
+        <a href="${cpath}/stocklist" class="sidebar-menu-item" data-path="/stock">
             <span><img src="${cpath}/resources/images/icon/assert.png" class="sidebar-menu-icon" alt="종목"></span>
             <span>종목</span>
         </a>
