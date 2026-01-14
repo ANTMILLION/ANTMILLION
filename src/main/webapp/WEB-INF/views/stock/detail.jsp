@@ -50,7 +50,7 @@
 							</div>
 
 							<!-- 커뮤니티 내용 include -->
-							<%@ include file="/WEB-INF/community.jsp"%>
+							<%@ include file="/WEB-INF/views/stock/community.jsp"%>
 
 						</section>
 					</section>
