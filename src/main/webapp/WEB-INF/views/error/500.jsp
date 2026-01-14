@@ -21,7 +21,7 @@
                 잠시 후 다시 시도해 주세요.
             </p>
             <div class="error-actions">
-                <button class="btn-primary" onclick="location.href='${cpath}/main'">
+                <button class="btn-primary" onclick="location.href='${cpath}/'">
                     홈으로 가기
                 </button>
                 <button class="btn-secondary" onclick="location.reload()">
