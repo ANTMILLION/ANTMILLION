@@ -1,0 +1,822 @@
+/* ===========================
+   마이페이지 스타일 (mypage.css)
+   =========================== */
+
+:root {
+    --primary-bg: #F5F7FB;
+    --secondary-bg: #FFFFFF;
+    --border-color: #E5E7EB;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --color-positive: #fd0000;
+    --color-negative: #1572fc;
+    --color-neutral: #606060;
+    --accent-blue: #3B82F6;
+    --accent-blue-light: rgba(59, 130, 246, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+    --font-english: 'Poppins', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--primary-bg);
+    overflow-x: hidden;
+    font-family: var(--font-korean);
+}
+
+/* ===========================
+   레이아웃
+   =========================== */
+
+.mypage-app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--primary-bg);
+}
+
+.mypage-main-content {
+    flex: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+    padding: 80px 50px 50px;
+}
+
+.mypage-content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+/* ===========================
+   좌측 영역
+   =========================== */
+
+.mypage-left-section {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+/* 탭 메뉴 */
+.mypage-tab-menu {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    background: var(--secondary-bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mypage-tab-button {
+    flex: 1;
+    padding: 18px 24px;
+    background: none;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: var(--font-korean);
+    position: relative;
+}
+
+.mypage-tab-button:hover {
+    color: var(--accent-blue);
+    background: var(--accent-blue-light);
+}
+
+.mypage-tab-button.active {
+    color: var(--accent-blue);
+}
+
+.mypage-tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent-blue);
+    border-radius: 3px 3px 0 0;
+}
+
+/* 탭 콘텐츠 */
+.mypage-tab-content {
+    padding: 28px;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* 스크롤바 스타일 */
+.mypage-tab-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.mypage-tab-content::-webkit-scrollbar-track {
+    background: var(--primary-bg);
+    border-radius: 10px;
+}
+
+.mypage-tab-content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.mypage-tab-content::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+.mypage-tab-panel {
+    display: none;
+}
+
+.mypage-tab-panel.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mypage-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+}
+
+/* ===========================
+   주식잔고 카드
+   =========================== */
+
+.mypage-stock-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mypage-stock-card {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.mypage-stock-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.mypage-stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.mypage-stock-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.mypage-stock-shares {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.mypage-stock-profit {
+    font-size: 16px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.mypage-stock-profit.positive {
+    color: var(--color-positive);
+}
+
+.mypage-stock-profit.negative {
+    color: var(--color-negative);
+}
+
+.mypage-stock-profit.neutral {
+    color: var(--color-neutral);
+}
+
+.mypage-stock-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.mypage-stock-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mypage-detail-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.mypage-detail-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ===========================
+   실현손익
+   =========================== */
+
+.mypage-realized-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mypage-realized-item {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.mypage-realized-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.mypage-realized-date {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.mypage-realized-amount {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.mypage-realized-amount.positive {
+    color: var(--color-positive);
+}
+
+.mypage-realized-amount.negative {
+    color: var(--color-negative);
+}
+
+.mypage-realized-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mypage-realized-stock {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.mypage-realized-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ===========================
+   체결내역
+   =========================== */
+
+.mypage-sub-tab-menu {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.mypage-sub-tab-button {
+    padding: 8px 16px;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: var(--font-korean);
+}
+
+.mypage-sub-tab-button:hover {
+    background: var(--accent-blue-light);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.mypage-sub-tab-button.active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.mypage-table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.mypage-executed-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.mypage-executed-table thead {
+    background: var(--primary-bg);
+}
+
+.mypage-executed-table th {
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.mypage-executed-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.mypage-executed-table tbody tr:hover {
+    background: var(--accent-blue-light);
+}
+
+.mypage-executed-table td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.mypage-executed-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.mypage-stock-name-cell {
+    font-weight: 600;
+}
+
+.mypage-buy-badge,
+.mypage-sell-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.mypage-buy-badge {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-positive);
+}
+
+.mypage-sell-badge {
+    background: rgb(237, 244, 253);
+    color: var(--color-negative);
+}
+
+/* ===========================
+   매매내역
+   =========================== */
+
+.mypage-filter-menu {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.mypage-filter-button {
+    padding: 8px 16px;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: var(--font-korean);
+}
+
+.mypage-filter-button:hover {
+    background: var(--accent-blue-light);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.mypage-filter-button.active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.mypage-trading-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mypage-trading-item {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.mypage-trading-date {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.mypage-trading-stock-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.mypage-trading-stock-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.mypage-trading-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.mypage-trading-detail {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ===========================
+   우측 영역
+   =========================== */
+
+.mypage-right-section {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* 자산 카드 */
+.mypage-asset-card {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: var(--shadow-md);
+}
+
+.mypage-asset-title {
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.9;
+    margin-bottom: 12px;
+}
+
+.mypage-asset-amount {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    font-family: var(--font-english);
+}
+
+.mypage-asset-profit {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mypage-profit-label {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+.mypage-profit-amount {
+    font-size: 18px;
+    font-weight: 700;
+    font-family: var(--font-english);
+}
+
+.mypage-profit-amount.positive {
+    color: #fd0000;
+}
+
+.mypage-profit-amount.negative {
+    color: #1572fc;
+}
+
+/* 심리경고 카드 */
+.mypage-alert-card {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.mypage-alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.mypage-alert-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.mypage-alert-filter {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--secondary-bg);
+    cursor: pointer;
+    font-family: var(--font-korean);
+    outline: none;
+    transition: all 0.3s;
+}
+
+.mypage-alert-filter:hover {
+    border-color: var(--accent-blue);
+}
+
+.mypage-alert-filter:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px var(--accent-blue-light);
+}
+
+.mypage-alert-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mypage-alert-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.mypage-alert-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding: 16px;
+    background: #FFF5F7;
+    border-left: 4px solid #FF3366;
+    border-radius: 8px;
+}
+
+.mypage-alert-tip {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.mypage-alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.mypage-alert-item {
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.mypage-alert-item-date {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.mypage-alert-item-stock {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.mypage-alert-item-detail {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.mypage-alert-item-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 4px;
+}
+
+.mypage-alert-item-price.negative {
+    color: var(--color-negative);
+}
+
+/* ===========================
+   반응형 디자인
+   =========================== */
+
+@media (max-width: 1400px) {
+    .mypage-main-content {
+        padding: 80px 32px 32px;
+    }
+
+    .mypage-content-wrapper {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .mypage-right-section {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .mypage-main-content {
+        margin-left: 50px;
+        padding: 80px 20px 20px;
+    }
+
+    .mypage-content-wrapper {
+        gap: 20px;
+    }
+
+    .mypage-tab-menu {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mypage-tab-button {
+        padding: 14px 16px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .mypage-tab-content {
+        padding: 20px;
+    }
+
+    .mypage-section-title {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .mypage-stock-card {
+        padding: 16px;
+    }
+
+    .mypage-stock-name {
+        font-size: 16px;
+    }
+
+    .mypage-asset-amount {
+        font-size: 28px;
+    }
+
+    .mypage-alert-card {
+        padding: 20px;
+    }
+
+    .mypage-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mypage-executed-table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mypage-main-content {
+        padding: 80px 15px 15px;
+    }
+
+    .mypage-tab-button {
+        padding: 12px 12px;
+        font-size: 13px;
+    }
+
+    .mypage-tab-content {
+        padding: 16px;
+    }
+
+    .mypage-asset-amount {
+        font-size: 24px;
+    }
+
+    .mypage-stock-card {
+        padding: 14px;
+    }
+
+    .mypage-alert-card {
+        padding: 16px;
+    }
+}
+
+/* ===========================
+   애니메이션
+   =========================== */
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mypage-stock-card,
+.mypage-realized-item,
+.mypage-trading-item,
+.mypage-alert-item {
+    animation: slideUp 0.3s ease backwards;
+}
+
+.mypage-stock-card:nth-child(1),
+.mypage-realized-item:nth-child(1),
+.mypage-trading-item:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.mypage-stock-card:nth-child(2),
+.mypage-realized-item:nth-child(2),
+.mypage-trading-item:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.mypage-stock-card:nth-child(3),
+.mypage-realized-item:nth-child(3),
+.mypage-trading-item:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.mypage-stock-card:nth-child(4),
+.mypage-realized-item:nth-child(4),
+.mypage-trading-item:nth-child(4) {
+    animation-delay: 0.2s;
+}
