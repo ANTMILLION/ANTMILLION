@@ -1,0 +1,384 @@
+:root {
+    --primary-bg: #F5F7FB;
+    --secondary-bg: #FFFFFF;
+    --border-color: #E5E7EB;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --color-positive: #10B981;
+    --color-negative: #EF4444;
+    --accent-blue: rgba(59, 130, 246, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+    --font-english: 'Poppins', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-korean);
+}
+
+body {
+    background-color: var(--primary-bg);
+    overflow-x: hidden;
+}
+
+/* 레이아웃 */
+.stocklist-app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--primary-bg);
+}
+
+.stocklist-main-content {
+    flex: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+    padding: 80px 50px;
+}
+
+/* 종목 카드 */
+.stocklist-card {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stocklist-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* 탭 버튼 */
+.stocklist-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stocklist-tab-btn {
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.stocklist-tab-btn:hover {
+    background: var(--primary-bg);
+    border-color: var(--text-tertiary);
+}
+
+.stocklist-tab-btn.active {
+    background: var(--text-primary);
+    color: white;
+    border-color: var(--text-primary);
+}
+
+/* 헤더 섹션 */
+.stocklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stocklist-time {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+.stocklist-view-options {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.stocklist-view-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.stocklist-sentiment-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stocklist-sentiment-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.stocklist-toggle-slider {
+    width: 44px;
+    height: 24px;
+    background-color: var(--border-color);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stocklist-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.stocklist-sentiment-toggle input[type="checkbox"]:checked + .stocklist-toggle-slider {
+    background-color: #2970ff;
+}
+
+.stocklist-sentiment-toggle input[type="checkbox"]:checked + .stocklist-toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.stocklist-help-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text-tertiary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.stocklist-help-icon:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-secondary);
+}
+
+/* 테이블 헤더 */
+.stocklist-table-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 140px 120px 200px;
+    padding: 12px 20px;
+    background-color: var(--primary-bg);
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.stocklist-header-cell {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+}
+
+.stocklist-header-cell:nth-child(3) {
+    text-align: right;
+    margin-right: 40px;
+}
+
+.stocklist-header-cell:nth-child(4) {
+    text-align: right;
+    margin-right: 20px;
+}
+
+.stocklist-header-cell:nth-child(5) {
+    text-align: center;
+}
+
+/* 종목 리스트 */
+.stocklist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 종목 아이템 */
+.stocklist-item {
+    display: grid;
+    grid-template-columns: 60px 1fr 140px 120px 200px;
+    padding: 18px 20px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.stocklist-item:hover {
+    background: var(--accent-blue);
+    border-color: #2970ff;
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* 즐겨찾기 */
+.stocklist-favorite {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stocklist-rank {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-family: var(--font-english);
+}
+
+.stocklist-favorite-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stocklist-favorite-btn:hover {
+    transform: scale(1.2);
+}
+
+.stocklist-favorite-btn.active {
+    color: #fbbf24;
+}
+
+/* 종목 정보 */
+.stocklist-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stocklist-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: white;
+    border: 1px solid var(--border-color);
+}
+
+.stocklist-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.stocklist-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 현재가 */
+.stocklist-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    font-family: var(--font-english);
+}
+
+/* 등락률 */
+.stocklist-change {
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+    font-family: var(--font-english);
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.stocklist-change.positive {
+    color: var(--color-negative);
+    background-color: #fef2f2;
+}
+
+.stocklist-change.negative {
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+/* 거래 비율 */
+.stocklist-sentiment {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.stocklist-sentiment-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.stocklist-sentiment-bar {
+    display: flex;
+    width: 100px;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.stocklist-sentiment-buy {
+    background-color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-english);
+}
+
+.stocklist-sentiment-sell {
+    background-color: var(--color-negative);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-english);
+}
+
+/* 애니메이션 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
