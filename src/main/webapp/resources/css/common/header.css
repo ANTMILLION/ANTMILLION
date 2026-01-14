@@ -356,7 +356,7 @@ to {
         border: 1px solid #e0e0e0 !important;
         border-radius: 8px !important;
         padding: 0 10px !important;
-        width: 170px !important; 
+        width: 300px !important; 
         height: 40px !important;
         margin-left: 50px !important;
         margin-right: 0 !important;
@@ -402,7 +402,7 @@ to {
         flex-shrink: 0 !important;
         margin-left: auto !important;
         position: relative !important;
-        top: -30px !important; 
+        top: -5px !important; 
     }
     
     /* 알림 버튼 */
