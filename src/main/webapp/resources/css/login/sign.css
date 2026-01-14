@@ -159,3 +159,37 @@ input:focus{
 input[type="text"], input[type="password"]{
   height: 44px;
 }
+
+/* ===== 반응형 ===== */
+@media (max-width: 900px){
+  :root{ --sidebar-w: 84px; }
+
+  .sidebar-sidebar{
+    width: var(--sidebar-w);
+    padding: 24px 12px;
+  }
+
+  .sidebar-logo{
+    justify-content: center;
+    padding-left: 0;
+    margin-bottom: 24px;
+  }
+  .sidebar-logo span{ display: none; }
+
+  .sidebar-menu-item{
+    justify-content: center;
+    padding: 14px 10px;
+  }
+  .sidebar-menu-item span:last-child{ display: none; }
+
+  .sidebar-menu-item img,
+  .sidebar-menu-bottom .sidebar-menu-item img{
+    margin-right: 0 !important;
+  }
+}
+
+@media (max-width: 520px){
+  :root{ --sidebar-w: 72px; }
+  .sidebar-sidebar{ padding: 20px 10px; }
+  .sidebar-menu-item{ padding: 12px 8px; border-radius: 16px; }
+}
