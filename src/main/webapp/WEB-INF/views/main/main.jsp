@@ -126,7 +126,7 @@
 										            </svg>
 										            
 										            <div class="main-tooltip-content">
-										                <div class="main-tooltip-title">토스증권 투자자들의 구매·판매 체결비중을 나타내요</div>
+										                <div class="main-tooltip-title">??증권 투자자들의 구매·판매 체결비중을 나타내요</div>
 										                <div class="main-tooltip-body">
 										                    • 30분 이내 체결내역을 실시간으로 보여줘요.<br>
 										                    • 투자자들의 심리와 수급추세를 알 수 있어요. 단, 시장 전체의 수급을 의미하지 않아요.
