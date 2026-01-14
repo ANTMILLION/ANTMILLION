@@ -79,6 +79,9 @@ function renderStocks() {
     // 이벤트 리스너 재등록
     attachFavoriteListeners();
 
+    // 종목 아이템 클릭 이벤트 리스너 등록
+    attachStockItemListeners();
+
     // 렌더링 후 현재 토글 상태에 맞춰 거래 비율 표시 여부 동기화
     syncSentimentDisplay();
 }
@@ -137,3 +140,18 @@ document.querySelectorAll('.stocklist-tab-btn').forEach((btn, index) => {
 document.addEventListener('DOMContentLoaded', function() {
     renderStocks();
 });
+
+// 종목 아이템 클릭 이벤트 리스너 등록
+function attachStockItemListeners() {
+    document.querySelectorAll('.stocklist-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            // 즐겨찾기 버튼 클릭은 제외
+            if (e.target.closest('.stocklist-favorite-btn')) {
+                return;
+            }
+
+            // contextPath는 JSP에서 전역 변수로 설정되어 있음
+            window.location.href = contextPath + '/stock/detail';
+        });
+    });
+}
