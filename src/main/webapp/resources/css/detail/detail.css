@@ -382,7 +382,7 @@ body {
 	.detail-main-content {
 		margin-left: 50px; /* 사이드바 축소 대응 */
 		width: calc(100% - 50px);
-		padding: 120px 20px 40px; /* 상단 패딩 증가 */
+		padding: 80px 20px 40px; /* 상단 패딩 증가 */
 	}
 
 	/* 패널 내부 패딩 축소 */
