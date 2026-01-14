@@ -69,9 +69,13 @@ body {
 	background: var(--secondary-bg);
 	border: 1px solid var(--border-color);
 	border-radius: 20px; /* mission.css 처럼 둥글게 */
-	padding: 24px;
+	padding: 17px;
 	box-shadow: var(--shadow-sm);
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	display: flex;           /* 내부 요소를 유연하게 배치 */
+	flex-direction: column;  /* 위에서 아래로 쌓음 */
+	/* 높이는 이미 잡혀있거나 부모에 따름 */
+	overflow: hidden;
 }
 
 .detail-stock-header:hover,
@@ -164,7 +168,7 @@ body {
 .detail-right-panel {
 	width: 380px;
 	position: sticky;
-	top: 100px; /* 헤더 높이 고려 */
+	top: 80px; /* 헤더 높이 고려 */
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
@@ -341,66 +345,88 @@ body {
    5. 반응형 미디어 쿼리 (Mission.css 기준)
    ========================================= */
 
-/* 1400px 이하 */
 @media (max-width: 1400px) {
 	.detail-main-content {
 		padding: 80px 32px;
 	}
 }
 
-/* 1200px 이하 */
+/* 1200px 이하 - 레이아웃 변경 (Grid 1열 처럼 동작) */
 @media (max-width: 1200px) {
 	.detail-main-content {
 		padding: 80px 24px;
 	}
 
-	/* 화면이 좁아지면 오른쪽 패널 너비 조정 */
-	.detail-right-panel {
-		width: 340px;
-	}
-}
-
-/* 768px 이하 (태블릿) - Sidebar Collapse */
-@media (max-width: 768px) {
-	.detail-main-content {
-		margin-left: 50px; /* Mission.css 처럼 아이콘 바만 남김 */
-		width: calc(100% - 50px);
-		padding: 120px 20px 40px; /* 헤더 공간 확보 */
-	}
-
-	/* 레이아웃 구조 변경: 좌우 패널을 세로로 배치 */
+	/* 좌우 배치를 상하 배치로 변경 */
 	.detail-stock-container {
 		flex-direction: column;
-		align-items: stretch;
+		align-items: stretch; /* 가로 가득 차게 */
 	}
 
-	.detail-left-panel {
-		width: 100%;
-	}
-
-	/* 오른쪽 패널(주문창)을 하단(혹은 상단)으로 이동 및 스타일 변경 */
+	/* 오른쪽 패널(주문) 스타일 변경 */
 	.detail-right-panel {
 		width: 100%;
 		position: static; /* sticky 해제 */
-		order: 1; /* 모바일에서는 차트 본 후 주문 */
+		order: 1; /* 차트 아래로 배치 */
+		margin-top: 20px;
 	}
 
 	/* 차트 높이 조정 */
 	.detail-chart-area {
-		height: 350px;
-	}
-
-	/* 하단 분할 영역도 세로로 배치할지 결정 (여기선 유지하되 높이 유동적) */
-	.detail-bottom-split {
-		height: auto;
-		min-height: 400px;
+		height: 450px;
 	}
 }
 
-/* 480px 이하 (모바일) */
+/* 768px 이하 (태블릿/모바일) - 사이드바 축소 및 폰트 조정 */
+@media (max-width: 768px) {
+	.detail-main-content {
+		margin-left: 50px; /* 사이드바 축소 대응 */
+		width: calc(100% - 50px);
+		padding: 120px 20px 40px; /* 상단 패딩 증가 */
+	}
+
+	/* 패널 내부 패딩 축소 */
+	.detail-stock-header,
+	.detail-chart-area,
+	.detail-hoga-box,
+	.detail-community-box,
+	.detail-right-panel {
+		padding: 20px;
+	}
+
+	.detail-strong {
+		padding: 20px 20px 10px 20px;
+	}
+
+	/* 하단 분할 영역(호가/커뮤니티) 세로 배치 */
+	.detail-bottom-split {
+		flex-direction: column;
+		height: auto;
+	}
+
+	.detail-hoga-box,
+	.detail-community-box {
+		min-height: 400px; /* 충분한 높이 확보 */
+	}
+
+	/* 폰트 사이즈 조정 (MyPage 스타일) */
+	.detail-current-price h3 {
+		font-size: 28px;
+	}
+
+	.detail-total-money {
+		font-size: 20px;
+	}
+
+	.detail-chart-area {
+		height: 350px;
+	}
+}
+
+/* 480px 이하 (모바일 디테일) */
 @media (max-width: 480px) {
 	.detail-main-content {
-		margin-left: 0; /* 사이드바 완전 숨김 대응 */
+		margin-left: 0; /* 사이드바 완전 숨김 시 */
 		width: 100%;
 		padding: 120px 16px 40px;
 	}
@@ -409,33 +435,5 @@ body {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 12px;
-	}
-
-	.detail-text-col {
-		width: 100%;
-	}
-
-	.detail-stock-header img {
-		width: 40px;
-		height: 40px;
-	}
-
-	/* 하단 호가/커뮤니티를 세로로 배치 */
-	.detail-bottom-split {
-		flex-direction: column;
-		height: auto;
-	}
-
-	.detail-hoga-box,
-	.detail-community-box {
-		min-height: 300px;
-	}
-
-	/* 주문창 글씨 크기 조정 */
-	.detail-big-price {
-		font-size: 16px;
-	}
-	.detail-total-money {
-		font-size: 20px;
 	}
 }
