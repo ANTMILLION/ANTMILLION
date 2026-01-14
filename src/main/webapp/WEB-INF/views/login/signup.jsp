@@ -10,7 +10,6 @@
 <title>ANTMILLION</title>
 <link rel="stylesheet" href="${cpath}/resources/css/login/sign.css" />
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css" />
-<link rel="stylesheet" href="${cpath}/resources/css/common/common.css">
 </head>
 <body>
 	<div class="shell">

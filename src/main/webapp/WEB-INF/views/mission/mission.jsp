@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="${cpath}/resources/css/mission/mission.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
-<link rel="stylesheet" href="${cpath}/resources/css/common/common.css">
 
 </head>
 <body>
