@@ -14,6 +14,5 @@ import lombok.ToString;
 @ToString
 public class MissionDTO {
 	private Long mission_id;
-    private BigDecimal mission_completion_rate;
     private String mission_name;
 }
