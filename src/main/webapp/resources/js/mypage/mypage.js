@@ -338,6 +338,47 @@ function setupEventListeners() {
             filterTradingHistory(this.dataset.filter);
         });
     });
+    
+    // 기간 선택 초기화
+    setupDateFilters();
+}
+
+// ===========================
+// 기간 선택 필터 설정
+// ===========================
+function setupDateFilters() {
+    // 날짜 입력 필드들
+    const dateInputs = document.querySelectorAll('.mypage-date-input');
+    const clearButtons = document.querySelectorAll('.mypage-date-clear');
+    
+    // 오늘 날짜로 초기화
+    const today = new Date().toISOString().split('T')[0];
+    dateInputs.forEach(input => {
+        if (!input.value) {
+            input.value = today;
+        }
+    });
+    
+    // 클리어 버튼 이벤트
+    clearButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-target');
+            const targetInput = document.getElementById(targetId);
+            if (targetInput) {
+                targetInput.value = '';
+            }
+        });
+    });
+    
+    // 날짜 변경 이벤트 (나중에 API 호출 등을 위해 추가)
+    dateInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            console.log(`Date changed: ${this.id} = ${this.value}`);
+            // 여기에 날짜 필터링 로직 추가 가능
+            // 예: filterByDateRange(this.id, this.value);
+        });
+    });
 }
 
 // ===========================

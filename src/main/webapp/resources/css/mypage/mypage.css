@@ -169,6 +169,93 @@ body {
 }
 
 /* ===========================
+   기간 선택 필터
+   =========================== */
+
+.mypage-date-filter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.mypage-date-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 40px;
+}
+
+.mypage-date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.mypage-date-input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.mypage-date-input {
+    padding: 8px 32px 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--secondary-bg);
+    cursor: pointer;
+    font-family: var(--font-korean);
+    outline: none;
+    transition: all 0.2s ease;
+    min-width: 150px;
+}
+
+.mypage-date-input:hover {
+    border-color: var(--accent-blue);
+}
+
+.mypage-date-input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px var(--accent-blue-light);
+}
+
+.mypage-date-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: var(--text-tertiary);
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.mypage-date-clear:hover {
+    background: var(--text-secondary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.mypage-date-separator {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ===========================
    주식잔고 카드
    =========================== */
 
@@ -775,6 +862,22 @@ body {
         margin-bottom: 20px;
     }
 
+    .mypage-date-filter {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .mypage-date-inputs {
+        width: 100%;
+    }
+
+    .mypage-date-input {
+        min-width: 130px;
+        font-size: 12px;
+        padding: 7px 28px 7px 10px;
+    }
+
     .mypage-stock-card {
         padding: 16px;
     }
@@ -813,6 +916,17 @@ body {
 
     .mypage-tab-content {
         padding: 16px;
+    }
+
+    .mypage-date-input {
+        min-width: 120px;
+        font-size: 11px;
+    }
+
+    .mypage-date-clear {
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
     }
 
     .mypage-asset-amount {

@@ -49,6 +49,22 @@
                     <div class="mypage-tab-panel" id="realized-panel">
                         <h2 class="mypage-section-title">실현손익</h2>
                         
+                        <!-- 기간 선택 -->
+                        <div class="mypage-date-filter">
+                            <label class="mypage-date-label">기간</label>
+                            <div class="mypage-date-inputs">
+                                <div class="mypage-date-input-wrapper">
+                                    <input type="date" class="mypage-date-input" id="realizedStartDate" value="2026-01-15">
+                                    <button class="mypage-date-clear" data-target="realizedStartDate">×</button>
+                                </div>
+                                <span class="mypage-date-separator">~</span>
+                                <div class="mypage-date-input-wrapper">
+                                    <input type="date" class="mypage-date-input" id="realizedEndDate" value="2026-01-15">
+                                    <button class="mypage-date-clear" data-target="realizedEndDate">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- 실현손익 목록 -->
                         <div class="mypage-realized-list" id="realizedList">
                             <!-- JavaScript로 동적 생성 -->
@@ -58,6 +74,22 @@
                     <!-- 체결내역 탭 -->
                     <div class="mypage-tab-panel" id="executed-panel">
                         <h2 class="mypage-section-title">체결내역</h2>
+                        
+                        <!-- 기간 선택 -->
+                        <div class="mypage-date-filter">
+                            <label class="mypage-date-label">기간</label>
+                            <div class="mypage-date-inputs">
+                                <div class="mypage-date-input-wrapper">
+                                    <input type="date" class="mypage-date-input" id="executedStartDate" value="2026-01-15">
+                                    <button class="mypage-date-clear" data-target="executedStartDate">×</button>
+                                </div>
+                                <span class="mypage-date-separator">~</span>
+                                <div class="mypage-date-input-wrapper">
+                                    <input type="date" class="mypage-date-input" id="executedEndDate" value="2026-01-15">
+                                    <button class="mypage-date-clear" data-target="executedEndDate">×</button>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- 서브 탭 -->
                         <div class="mypage-sub-tab-menu">
@@ -97,6 +129,22 @@
                     <!-- 매매내역 탭 -->
                     <div class="mypage-tab-panel" id="trading-panel">
                         <h2 class="mypage-section-title">매매내역</h2>
+                        
+                        <!-- 기간 선택 -->
+                        <div class="mypage-date-filter">
+                            <label class="mypage-date-label">기간</label>
+                            <div class="mypage-date-inputs">
+                                <div class="mypage-date-input-wrapper">
+                                    <input type="date" class="mypage-date-input" id="tradingStartDate" value="2026-01-15">
+                                    <button class="mypage-date-clear" data-target="tradingStartDate">×</button>
+                                </div>
+                                <span class="mypage-date-separator">~</span>
+                                <div class="mypage-date-input-wrapper">
+                                    <input type="date" class="mypage-date-input" id="tradingEndDate" value="2026-01-15">
+                                    <button class="mypage-date-clear" data-target="tradingEndDate">×</button>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- 필터 버튼 -->
                         <div class="mypage-filter-menu">
