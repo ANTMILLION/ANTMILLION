@@ -20,5 +20,5 @@ public class QuizQuestionDTO {
     private Integer answer;
     private String explanation;
     private Integer point;
-    private LocalDateTime date;
+    private LocalDateTime quizDate;
 }
