@@ -5,8 +5,8 @@
     --text-primary: #1F2937;
     --text-secondary: #6B7280;
     --text-tertiary: #9CA3AF;
-    --color-positive: #10B981;
-    --color-negative: #EF4444;
+    --color-positive: #e22939;
+    --color-negative: #2271e9;
     --accent-blue: rgba(59, 130, 246, 0.08);
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -38,6 +38,9 @@ body {
     margin-left: 260px;
     min-height: 100vh;
     padding: 80px 50px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* 종목 카드 */
@@ -49,6 +52,10 @@ body {
     border: 1px solid var(--border-color);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .stocklist-card:hover {
@@ -60,6 +67,7 @@ body {
     display: flex;
     gap: 12px;
     margin-bottom: 24px;
+    flex-wrap: wrap;
 }
 
 .stocklist-tab-btn {
@@ -93,6 +101,8 @@ body {
     margin-bottom: 28px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .stocklist-time {
@@ -135,11 +145,15 @@ body {
 /* 테이블 헤더 */
 .stocklist-table-header {
     display: grid;
-    grid-template-columns: 60px 1fr 140px 120px 200px;
+    grid-template-columns: 60px 1fr 1fr 1fr 1fr;
     padding: 12px 20px;
     background-color: var(--primary-bg);
     border-radius: 12px;
     margin-bottom: 12px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 20px;
 }
 
 .stocklist-header-cell {
@@ -147,16 +161,15 @@ body {
     font-weight: 600;
     color: var(--text-secondary);
     text-align: left;
+    min-width: 0;
 }
 
 .stocklist-header-cell:nth-child(3) {
-    text-align: right;
-    margin-right: 40px;
+    text-align: center;
 }
 
 .stocklist-header-cell:nth-child(4) {
-    text-align: right;
-    margin-right: 20px;
+    text-align: center;
 }
 
 .stocklist-header-cell:nth-child(5) {
@@ -168,12 +181,14 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
+    width: 100%;
 }
 
 /* 종목 아이템 */
 .stocklist-item {
     display: grid;
-    grid-template-columns: 60px 1fr 140px 120px 200px;
+    grid-template-columns: 60px 1fr 1fr 1fr 1fr;
     padding: 18px 20px;
     background: var(--secondary-bg);
     border: 1px solid var(--border-color);
@@ -181,6 +196,10 @@ body {
     align-items: center;
     transition: all 0.2s ease;
     cursor: pointer;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 20px;
 }
 
 .stocklist-item:hover {
@@ -195,6 +214,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
 }
 
 .stocklist-rank {
@@ -215,6 +235,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .stocklist-favorite-btn:hover {
@@ -230,6 +251,8 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .stocklist-logo {
@@ -242,6 +265,7 @@ body {
     overflow: hidden;
     background: white;
     border: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .stocklist-logo img {
@@ -254,6 +278,10 @@ body {
     font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 /* 현재가 */
@@ -263,60 +291,63 @@ body {
     color: var(--text-primary);
     text-align: center;
     font-family: var(--font-english);
+    white-space: nowrap;
 }
 
 /* 등락률 */
 .stocklist-change {
     font-size: 15px;
     font-weight: 700;
-    text-align: right;
+    text-align: center;
     font-family: var(--font-english);
     padding: 6px 12px;
     border-radius: 8px;
+    white-space: nowrap;
+    justify-self: center;
 }
 
 .stocklist-change.positive {
-    color: var(--color-negative);
+    color: var(--color-positive);
     background-color: #fef2f2;
 }
 
 .stocklist-change.negative {
-    color: #2563eb;
+    color: var(--color-negative);
     background-color: #eff6ff;
 }
 
 /* 거래 비율 */
 .stocklist-sentiment {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     justify-content: center;
+    min-width: 0;
 }
 
 .stocklist-sentiment-label {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
+    white-space: nowrap;
 }
 
 .stocklist-sentiment-bar {
     display: flex;
     width: 100px;
-    height: 20px;
-    border-radius: 10px;
+    height: 8px;
+    border-radius: 4px;
     overflow: hidden;
     border: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .stocklist-sentiment-buy {
-    background-color: #2563eb;
+    background-color: var(--color-positive);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    font-family: var(--font-english);
 }
 
 .stocklist-sentiment-sell {
@@ -324,10 +355,23 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
+}
+
+.stocklist-sentiment-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100px;
+    font-size: 10px;
+    font-weight: 600;
     font-family: var(--font-english);
+}
+
+.stocklist-sentiment-buy-label {
+    color: var(--color-positive);
+}
+
+.stocklist-sentiment-sell-label {
+    color: var(--color-negative);
 }
 
 /* 애니메이션 */
@@ -342,41 +386,94 @@ body {
     }
 }
 
-@media ( max-width : 1400px) {
+/* ===========================
+   반응형 디자인
+   =========================== */
+
+@media (max-width: 1400px) {
     .stocklist-main-content {
         padding: 80px 32px;
+        min-width: 0;
+    }
+
+    .stocklist-card {
+        padding: 28px;
+        min-width: 0;
+        width: 100%;
     }
 
     .stocklist-table-header,
     .stocklist-item {
-        grid-template-columns: 50px 1fr 120px 100px 180px;
+        grid-template-columns: 50px 1fr 0.9fr 0.9fr 0.9fr;
+        min-width: 0;
+        width: 100%;
+        gap: 16px;
+    }
+
+    .stocklist-sentiment-bar {
+        width: 90px;
+        height: 8px;
+    }
+
+    .stocklist-sentiment-labels {
+        width: 90px;
     }
 }
 
-@media ( max-width : 1200px) {
+@media (max-width: 1200px) {
     .stocklist-main-content {
         padding: 80px 24px;
+        min-width: 0;
+    }
+
+    .stocklist-card {
+        padding: 24px;
+        min-width: 0;
+        width: 100%;
     }
 
     .stocklist-table-header,
     .stocklist-item {
-        grid-template-columns: 50px 1fr 110px 90px 160px;
+        grid-template-columns: 50px 1fr 0.8fr 0.8fr 0.8fr;
+        min-width: 0;
+        width: 100%;
+        gap: 12px;
     }
 
     .stocklist-sentiment-bar {
         width: 80px;
+        height: 6px;
+    }
+
+    .stocklist-sentiment-labels {
+        width: 80px;
+        font-size: 9px;
+    }
+
+    .stocklist-price {
+        font-size: 15px;
+    }
+
+    .stocklist-change {
+        font-size: 14px;
+        padding: 5px 10px;
     }
 }
 
-@media ( max-width : 768px) {
+@media (max-width: 768px) {
     .stocklist-main-content {
         margin-left: 50px;
         padding: 20px;
         padding-top: 80px;
+        min-width: 0;
+        width: 100%;
     }
 
     .stocklist-card {
         padding: 20px;
+        min-width: 0;
+        width: 100%;
+        overflow: visible;
     }
 
     .stocklist-header {
@@ -390,17 +487,26 @@ body {
     }
 
     .stocklist-item {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
         padding: 16px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .stocklist-item:hover {
+        transform: translateX(0);
     }
 
     .stocklist-favorite {
         justify-content: space-between;
+        width: 100%;
     }
 
     .stocklist-info {
         order: -1;
+        width: 100%;
     }
 
     .stocklist-price,
@@ -410,5 +516,75 @@ body {
 
     .stocklist-sentiment {
         justify-content: flex-start;
+        width: 100%;
+    }
+
+    .stocklist-name {
+        white-space: normal;
+        word-break: break-word;
+    }
+}
+
+@media (max-width: 480px) {
+    .stocklist-main-content {
+        padding: 15px;
+        padding-top: 120px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .stocklist-card {
+        padding: 16px;
+        border-radius: 16px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .stocklist-tabs {
+        gap: 8px;
+    }
+
+    .stocklist-tab-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    .stocklist-item {
+        padding: 14px;
+        gap: 10px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .stocklist-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .stocklist-name {
+        font-size: 15px;
+    }
+
+    .stocklist-price {
+        font-size: 14px;
+    }
+
+    .stocklist-change {
+        font-size: 13px;
+        padding: 4px 8px;
+    }
+
+    .stocklist-sentiment-label {
+        font-size: 12px;
+    }
+
+    .stocklist-sentiment-bar {
+        width: 70px;
+        height: 18px;
+    }
+
+    .stocklist-sentiment-buy,
+    .stocklist-sentiment-sell {
+        font-size: 10px;
     }
 }

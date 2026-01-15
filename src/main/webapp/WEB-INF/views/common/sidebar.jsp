@@ -4,9 +4,9 @@
 <aside class="sidebar-sidebar">
     <div class="sidebar-logo" style="cursor: pointer">
         <div class="sidebar-logo-icon">
-            <img src="${cpath}/resources/images/defaultant.png">
+            <img src="${cpath}/resources/images/icontmp.png">
         </div>
-        <span>똑똑한개미</span>
+        <span>ANTMILLION</span>
     </div>
     <nav>
         <a href="${cpath}/" class="sidebar-menu-item" data-path="/">
@@ -27,10 +27,6 @@
         </a>
     </nav>
     <div class="sidebar-menu-bottom">
-        <a href="${cpath}/history" class="sidebar-menu-item">
-            <span><img src="${cpath}/resources/images/icon/history.png" alt="히스토리"></span>
-            <span>히스토리</span>
-        </a>
         <a href="${cpath}/logout" class="sidebar-menu-item" onclick="logout()">
             <span><img src="${cpath}/resources/images/icon/logout.png" alt="로그아웃"></span>
             <span>로그아웃</span>

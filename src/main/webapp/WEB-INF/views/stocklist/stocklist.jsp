@@ -23,7 +23,7 @@
                 <button class="stocklist-tab-btn">관심종목</button>
             </div>
             <div class="stocklist-header">
-                <div class="stocklist-time">순위·오늘 09:27 기준</div>
+                <div class="stocklist-time">거래량 순위·오늘 09:27 기준</div>
                 <div class="stocklist-view-options">
                     <span class="stocklist-help-icon">?</span>
                 </div>

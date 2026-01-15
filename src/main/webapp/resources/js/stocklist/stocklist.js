@@ -52,10 +52,13 @@ function createStockItemHTML(stock, index) {
             <div class="stocklist-price">${stock.price}</div>
             <div class="stocklist-change ${changeClass}">${stock.change}</div>
             <div class="stocklist-sentiment">
-                <span class="stocklist-sentiment-label">매수</span>
                 <div class="stocklist-sentiment-bar">
-                    <div class="stocklist-sentiment-buy" style="width: ${stock.buyRatio}%;">${stock.buyRatio}</div>
-                    <div class="stocklist-sentiment-sell" style="width: ${stock.sellRatio}%;">${stock.sellRatio}</div>
+                    <div class="stocklist-sentiment-buy" style="width: ${stock.buyRatio}%;"></div>
+                    <div class="stocklist-sentiment-sell" style="width: ${stock.sellRatio}%;"></div>
+                </div>
+                <div class="stocklist-sentiment-labels">
+                    <span class="stocklist-sentiment-buy-label">${stock.buyRatio}</span>
+                    <span class="stocklist-sentiment-sell-label">${stock.sellRatio}</span>
                 </div>
             </div>
         </div>
