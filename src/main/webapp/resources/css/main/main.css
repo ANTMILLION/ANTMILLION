@@ -1,7 +1,3 @@
-/* ===========================
-   메인 페이지 스타일 (main.css)
-   =========================== */
-
 :root {
     --primary-bg: #F5F7FB;
     --secondary-bg: #FFFFFF;
@@ -27,7 +23,6 @@ body {
     overflow-x: hidden;
 }
 
-/* mission.css와 동일한 레이아웃 구조 */
 .main-app-container {
     display: flex;
     min-height: 100vh;
@@ -51,54 +46,48 @@ body {
 }
 
 @media (min-width: 1401px) {
-    .main-content-grid {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-    }
-    
     .main-grid-rank {
         grid-column: 1;
+        grid-row: 1;
     }
 
     .main-grid-kospi {
         grid-column: 2;
+        grid-row: 1;
     }
 
     .main-grid-mission {
         grid-column: 1;
+        grid-row: 2;
     }
 
     .main-grid-kosdaq {
         grid-column: 2;
+        grid-row: 2;
     }
 
     .main-grid-table {
         grid-column: 1 / -1;
+        grid-row: 3;
     }
 }
 
-/* 카드 공통 스타일 */
 .main-rank-card,
 .main-mission-card,
 .main-crypto-card {
     background: var(--secondary-bg);
     border-radius: 20px;
-    padding: 16px;
+    padding: 20px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     height: 200px;
     display: flex;
     flex-direction: column;
     min-width: 0;
     width: 100%;
-    box-sizing: border-box;
-}
-
-.main-rank-card,
-.main-mission-card {
-    flex-direction: column;
-    gap: 0;
+    will-change: transform;
 }
 
 .main-rank-card:hover,
@@ -112,26 +101,46 @@ body {
     font-size: 16px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 12px;
     letter-spacing: -0.3px;
+    margin: 0;
 }
 
-/* 랭크 카드 */
-.main-rank-image-container {
+.main-rank-card {
     position: relative;
-    width: 100%;
-    flex: 1;
-    border-radius: 12px;
-    overflow: hidden;
+    gap: 0;
+}
+
+.main-rank-card .main-card-title {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+}
+
+.main-rank-header {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 1;
     min-height: 0;
+    padding-top: 20px;
+}
+
+.main-rank-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .main-rank-image {
-    width: 100%;
+    width: auto;
     height: 100%;
+    max-height: 130px;
     object-fit: contain;
     display: none;
 }
@@ -140,42 +149,59 @@ body {
     display: block;
 }
 
-.main-rank-image[src]:not([src=""]) ~ .main-rank-image-placeholder {
-    display: none;
+.main-exp-bar-container {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+    margin-top: 12px;
 }
 
-.main-rank-image-placeholder {
+.main-exp-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #ffd54f 0%, #ffc107 50%, #ff8f00 100%);
+    border-radius: 12px;
+    transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
+}
+
+.main-exp-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: rgba(255, 255, 255, 0.9);
-    text-align: center;
-}
-
-.main-rank-image-placeholder svg {
-    width: 50px;
-    height: 50px;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-    animation: main-float 3s ease-in-out infinite;
-}
-
-@keyframes main-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-}
-
-.main-rank-image-placeholder p {
+    gap: 4px;
+    font-family: var(--font-english);
     font-size: 12px;
-    font-weight: 500;
-    opacity: 0.9;
+    font-weight: 700;
+    z-index: 1;
 }
 
-/* 미션 카드 */
+.main-exp-current {
+    color: #ff8f00;
+}
+
+.main-exp-divider {
+    color: var(--text-secondary);
+}
+
+.main-exp-max {
+    color: var(--text-tertiary);
+}
+
 .main-mission-card {
     background: linear-gradient(135deg, #FFF5F7 0%, #FFF 100%);
     border: 1px solid #FFE0E9;
+    gap: 0;
 }
 
 .main-mission-header {
@@ -185,23 +211,19 @@ body {
     margin-bottom: 8px;
 }
 
-.main-mission-header svg {
-    width: 18px;
-    height: 18px;
-}
-
 .main-mission-header h3 {
     font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.3px;
+    margin: 0;
 }
 
 .main-mission-description {
     font-size: 13px;
     color: var(--text-secondary);
     margin-bottom: 12px;
-    line-height: 1.4;
+    line-height: 1.5;
     flex: 1;
 }
 
@@ -229,11 +251,6 @@ body {
     transform: translateY(0);
 }
 
-.main-crypto-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
-
 .main-crypto-card {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -251,40 +268,18 @@ body {
     grid-row: 1;
 }
 
-.main-crypto-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.main-crypto-icon svg {
-    width: 18px;
-    height: 18px;
-}
-
-.main-crypto-icon.main-ethereum {
-    background: linear-gradient(135deg, #627EEA 0%, #8B9FFF 100%);
-}
-
-.main-crypto-icon.main-bitcoin {
-    background: linear-gradient(135deg, #F7931A 0%, #FFB347 100%);
-}
-
 .main-crypto-info h3 {
     font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 2px;
+    margin: 0 0 2px 0;
 }
 
 .main-crypto-symbol {
     font-size: 11px;
     color: var(--text-tertiary);
     font-family: var(--font-english);
+    margin: 0;
 }
 
 .main-crypto-price {
@@ -302,7 +297,6 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 0;
     flex-wrap: wrap;
     grid-column: 1;
     grid-row: 3;
@@ -362,15 +356,30 @@ body {
     height: 100% !important;
 }
 
-/* ===========================
-   주식 리스트 (stocklist 스타일 통일)
-   =========================== */
+.main-stock-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    min-width: 0;
+    width: 100%;
+}
+
+.main-stock-table-card,
+.main-stock-chart-card {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    min-width: 0;
+    overflow: hidden;
+}
 
 .main-stocklist-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -383,7 +392,7 @@ body {
 
 .main-stocklist-table-header {
     display: grid;
-    grid-template-columns: 60px 1.2fr 0.8fr 0.8fr 1fr;
+    grid-template-columns: 60px 1.5fr 1fr 0.8fr 1fr;
     padding: 12px 20px;
     background-color: var(--primary-bg);
     border-radius: 12px;
@@ -399,10 +408,7 @@ body {
     min-width: 0;
 }
 
-.main-stocklist-header-cell:nth-child(3) {
-    text-align: right;
-}
-
+.main-stocklist-header-cell:nth-child(3),
 .main-stocklist-header-cell:nth-child(4) {
     text-align: right;
 }
@@ -421,7 +427,7 @@ body {
 
 .main-stocklist-item {
     display: grid;
-    grid-template-columns: 60px 1.2fr 0.8fr 0.8fr 1fr;
+    grid-template-columns: 60px 1.5fr 1fr 0.8fr 1fr;
     padding: 18px 20px;
     background: var(--secondary-bg);
     border: 1px solid var(--border-color);
@@ -431,12 +437,11 @@ body {
     cursor: pointer;
     min-width: 0;
     width: 100%;
-    box-sizing: border-box;
     gap: 16px;
 }
 
 .main-stocklist-item:hover {
-    background: var(--accent-blue-light);
+    background: var(--accent-blue);
     border-color: #2970ff;
     transform: translateX(4px);
     box-shadow: var(--shadow-sm);
@@ -537,6 +542,8 @@ body {
     padding: 6px 12px;
     border-radius: 8px;
     white-space: nowrap;
+    width: fit-content;
+    margin-left: auto;
 }
 
 .main-stocklist-change.positive {
@@ -568,18 +575,20 @@ body {
     flex-shrink: 0;
 }
 
-.main-stocklist-sentiment-buy {
-    background-color: #fd0000;
+.main-stocklist-sentiment-buy,
+.main-stocklist-sentiment-sell {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 100%;
+}
+
+.main-stocklist-sentiment-buy {
+    background-color: #fd0000;
 }
 
 .main-stocklist-sentiment-sell {
     background-color: #1572fc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .main-stocklist-sentiment-labels {
@@ -599,204 +608,6 @@ body {
     color: #1572fc;
 }
 
-/* ===========================
-   주식 테이블과 차트 섹션
-   =========================== */
-
-.main-stock-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 28px;
-    min-width: 0;
-    width: 100%;
-}
-
-.main-stock-table-card {
-    background: var(--secondary-bg);
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-    min-width: 0;
-    overflow: hidden;
-}
-
-/* Stocklist 스타일 추가 */
-.main-stocklist-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.main-stocklist-time {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-tertiary);
-}
-
-.main-stocklist-table-header {
-    display: grid;
-    grid-template-columns: 60px 1fr 120px 100px 140px;
-    padding: 12px 20px;
-    background-color: var(--primary-bg);
-    border-radius: 12px;
-    margin-bottom: 12px;
-    gap: 12px;
-}
-
-.main-stocklist-header-cell {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-align: left;
-}
-
-.main-stocklist-header-cell:nth-child(3) {
-    text-align: right;
-}
-
-.main-stocklist-header-cell:nth-child(4) {
-    text-align: right;
-}
-
-.main-stocklist-header-cell:nth-child(5) {
-    text-align: center;
-}
-
-.main-stocklist-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.main-stocklist-item {
-    display: grid;
-    grid-template-columns: 60px 1fr 120px 100px 140px;
-    padding: 18px 20px;
-    background: var(--secondary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    align-items: center;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    gap: 12px;
-}
-
-.main-stocklist-item:hover {
-    background: var(--accent-blue);
-    border-color: #2970ff;
-    transform: translateX(4px);
-    box-shadow: var(--shadow-sm);
-}
-
-.main-stocklist-rank {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-family: var(--font-english);
-    text-align: center;
-}
-
-.main-stocklist-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.main-stocklist-logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: white;
-    border: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-
-.main-stocklist-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.main-stocklist-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.main-stocklist-price {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-    text-align: right;
-    font-family: var(--font-english);
-}
-
-.main-stocklist-change {
-    font-size: 15px;
-    font-weight: 700;
-    text-align: right;
-    font-family: var(--font-english);
-    padding: 6px 12px;
-    border-radius: 8px;
-}
-
-.main-stocklist-change.positive {
-    color: #fd0000;
-    background-color: #fef2f2;
-}
-
-.main-stocklist-change.negative {
-    color: #2563eb;
-    background-color: #eff6ff;
-}
-
-.main-stocklist-sentiment {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-}
-
-.main-stocklist-sentiment-buy {
-    background-color: #fd0000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    font-family: var(--font-english);
-}
-
-.main-stocklist-sentiment-sell {
-    background-color: #1572fc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    font-family: var(--font-english);
-}
-
-.main-stock-chart-card {
-    background: var(--secondary-bg);
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-    min-width: 0;
-    overflow: hidden;
-}
-
 .main-chart-header {
     margin-bottom: 20px;
 }
@@ -805,13 +616,14 @@ body {
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin: 0 0 4px 0;
 }
 
 .main-chart-stock-code {
     font-size: 14px;
     color: var(--text-secondary);
     font-family: var(--font-english);
+    margin: 0;
 }
 
 .main-stock-chart-container {
@@ -824,209 +636,6 @@ body {
     height: 100% !important;
 }
 
-.main-table-wrapper {
-    overflow-x: auto;
-}
-
-.main-stock-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-.main-stock-table th {
-    padding: 12px 12px;
-    font-size: 13px;
-    font-weight: 600 !important;
-    color: var(--text-secondary) !important;
-    font-family: var(--font-korean) !important;
-    text-align: left;
-    border-bottom: 2px solid var(--border-color);
-    white-space: nowrap;
-}
-
-.main-stock-table th.main-rank-company {
-    font-weight: 600 !important;
-    color: var(--text-secondary) !important;
-    font-family: var(--font-korean) !important;
-}
-
-.main-stock-table th.main-price {
-    text-align: center;
-    padding-right: 30px;
-    font-weight: 600 !important;
-    color: var(--text-secondary) !important;
-    font-family: var(--font-korean) !important;
-}
-
-.main-stock-table th.main-change {
-    text-align: center;
-    padding-right: 30px;
-    font-weight: 600 !important;
-    color: var(--text-secondary) !important;
-    font-family: var(--font-korean) !important;
-}
-
-.main-stock-table th.main-chart-mini {
-    text-align: left;
-    padding-left: 12px;
-    min-width: 120px;
-    font-weight: 600 !important;
-    color: var(--text-secondary) !important;
-    font-family: var(--font-korean) !important;
-}
-
-.main-stock-table tbody tr {
-    transition: background-color 0.2s;
-    cursor: pointer;
-}
-
-.main-stock-table tbody tr:hover {
-    background-color: var(--accent-blue);
-}
-
-.main-stock-table tbody tr.main-active {
-    background-color: rgba(59, 130, 246, 0.15);
-}
-
-.main-stock-table td {
-    padding: 16px 12px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 14px;
-}
-
-.main-stock-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.main-stock-table .main-rank {
-    color: var(--text-tertiary);
-    font-weight: 500;
-    width: 40px;
-    text-align: center;
-}
-
-.main-stock-table .main-company {
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.main-company {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.main-company-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    flex-shrink: 0;
-}
-
-.main-company-logo.main-samsung {
-    background: linear-gradient(135deg, #0C4DA2 0%, #1565C0 100%);
-}
-
-.main-company-logo.main-sk {
-    background: linear-gradient(135deg, #EA1917 0%, #FF5252 100%);
-}
-
-.main-company-logo.main-doosan {
-    background: linear-gradient(135deg, #005BAA 0%, #42A5F5 100%);
-}
-
-.main-company-logo.main-hyundai {
-    background: linear-gradient(135deg, #00263E 0%, #003D5C 100%);
-}
-
-.main-company-logo.main-tsll {
-    background: linear-gradient(135deg, #DC3545 0%, #E57373 100%);
-}
-
-.main-company-logo.main-hyundai-motor {
-    background: linear-gradient(135deg, #002C5F 0%, #004B87 100%);
-}
-
-.main-company-logo.main-celltrion {
-    background: linear-gradient(135deg, #7CB342 0%, #9CCC65 100%);
-}
-
-.main-company-logo.main-miraeasset {
-    background: linear-gradient(135deg, #FF6F00 0%, #FFA726 100%);
-}
-
-.main-company-logo.main-soxl {
-    background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
-}
-
-.main-company-logo.main-lg {
-    background: linear-gradient(135deg, #0047AB 0%, #1976D2 100%);
-}
-
-.main-stock-table .main-price {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-family: var(--font-english);
-    text-align: center;
-    padding-right: 30px;
-}
-
-.main-stock-table .main-change {
-    font-weight: 600;
-    font-family: var(--font-english);
-    text-align: center;
-    padding-right: 30px;
-    min-width: 80px;
-}
-
-.main-stock-table .main-change.main-positive {
-    color: var(--color-positive);
-}
-
-.main-stock-table .main-change.main-negative {
-    color: var(--color-negative);
-}
-
-.main-stock-table .main-chart-mini {
-    text-align: left;
-    width: 120px;
-    min-width: 120px;
-    padding-left: 12px;
-    padding-right: 12px;
-}
-
-/* 미니 바 차트 - 매수/매도 비율 */
-.main-mini-bar-chart {
-    display: flex;
-    width: 100%;
-    height: 4px;
-    border-radius: 4px;
-    overflow: hidden;
-    background-color: #E5E7EB;
-}
-
-.main-mini-bar-chart .main-bar {
-    height: 4px !important;
-    min-height: 4px;
-    max-height: 4px;
-    width: calc(var(--value) * 1%);
-    transition: width 0.3s ease;
-    flex-shrink: 0;
-}
-
-.main-mini-bar-chart .main-bar:first-child {
-    background-color: var(--color-positive) !important;
-}
-
-.main-mini-bar-chart .main-bar:last-child {
-    background-color: var(--color-negative) !important;
-}
-
-/* ===========================
-   애니메이션
-   =========================== */
-
 @keyframes main-fadeInUp {
     from {
         opacity: 0;
@@ -1038,79 +647,47 @@ body {
     }
 }
 
-.main-rank-card,
-.main-mission-card,
-.main-crypto-card,
-.main-stock-table-card {
-    animation: main-fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
-}
-
-.main-rank-card {
-    animation-delay: 0.1s;
-}
-
-.main-mission-card {
-    animation-delay: 0.15s;
-}
-
-.main-crypto-card:nth-child(1) {
-    animation-delay: 0.1s;
-}
-
-.main-crypto-card:nth-child(2) {
-    animation-delay: 0.15s;
-}
-
-.main-stock-table-card {
-    animation-delay: 0.2s;
-}
-
-/* ===========================
-   반응형 디자인
-   =========================== */
-
-/* 1600px 이하 - 첫 번째 조정 */
-@media (max-width: 1600px) {
-    .main-stocklist-table-header,
-    .main-stocklist-item {
-        grid-template-columns: 55px 1.5fr 0.9fr 0.9fr 1fr;
-        gap: 14px;
+@media (min-width: 1401px) {
+    .main-rank-card,
+    .main-mission-card,
+    .main-crypto-card,
+    .main-stock-table-card,
+    .main-stock-chart-card {
+        animation: main-fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
     }
 
-    .main-stocklist-sentiment-bar {
-        width: 95px;
+    .main-rank-card {
+        animation-delay: 0.1s;
     }
 
-    .main-stocklist-sentiment-labels {
-        width: 95px;
+    .main-mission-card {
+        animation-delay: 0.15s;
+    }
+
+    .main-crypto-card:nth-of-type(2) {
+        animation-delay: 0.1s;
+    }
+
+    .main-crypto-card:nth-of-type(4) {
+        animation-delay: 0.15s;
+    }
+
+    .main-stock-table-card,
+    .main-stock-chart-card {
+        animation-delay: 0.2s;
     }
 }
 
-/* 1400px 이하 */
 @media (max-width: 1400px) {
     .main-main-content {
         padding: 80px 32px;
-        min-width: 0;
     }
 
     .main-content-grid {
-        grid-template-columns: 380px 1fr;
+        grid-template-columns: 1fr;
         gap: 24px;
-        padding: 24px 32px;
     }
 
-    /* 모든 그리드 아이템을 flex 아이템으로 */
-    .main-grid-rank,
-    .main-grid-kospi,
-    .main-grid-mission,
-    .main-grid-kosdaq,
-    .main-grid-table {
-        grid-column: auto;
-        min-width: 0;
-        width: 100%;
-    }
-
-    /* 축소 시 카드 순서 변경 */
     .main-grid-rank {
         order: 1;
     }
@@ -1131,38 +708,18 @@ body {
         order: 5;
     }
 
-    .main-rank-card,
-    .main-mission-card,
-    .main-crypto-card {
-        min-width: 0;
-        width: 100%;
-        max-width: 100%;
-    }
-
     .main-stock-section {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        width: 100%;
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
 
-    .main-stock-table-card,
-    .main-stock-chart-card {
-        min-width: 0;
-        width: 100%;
-    }
-
-    /* 종목 리스트 */
     .main-stocklist-table-header,
     .main-stocklist-item {
         grid-template-columns: 50px 1.3fr 0.85fr 0.85fr 0.95fr;
         gap: 12px;
     }
 
-    .main-stocklist-sentiment-bar {
-        width: 85px;
-    }
-
+    .main-stocklist-sentiment-bar,
     .main-stocklist-sentiment-labels {
         width: 85px;
     }
@@ -1173,62 +730,36 @@ body {
     }
 }
 
-/* 1200px 이하 */
 @media (max-width: 1200px) {
     .main-main-content {
         padding: 80px 24px;
     }
 
     .main-content-grid {
-        display: flex;
-        flex-direction: column;
         gap: 20px;
     }
 
-    .main-content-grid {
-        grid-template-columns: 1fr;
-    }
-
-    /* 축소 시 카드 순서 변경 */
-    .main-grid-rank {
-        order: 1;
-    }
-
-    .main-grid-mission {
-        order: 2;
-    }
-
-    .main-grid-kospi {
-        order: 3;
-    }
-
-    .main-grid-kosdaq {
-        order: 4;
-    }
-
-    .main-grid-table {
-        order: 5;
-    }
-
     .main-stock-section {
-        display: flex;
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
 
-    /* 종목 리스트 */
     .main-stocklist-table-header,
     .main-stocklist-item {
         grid-template-columns: 45px 1.2fr 0.8fr 0.8fr 0.9fr;
         gap: 10px;
     }
 
-    .main-stocklist-sentiment-bar {
+    .main-stocklist-sentiment-bar,
+    .main-stocklist-sentiment-labels {
         width: 75px;
+    }
+
+    .main-stocklist-sentiment-bar {
         height: 6px;
     }
 
     .main-stocklist-sentiment-labels {
-        width: 75px;
         font-size: 9px;
     }
 
@@ -1246,19 +777,15 @@ body {
     }
 }
 
-/* 1000px 이하 - 추가 브레이크포인트 */
 @media (max-width: 1000px) {
     .main-stocklist-table-header,
     .main-stocklist-item {
         grid-template-columns: 40px 1.1fr 0.75fr 0.75fr 0.85fr;
         gap: 8px;
-        padding: 16px 16px;
+        padding: 16px;
     }
 
-    .main-stocklist-sentiment-bar {
-        width: 70px;
-    }
-
+    .main-stocklist-sentiment-bar,
     .main-stocklist-sentiment-labels {
         width: 70px;
     }
@@ -1277,100 +804,14 @@ body {
     }
 }
 
-/* 900px 이하 */
-@media (max-width: 900px) {
-    .main-stocklist-table-header,
-    .main-stocklist-item {
-        grid-template-columns: 40px 1fr 0.7fr 0.7fr 0.8fr;
-        gap: 6px;
-        padding: 14px 12px;
-    }
-
-    .main-stocklist-sentiment-bar {
-        width: 65px;
-    }
-
-    .main-stocklist-sentiment-labels {
-        width: 65px;
-        font-size: 9px;
-    }
-
-    .main-stocklist-price {
-        font-size: 13px;
-    }
-
-    .main-stocklist-change {
-        font-size: 12px;
-        padding: 3px 5px;
-    }
-
-    .main-stocklist-name {
-        font-size: 14px;
-    }
-
-    .main-stocklist-rank {
-        font-size: 13px;
-    }
-
-    .main-stocklist-logo {
-        width: 36px;
-        height: 36px;
-    }
-}
-
 @media (max-width: 768px) {
-
-    .main-crypto-cards {
-        grid-template-columns: 1fr;
-    }
-    .main-stock-table {
-        font-size: 13px;
-    }
-    .main-stock-table td {
-        padding: 12px 8px;
-    }
-    .main-company-logo {
-        width: 28px;
-        height: 28px;
-    }
-    .main-crypto-price {
-        font-size: 24px;
-    }
-
     .main-main-content {
         margin-left: 50px;
-        padding: 20px;
-        padding-top: 80px;
-        min-width: 0;
+        padding: 80px 20px 20px;
     }
 
     .main-content-grid {
         gap: 20px;
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        width: 100%;
-    }
-
-    /* 카드 순서 */
-    .main-grid-rank {
-        order: 1;
-    }
-
-    .main-grid-mission {
-        order: 2;
-    }
-
-    .main-grid-kospi {
-        order: 3;
-    }
-
-    .main-grid-kosdaq {
-        order: 4;
-    }
-
-    .main-grid-table {
-        order: 5;
     }
 
     .main-rank-card,
@@ -1379,49 +820,15 @@ body {
         height: auto;
         min-height: 200px;
         padding: 20px;
-        min-width: 0;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .main-stock-section {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        width: 100%;
     }
 
     .main-stock-table-card,
     .main-stock-chart-card {
         padding: 20px;
-        min-width: 0;
-        width: 100%;
-        overflow: hidden;
-    }
-
-    .main-table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
 
     .main-stock-chart-container {
         height: 300px;
-        min-width: 0;
-        width: 100%;
-    }
-
-    .main-stock-table {
-        font-size: 13px;
-        min-width: 500px;
-    }
-
-    .main-stock-table td {
-        padding: 12px 8px;
-    }
-
-    .main-company-logo {
-        width: 28px;
-        height: 28px;
     }
 
     .main-crypto-price {
@@ -1436,26 +843,17 @@ body {
         gap: 8px;
     }
 
-    .main-crypto-icon {
-        width: 32px;
-        height: 32px;
-    }
-
-    .main-crypto-chart {
-        min-width: 0;
-    }
-
     .main-stocklist-table-header {
         display: none;
     }
 
     .main-stocklist-item {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 16px;
-        min-width: 0;
-        width: 100%;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: auto auto auto;
+        gap: 12px 16px;
+        padding: 20px;
+        align-items: start;
     }
 
     .main-stocklist-item:hover {
@@ -1463,23 +861,61 @@ body {
     }
 
     .main-stocklist-favorite {
-        justify-content: space-between;
-        width: 100%;
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: column;
+        gap: 4px;
+        align-items: center;
     }
 
     .main-stocklist-info {
-        order: -1;
-        width: 100%;
+        grid-column: 2;
+        grid-row: 1;
+        width: auto;
     }
 
-    .main-stocklist-price,
-    .main-stocklist-change {
+    .main-stocklist-favorite-btn {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .main-stocklist-price {
+        grid-column: 1 / 2;
+        grid-row: 2;
         text-align: left;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .main-stocklist-change {
+        grid-column: 2 / 4;
+        grid-row: 2;
+        text-align: right;
+        margin-left: 0;
+        justify-self: end;
+        font-size: 16px;
     }
 
     .main-stocklist-sentiment {
-        justify-content: flex-start;
+        grid-column: 1 / -1;
+        grid-row: 3;
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 100%;
+        height: 10px;
+        margin: 4px 0;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 100%;
+        font-size: 12px;
     }
 
     .main-stocklist-name {
@@ -1490,19 +926,7 @@ body {
 
 @media (max-width: 480px) {
     .main-main-content {
-        padding: 15px;
-        padding-top: 120px;
-    }
-
-    .main-card-title {
-        font-size: 18px;
-    }
-    .main-crypto-header {
-        gap: 10px;
-    }
-    .main-crypto-icon {
-        width: 40px;
-        height: 40px;
+        padding: 120px 15px 15px;
     }
 
     .main-rank-card,
@@ -1517,15 +941,9 @@ body {
         font-size: 18px;
     }
 
-    .main-stock-table {
-        font-size: 12px;
-    }
-
     .main-stocklist-item {
         padding: 14px;
         gap: 10px;
-        min-width: 0;
-        width: 100%;
     }
 
     .main-stocklist-logo {
@@ -1547,115 +965,12 @@ body {
     }
 
     .main-stocklist-sentiment-bar {
-        width: 70px;
-        height: 6px;
+        width: 100%; /* 기존 70px 제거 */
+        height: 8px;
     }
 
     .main-stocklist-sentiment-labels {
-        width: 70px;
-        font-size: 9px;
+        width: 100%; /* 기존 70px 제거 */
+        font-size: 11px;
     }
-}
-
-/* ===========================
-   랭크 카드 경험치 바
-   =========================== */
-
-/* 경험치 바 */
-.main-exp-bar-container {
-    position: relative;
-    width: 100%;
-    height: 24px;
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-}
-
-.main-exp-bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: linear-gradient(90deg, #ffd54f 0%, #ffc107 50%, #ff8f00 100%);
-    border-radius: 12px;
-    transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
-}
-
-.main-exp-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-family: var(--font-english);
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-primary);
-    z-index: 1;
-}
-
-.main-exp-current {
-    color: #ff8f00;
-}
-
-.main-exp-divider {
-    color: var(--text-secondary);
-}
-
-.main-exp-max {
-    color: var(--text-tertiary);
-}
-
-/* 랭크 카드 - 수정된 레이아웃 */
-.main-rank-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: 20px;
-    position: relative;
-}
-
-/* 제목을 좌측 상단에 고정 */
-.main-rank-card .main-card-title {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    margin-bottom: 0;
-    font-size: 16px;
-    z-index: 2;
-}
-
-/* 랭크 헤더 (이미지를 중앙에 배치) */
-.main-rank-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    min-height: 0;
-    padding-top: 20px;
-}
-
-.main-rank-image-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 0;
-    height: 100%;
-}
-
-.main-rank-image {
-    width: auto;
-    height: 100%;
-    max-height: 130px;
-    object-fit: contain;
-}
-
-/* 경험치 바는 하단 고정 */
-.main-exp-bar-container {
-    flex-shrink: 0;
-    margin-top: 12px;
 }
