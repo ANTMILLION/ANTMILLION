@@ -11,8 +11,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class MemberDTO {
-	private Long user_id;
-    private Integer rank_id;
+	private Long userId;
+    private Integer rankId;
     private String email;
     private String password;
     private String nickname;

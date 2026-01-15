@@ -13,8 +13,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class QuizLogDTO {
-	private Long quiz_log_id;
-    private Long user_id;
-    private Long quiz_id;
-    private LocalDateTime solved_at;
+	private Long quizLogId;
+    private Long userId;
+    private Long quizId;
+    private LocalDateTime solvedAt;
 }

@@ -11,7 +11,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class StockDTO {
-	private String stock_code;
-	private String stock_name;
-	private String stock_image;
+	private String stockCode;
+	private String stockName;
+	private String stockImage;
 }

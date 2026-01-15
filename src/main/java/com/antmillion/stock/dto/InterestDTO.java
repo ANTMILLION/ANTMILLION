@@ -13,7 +13,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class InterestDTO {
-	private String stock_code;
-    private Long account_id;
-    private LocalDateTime created_at;
+	private String stockCode;
+    private Long accountId;
+    private LocalDateTime createdAt;
 }

@@ -13,11 +13,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class HistoryDTO {
-	private Long history_id;
-    private Long user_id;
-    private Long message_id;
-    private String stock_code;
-    private String message_detail;
+	private Long historyId;
+    private Long userId;
+    private Long messageId;
+    private String stockCode;
+    private String messageDetail;
     private LocalDateTime time;
-    private Boolean is_read;
+    private Boolean isRead;
 }

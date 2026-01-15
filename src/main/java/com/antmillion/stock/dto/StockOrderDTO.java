@@ -13,14 +13,14 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class StockOrderDTO {
-	private Long order_id;
-    private Long account_id;
-    private String stock_code;
-    private String transaction_type;
-    private String order_type;
+	private Long orderId;
+    private Long accountId;
+    private String stockCode;
+    private String transactionType;
+    private String orderType;
     private Integer quantity;
-    private Long order_price;
+    private Long orderPrice;
     private String status;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

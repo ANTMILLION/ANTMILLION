@@ -13,9 +13,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class CommunityDTO {
-	private Long post_id;
-    private Long user_id;
-    private String stock_code;
+	private Long postId;
+    private Long userId;
+    private String stockCode;
     private String content;
-    private LocalDateTime posted_date;
+    private LocalDateTime postedDate;
 }
