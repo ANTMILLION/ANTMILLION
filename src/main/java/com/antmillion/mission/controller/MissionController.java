@@ -1,4 +1,4 @@
-package com.antmillion.mission;
+package com.antmillion.mission.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

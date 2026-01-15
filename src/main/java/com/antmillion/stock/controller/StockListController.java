@@ -1,16 +1,16 @@
-package com.antmillion.main;
+package com.antmillion.stock.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping({"/", "/antmillion", "/antmillion/"})
+@RequestMapping("/stocklist")
 @Controller
-public class MainController {
+public class StockListController {
 
     @GetMapping
-    public String mainPage() {
-        return "main/main";
+    public String stockListPage() {
+        return "stocklist/stocklist";
     }
 
 }
