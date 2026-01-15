@@ -11,6 +11,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class MissionDTO {
-	private Long mission_id;
-    private String mission_name;
+	private Long missionId;
+    private String missionName;
 }

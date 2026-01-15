@@ -13,8 +13,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class QuizQuestionDTO {
-	private Long quiz_id;
-    private Long mission_id;
+	private Long quizId;
+    private Long missionId;
     private Integer type;
     private String question;
     private Integer answer;

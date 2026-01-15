@@ -11,6 +11,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class SocialDTO {
-	private Long kakao_id;
-	private Long user_id;
+	private Long kakaoId;
+	private Long userId;
 }

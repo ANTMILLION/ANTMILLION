@@ -11,8 +11,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class AccountDTO {
-	 private Long account_id;
-	    private Long user_id;
-	    private String account_number;
-	    private Long balance;
+	private Long accountId;
+    private Long userId;
+    private String accountNumber;
+    private Long balance;
 }

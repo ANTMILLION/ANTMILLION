@@ -13,9 +13,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class TradeLogDTO {
-	private Long trade_id;
-    private Long order_id;
-    private LocalDateTime trade_date;
-    private Long trade_price;
-    private Integer trade_quantity;
+	private Long tradeId;
+    private Long orderId;
+    private LocalDateTime tradeDate;
+    private Long tradePrice;
+    private Integer tradeQuantity;
 }

@@ -14,11 +14,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class AssetDTO {
-	private Long asset_id;
-    private Long account_id;        // FK -> account.account_id
-    private String stock_code;      // FK -> stock.stock_code
+	private Long assetId;
+    private Long accountId;        // FK -> account.account_id
+    private String stockCode;      // FK -> stock.stock_code
     private Integer quantity;
-    private LocalDateTime updated_at;
-    private Long purchase_amount;
-    private BigDecimal avg_price;   // DECIMAL(15,2)
+    private LocalDateTime updatedAt;
+    private Long purchaseAmount;
+    private BigDecimal avgPrice;   // DECIMAL(15,2)
 }

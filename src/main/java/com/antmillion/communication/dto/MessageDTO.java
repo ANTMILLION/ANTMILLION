@@ -11,7 +11,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class MessageDTO {
-	private Long message_id;
-    private String message_content;
-    private String message_type;
+	private Long messageId;
+    private String messageContent;
+    private String messageType;
 }
