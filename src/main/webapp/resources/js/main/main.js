@@ -2,6 +2,169 @@
    메인 페이지 JavaScript (com.antmillion.main.js)
    =========================== */
 
+// Mock 데이터 (상위 6개만)
+const mainStocks = [
+    { id: 1, name: '삼성전자', logo: 'samsung', price: '140,900원', change: '+1.43%', isPositive: true, buyRatio: 50, sellRatio: 50, isFavorite: false },
+    { id: 2, name: 'SK하이닉스', logo: 'sk', price: '742,500원', change: '+2.27%', isPositive: true, buyRatio: 43, sellRatio: 57, isFavorite: true },
+    { id: 3, name: '현대차', logo: 'hyundai', price: '326,500원', change: '+6.00%', isPositive: true, buyRatio: 75, sellRatio: 25, isFavorite: false },
+    { id: 4, name: '한미반도체', logo: 'hanmi', price: '186,300원', change: '+1.41%', isPositive: true, buyRatio: 41, sellRatio: 59, isFavorite: false },
+    { id: 5, name: 'KODEX 레버리지', logo: 'kodex', price: '57,300원', change: '+1.64%', isPositive: true, buyRatio: 44, sellRatio: 56, isFavorite: false }
+];
+
+// 로고 이미지 URL 매핑
+const logoMap = {
+    'samsung': 'https://via.placeholder.com/40?text=LOGO',
+    'sk': 'https://via.placeholder.com/40?text=LOGO',
+    'hyundai': 'https://via.placeholder.com/40?text=LOGO',
+    'hanmi': 'https://via.placeholder.com/40?text=LOGO',
+    'kodex': 'https://via.placeholder.com/40?text=LOGO',
+    'doosan': 'https://via.placeholder.com/40?text=LOGO',
+    'hanwha': 'https://via.placeholder.com/40?text=LOGO',
+    'hyundai-motor': 'https://via.placeholder.com/40?text=LOGO'
+};
+
+// 종목 아이템 HTML 생성 함수
+function createMainStockItemHTML(stock, index) {
+    const changeClass = stock.isPositive ? 'positive' : 'negative';
+    const favoriteIcon = stock.isFavorite ? '♥' : '♡';
+    const favoriteClass = stock.isFavorite ? 'active' : '';
+    const logoUrl = logoMap[stock.logo] || 'https://via.placeholder.com/40?text=LOGO';
+
+    return `
+        <div class="main-stocklist-item" data-id="${stock.id}">
+            <div class="main-stocklist-favorite">
+                <span class="main-stocklist-rank">${index + 1}</span>
+                <button class="main-stocklist-favorite-btn ${favoriteClass}" data-id="${stock.id}">${favoriteIcon}</button>
+            </div>
+            <div class="main-stocklist-info">
+                <div class="main-stocklist-logo">
+                    <img src="${logoUrl}" alt="${stock.name}">
+                </div>
+                <span class="main-stocklist-name">${stock.name}</span>
+            </div>
+            <div class="main-stocklist-price">${stock.price}</div>
+            <div class="main-stocklist-change ${changeClass}">${stock.change}</div>
+            <div class="main-stocklist-sentiment">
+                <div class="main-stocklist-sentiment-bar">
+                    <div class="main-stocklist-sentiment-buy" style="width: ${stock.buyRatio}%;"></div>
+                    <div class="main-stocklist-sentiment-sell" style="width: ${stock.sellRatio}%;"></div>
+                </div>
+                <div class="main-stocklist-sentiment-labels">
+                    <span class="main-stocklist-sentiment-buy-label">${stock.buyRatio}</span>
+                    <span class="main-stocklist-sentiment-sell-label">${stock.sellRatio}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 종목 리스트 렌더링 함수
+function renderMainStocks() {
+    const container = document.getElementById('main-stocklist-Container');
+    if (!container) return;
+
+    // HTML 생성
+    const html = mainStocks.map((stock, index) => createMainStockItemHTML(stock, index)).join('');
+    container.innerHTML = html;
+
+    // 이벤트 리스너 재등록
+    attachMainFavoriteListeners();
+    attachMainStockItemListeners();
+}
+
+// 즐겨찾기 버튼 이벤트 리스너 등록
+function attachMainFavoriteListeners() {
+    document.querySelectorAll('.main-stocklist-favorite-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const stockId = parseInt(this.getAttribute('data-id'));
+
+            // 데이터 업데이트
+            const stock = mainStocks.find(s => s.id === stockId);
+            if (stock) {
+                stock.isFavorite = !stock.isFavorite;
+
+                this.classList.toggle('active');
+                this.textContent = stock.isFavorite ? '♥' : '♡';
+            }
+        });
+    });
+}
+
+// 종목 아이템 클릭 이벤트 리스너 등록
+function attachMainStockItemListeners() {
+    const stockCanvas = document.getElementById('main-stockChart');
+    let stockChart = null;
+    
+    // 주식 차트 데이터 (임시)
+    const stockChartsData = {
+        '삼성전자': generateChartData(30, 130000, 145000, false),
+        'SK하이닉스': generateChartData(30, 680000, 750000, true),
+        '현대차': generateChartData(30, 295000, 315000, true),
+        '한미반도체': generateChartData(30, 170000, 200000, true),
+        'KODEX 레버리지': generateChartData(30, 50000, 60000, false),
+        '두산에너빌리티': generateChartData(30, 80000, 90000, true)
+    };
+    
+    // 초기 차트 생성 (삼성전자)
+    if (stockCanvas) {
+        if (typeof Chart !== 'undefined') {
+            stockChart = createStockChart(stockCanvas, stockChartsData['삼성전자']);
+        } else {
+            drawSimpleStockChart('main-stockChart', stockChartsData['삼성전자']);
+        }
+    }
+    
+    document.querySelectorAll('.main-stocklist-item').forEach((item, index) => {
+        // 첫 번째 항목을 active로 설정
+        if (index === 0) {
+            item.classList.add('main-active');
+        }
+        
+        // mouseenter 이벤트 추가
+        item.addEventListener('mouseenter', function(e) {
+            // 즐겨찾기 버튼 클릭은 제외
+            if (e.target.closest('.main-stocklist-favorite-btn')) {
+                return;
+            }
+            
+            // 모든 항목의 active 제거
+            document.querySelectorAll('.main-stocklist-item').forEach(i => i.classList.remove('main-active'));
+            
+            // 현재 항목을 active로 설정
+            this.classList.add('main-active');
+            
+            // 종목명 가져오기
+            const stockName = this.querySelector('.main-stocklist-name').textContent;
+            
+            // 차트 헤더 업데이트
+            const chartStockName = document.querySelector('.main-chart-stock-name');
+            if (chartStockName) {
+                chartStockName.textContent = stockName;
+            }
+            
+            // 차트 업데이트
+            if (stockChart && stockChartsData[stockName]) {
+                updateStockChart(stockChart, stockChartsData[stockName]);
+            } else if (stockChartsData[stockName]) {
+                // SVG 차트 업데이트
+                drawSimpleStockChart('main-stockChart', stockChartsData[stockName]);
+            }
+        });
+        
+        // click 이벤트 추가
+        item.addEventListener('click', function(e) {
+            // 즐겨찾기 버튼 클릭은 제외
+            if (e.target.closest('.main-stocklist-favorite-btn')) {
+                return;
+            }
+
+            // contextPath는 JSP에서 전역 변수로 설정되어 있음
+            window.location.href = contextPath + '/stock/detail';
+        });
+    });
+}
+
 // 차트 인스턴스 저장
 let ethereumChart = null;
 let bitcoinChart = null;
@@ -12,6 +175,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeMainPage() {
+    // 종목 리스트 렌더링
+    renderMainStocks();
+    
     // 차트 초기화
     initializeCharts();
     
@@ -20,9 +186,6 @@ function initializeMainPage() {
     
     // 미션 버튼 이벤트
     initializeMissionButton();
-    
-    // 주식 테이블 인터랙션
-    initializeStockTable();
     
     // 실시간 데이터 업데이트 (선택사항)
     // startRealtimeUpdates();
@@ -302,73 +465,6 @@ function initializeMissionButton() {
             }, 1000);
         });
     }
-}
-
-// 주식 테이블 인터랙션
-function initializeStockTable() {
-    const tableRows = document.querySelectorAll('.main-stock-row');
-    let stockChart = null;
-    
-    // 주식 차트 데이터 (임시)
-    const stockChartsData = {
-        '삼성전자': generateChartData(30, 130000, 145000, false),
-        'SK하이닉스': generateChartData(30, 680000, 750000, true),
-        '두산에너빌리티': generateChartData(30, 80000, 90000, true),
-        '현대모비스': generateChartData(30, 170000, 185000, true),
-        'TSLL': generateChartData(30, 25000, 30000, false),
-        '현대차': generateChartData(30, 295000, 315000, true)
-    };
-    
-    // 초기 차트 생성 (삼성전자)
-    const stockCanvas = document.getElementById('main-stockChart');
-    if (stockCanvas) {
-        if (typeof Chart !== 'undefined') {
-            stockChart = createStockChart(stockCanvas, stockChartsData['삼성전자']);
-        } else {
-            drawSimpleStockChart('main-stockChart', stockChartsData['삼성전자']);
-        }
-    }
-    
-    // 첫 번째 행을 active로 설정
-    if (tableRows.length > 0) {
-        tableRows[0].classList.add('active');
-    }
-    
-    // 각 행에 이벤트 리스너 추가
-    tableRows.forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            // 모든 행의 active 제거
-            tableRows.forEach(r => r.classList.remove('active'));
-            
-            // 현재 행을 active로 설정
-            this.classList.add('active');
-            
-            // 종목명 가져오기
-            const stockName = this.getAttribute('data-stock');
-            
-            // 차트 헤더 업데이트
-            const chartStockName = document.querySelector('.main-chart-stock-name');
-            if (chartStockName) {
-                chartStockName.textContent = stockName;
-            }
-            
-            // 차트 업데이트
-            if (stockChart && stockChartsData[stockName]) {
-                updateStockChart(stockChart, stockChartsData[stockName]);
-            } else if (stockChartsData[stockName]) {
-                // SVG 차트 업데이트
-                drawSimpleStockChart('main-stockChart', stockChartsData[stockName]);
-            }
-        });
-        
-        row.addEventListener('click', function() {
-            const stockName = this.getAttribute('data-stock');
-            const price = this.querySelector('.price').textContent;
-            
-            console.log('선택된 종목:', stockName, price);
-            // 상세 페이지로 이동 또는 모달 표시
-        });
-    });
 }
 
 // 주식 차트 생성

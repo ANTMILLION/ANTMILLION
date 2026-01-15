@@ -27,10 +27,6 @@
         </a>
     </nav>
     <div class="sidebar-menu-bottom">
-        <a href="${cpath}/history" class="sidebar-menu-item">
-            <span><img src="${cpath}/resources/images/icon/history.png" alt="히스토리"></span>
-            <span>히스토리</span>
-        </a>
         <a href="${cpath}/logout" class="sidebar-menu-item" onclick="logout()">
             <span><img src="${cpath}/resources/images/icon/logout.png" alt="로그아웃"></span>
             <span>로그아웃</span>

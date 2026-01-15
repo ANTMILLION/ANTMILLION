@@ -9,8 +9,8 @@
     --text-primary: #1F2937;
     --text-secondary: #6B7280;
     --text-tertiary: #9CA3AF;
-    --color-positive: #10B981;
-    --color-negative: #EF4444;
+    --color-positive: #e22939;
+    --color-negative: #2271e9;
     --accent-blue: rgba(59, 130, 246, 0.08);
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -363,6 +363,243 @@ body {
 }
 
 /* ===========================
+   주식 리스트 (stocklist 스타일 통일)
+   =========================== */
+
+.main-stocklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.main-stocklist-time {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+.main-stocklist-table-header {
+    display: grid;
+    grid-template-columns: 60px 1.2fr 0.8fr 0.8fr 1fr;
+    padding: 12px 20px;
+    background-color: var(--primary-bg);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    gap: 16px;
+}
+
+.main-stocklist-header-cell {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+    min-width: 0;
+}
+
+.main-stocklist-header-cell:nth-child(3) {
+    text-align: right;
+}
+
+.main-stocklist-header-cell:nth-child(4) {
+    text-align: right;
+}
+
+.main-stocklist-header-cell:nth-child(5) {
+    text-align: center;
+}
+
+.main-stocklist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+}
+
+.main-stocklist-item {
+    display: grid;
+    grid-template-columns: 60px 1.2fr 0.8fr 0.8fr 1fr;
+    padding: 18px 20px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 16px;
+}
+
+.main-stocklist-item:hover {
+    background: var(--accent-blue-light);
+    border-color: #2970ff;
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+.main-stocklist-item.main-active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #2970ff;
+}
+
+.main-stocklist-favorite {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.main-stocklist-rank {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-family: var(--font-english);
+}
+
+.main-stocklist-favorite-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.main-stocklist-favorite-btn:hover {
+    transform: scale(1.2);
+}
+
+.main-stocklist-favorite-btn.active {
+    color: #fbbf24;
+}
+
+.main-stocklist-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.main-stocklist-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: white;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.main-stocklist-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.main-stocklist-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.main-stocklist-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: right;
+    font-family: var(--font-english);
+    white-space: nowrap;
+}
+
+.main-stocklist-change {
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+    font-family: var(--font-english);
+    padding: 6px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.main-stocklist-change.positive {
+    color: #fd0000;
+    background-color: #fef2f2;
+}
+
+.main-stocklist-change.negative {
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.main-stocklist-sentiment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+    min-width: 0;
+}
+
+.main-stocklist-sentiment-bar {
+    display: flex;
+    width: 100px;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.main-stocklist-sentiment-buy {
+    background-color: #fd0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-stocklist-sentiment-sell {
+    background-color: #1572fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-stocklist-sentiment-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: var(--font-english);
+}
+
+.main-stocklist-sentiment-buy-label {
+    color: #fd0000;
+}
+
+.main-stocklist-sentiment-sell-label {
+    color: #1572fc;
+}
+
+/* ===========================
    주식 테이블과 차트 섹션
    =========================== */
 
@@ -382,6 +619,172 @@ body {
     border: 1px solid var(--border-color);
     min-width: 0;
     overflow: hidden;
+}
+
+/* Stocklist 스타일 추가 */
+.main-stocklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.main-stocklist-time {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+.main-stocklist-table-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 120px 100px 140px;
+    padding: 12px 20px;
+    background-color: var(--primary-bg);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.main-stocklist-header-cell {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+}
+
+.main-stocklist-header-cell:nth-child(3) {
+    text-align: right;
+}
+
+.main-stocklist-header-cell:nth-child(4) {
+    text-align: right;
+}
+
+.main-stocklist-header-cell:nth-child(5) {
+    text-align: center;
+}
+
+.main-stocklist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.main-stocklist-item {
+    display: grid;
+    grid-template-columns: 60px 1fr 120px 100px 140px;
+    padding: 18px 20px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    gap: 12px;
+}
+
+.main-stocklist-item:hover {
+    background: var(--accent-blue);
+    border-color: #2970ff;
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+.main-stocklist-rank {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-family: var(--font-english);
+    text-align: center;
+}
+
+.main-stocklist-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.main-stocklist-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: white;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.main-stocklist-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.main-stocklist-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.main-stocklist-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: right;
+    font-family: var(--font-english);
+}
+
+.main-stocklist-change {
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+    font-family: var(--font-english);
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.main-stocklist-change.positive {
+    color: #fd0000;
+    background-color: #fef2f2;
+}
+
+.main-stocklist-change.negative {
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.main-stocklist-sentiment {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.main-stocklist-sentiment-buy {
+    background-color: #fd0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-english);
+}
+
+.main-stocklist-sentiment-sell {
+    background-color: #1572fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-english);
 }
 
 .main-stock-chart-card {
@@ -613,11 +1016,11 @@ body {
 }
 
 .main-mini-bar-chart .main-bar:first-child {
-    background-color: #4A90E2 !important;
+    background-color: var(--color-positive) !important;
 }
 
 .main-mini-bar-chart .main-bar:last-child {
-    background-color: #FF6B6B !important;
+    background-color: var(--color-negative) !important;
 }
 
 /* ===========================
@@ -730,6 +1133,12 @@ body {
         min-width: 0;
         width: 100%;
     }
+
+    .main-stocklist-table-header,
+    .main-stocklist-item {
+        grid-template-columns: 50px 1.2fr 0.8fr 0.8fr 1fr;
+        gap: 12px;
+    }
 }
 
 @media (max-width: 1200px) {
@@ -771,6 +1180,16 @@ body {
     .main-stock-section {
         display: flex;
         flex-direction: column;
+    }
+
+    .main-stocklist-table-header,
+    .main-stocklist-item {
+        grid-template-columns: 50px 1.2fr 0.7fr 0.7fr 0.9fr;
+        gap: 10px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 80px;
     }
 }
 
@@ -900,6 +1319,48 @@ body {
     .main-crypto-chart {
         min-width: 0;
     }
+
+    .main-stocklist-table-header {
+        display: none;
+    }
+
+    .main-stocklist-item {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .main-stocklist-item:hover {
+        transform: translateX(0);
+    }
+
+    .main-stocklist-favorite {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .main-stocklist-info {
+        order: -1;
+        width: 100%;
+    }
+
+    .main-stocklist-price,
+    .main-stocklist-change {
+        text-align: left;
+    }
+
+    .main-stocklist-sentiment {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .main-stocklist-name {
+        white-space: normal;
+        word-break: break-word;
+    }
 }
 
 @media (max-width: 480px) {
@@ -933,6 +1394,41 @@ body {
 
     .main-stock-table {
         font-size: 12px;
+    }
+
+    .main-stocklist-item {
+        padding: 14px;
+        gap: 10px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .main-stocklist-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .main-stocklist-name {
+        font-size: 15px;
+    }
+
+    .main-stocklist-price {
+        font-size: 14px;
+    }
+
+    .main-stocklist-change {
+        font-size: 13px;
+        padding: 4px 8px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 70px;
+        height: 6px;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 70px;
+        font-size: 9px;
     }
 }
 

@@ -9,8 +9,8 @@
     --text-primary: #1F2937;
     --text-secondary: #6B7280;
     --text-tertiary: #9CA3AF;
-    --color-positive: #fd0000;
-    --color-negative: #1572fc;
+    --color-positive: #e22939;
+    --color-negative: #2271e9;
     --color-neutral: #606060;
     --accent-blue: #3B82F6;
     --accent-blue-light: rgba(59, 130, 246, 0.08);
@@ -577,11 +577,11 @@ body {
 }
 
 .mypage-profit-amount.positive {
-    color: #fd0000;
+    color: var(--color-positive);
 }
 
 .mypage-profit-amount.negative {
-    color: #1572fc;
+    color: var(--color-negative);
 }
 
 /* 심리경고 카드 */
@@ -594,34 +594,33 @@ body {
     display: flex;
     flex-direction: column;
     max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* 심리경고 카드 스크롤바 스타일 */
-.mypage-alert-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 4px;
-}
-
-.mypage-alert-content::-webkit-scrollbar {
+.mypage-alert-card::-webkit-scrollbar {
     width: 8px;
 }
 
-.mypage-alert-content::-webkit-scrollbar-track {
+.mypage-alert-card::-webkit-scrollbar-track {
     background: var(--primary-bg);
     border-radius: 10px;
 }
 
-.mypage-alert-content::-webkit-scrollbar-thumb {
+.mypage-alert-card::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 10px;
 }
 
-.mypage-alert-content::-webkit-scrollbar-thumb:hover {
+.mypage-alert-card::-webkit-scrollbar-thumb:hover {
     background: var(--text-tertiary);
+}
+
+.mypage-alert-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .mypage-alert-header {

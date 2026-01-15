@@ -5,8 +5,8 @@
 	--text-primary: #1F2937;
 	--text-secondary: #6B7280;
 	--text-tertiary: #9CA3AF;
-	--color-positive: #10B981;
-	--color-negative: #EF4444;
+	--color-positive: #e22939;
+	--color-negative: #2271e9;
 	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
 	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 	--font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
@@ -284,7 +284,7 @@ body {
 
 .detail-total-money {
 	font-size: 22px;
-	color: var(--color-negative); /* 매수일 때 색상 */
+	color: var(--color-positive); /* 매수일 때 색상 */
 }
 
 /* 감정(Sentiment) 바 */
@@ -300,7 +300,7 @@ body {
 	text-align: center;
 }
 
-.detail-red-text { color: var(--color-negative); }
+.detail-red-text { color: var(--color-positive); }
 
 .detail-percent-labels {
 	display: flex;
@@ -318,13 +318,13 @@ body {
 	background-color: #F3F4F6;
 }
 
-.detail-fill-buy { background: var(--color-negative); }
+.detail-fill-buy { background: var(--color-positive); }
 .detail-fill-sell { background: #3B82F6; }
 
 /* 매수 버튼 */
 .detail-btn-submit {
 	width: 100%;
-	background: var(--color-negative);
+	background: var(--color-positive);
 	color: #fff;
 	border: none;
 	border-radius: 16px;
@@ -337,7 +337,7 @@ body {
 }
 
 .detail-btn-submit:hover {
-	background: #DC2626;
+	background: var(--color-positive);
 	transform: translateY(-1px);
 }
 
