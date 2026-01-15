@@ -15,7 +15,7 @@ public class AppContextListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-
+        //MySQL cleanup thread 종료
         AbandonedConnectionCleanupThread.checkedShutdown();
         // JDBC 드라이버 해제
         Enumeration<Driver> drivers = DriverManager.getDrivers();
