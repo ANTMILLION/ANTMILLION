@@ -1066,9 +1066,27 @@ body {
 }
 
 /* ===========================
-   반응형 디자인 (mypage.css 구조 참고)
+   반응형 디자인
    =========================== */
 
+/* 1600px 이하 - 첫 번째 조정 */
+@media (max-width: 1600px) {
+    .main-stocklist-table-header,
+    .main-stocklist-item {
+        grid-template-columns: 55px 1.5fr 0.9fr 0.9fr 1fr;
+        gap: 14px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 95px;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 95px;
+    }
+}
+
+/* 1400px 이하 */
 @media (max-width: 1400px) {
     .main-main-content {
         padding: 80px 32px;
@@ -1134,13 +1152,28 @@ body {
         width: 100%;
     }
 
+    /* 종목 리스트 */
     .main-stocklist-table-header,
     .main-stocklist-item {
-        grid-template-columns: 50px 1.2fr 0.8fr 0.8fr 1fr;
+        grid-template-columns: 50px 1.3fr 0.85fr 0.85fr 0.95fr;
         gap: 12px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 85px;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 85px;
+    }
+
+    .main-stocklist-change {
+        font-size: 14px;
+        padding: 5px 8px;
     }
 }
 
+/* 1200px 이하 */
 @media (max-width: 1200px) {
     .main-main-content {
         padding: 80px 24px;
@@ -1182,14 +1215,106 @@ body {
         flex-direction: column;
     }
 
+    /* 종목 리스트 */
     .main-stocklist-table-header,
     .main-stocklist-item {
-        grid-template-columns: 50px 1.2fr 0.7fr 0.7fr 0.9fr;
+        grid-template-columns: 45px 1.2fr 0.8fr 0.8fr 0.9fr;
         gap: 10px;
     }
 
     .main-stocklist-sentiment-bar {
-        width: 80px;
+        width: 75px;
+        height: 6px;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 75px;
+        font-size: 9px;
+    }
+
+    .main-stocklist-price {
+        font-size: 15px;
+    }
+
+    .main-stocklist-change {
+        font-size: 13px;
+        padding: 4px 7px;
+    }
+
+    .main-stocklist-name {
+        font-size: 15px;
+    }
+}
+
+/* 1000px 이하 - 추가 브레이크포인트 */
+@media (max-width: 1000px) {
+    .main-stocklist-table-header,
+    .main-stocklist-item {
+        grid-template-columns: 40px 1.1fr 0.75fr 0.75fr 0.85fr;
+        gap: 8px;
+        padding: 16px 16px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 70px;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 70px;
+    }
+
+    .main-stocklist-price {
+        font-size: 14px;
+    }
+
+    .main-stocklist-change {
+        font-size: 13px;
+        padding: 4px 6px;
+    }
+
+    .main-stocklist-name {
+        font-size: 14px;
+    }
+}
+
+/* 900px 이하 */
+@media (max-width: 900px) {
+    .main-stocklist-table-header,
+    .main-stocklist-item {
+        grid-template-columns: 40px 1fr 0.7fr 0.7fr 0.8fr;
+        gap: 6px;
+        padding: 14px 12px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 65px;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 65px;
+        font-size: 9px;
+    }
+
+    .main-stocklist-price {
+        font-size: 13px;
+    }
+
+    .main-stocklist-change {
+        font-size: 12px;
+        padding: 3px 5px;
+    }
+
+    .main-stocklist-name {
+        font-size: 14px;
+    }
+
+    .main-stocklist-rank {
+        font-size: 13px;
+    }
+
+    .main-stocklist-logo {
+        width: 36px;
+        height: 36px;
     }
 }
 
