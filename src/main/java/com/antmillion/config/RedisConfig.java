@@ -1,7 +1,7 @@
 package com.antmillion.config;
 
 import io.lettuce.core.ClientOptions;
-import io.lettuce.core.ProtocolVersion;
+import io.lettuce.core.protocol.ProtocolVersion;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
