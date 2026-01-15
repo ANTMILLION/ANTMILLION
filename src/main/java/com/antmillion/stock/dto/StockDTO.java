@@ -1,4 +1,4 @@
-package com.antmillion.dto;
+package com.antmillion.stock.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +10,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class SocialDTO {
-	private Long kakao_id;
-	private Long user_id;
+public class StockDTO {
+	private String stock_code;
+	private String stock_name;
+	private String stock_image;
 }

@@ -1,4 +1,4 @@
-package com.antmillion.dto;
+package com.antmillion.mission.dto;
 
 import java.time.LocalDateTime;
 
@@ -12,10 +12,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class TradeLogDTO {
-	private Long trade_id;
-    private Long order_id;
-    private LocalDateTime trade_date;
-    private Long trade_price;
-    private Integer trade_quantity;
+public class QuizLogDTO {
+	private Long quiz_log_id;
+    private Long user_id;
+    private Long quiz_id;
+    private LocalDateTime solved_at;
 }

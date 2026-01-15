@@ -1,4 +1,4 @@
-package com.antmillion.dto;
+package com.antmillion.mission.dto;
 
 import java.time.LocalDateTime;
 

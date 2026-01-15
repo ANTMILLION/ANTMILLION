@@ -1,4 +1,4 @@
-package com.antmillion.dto;
+package com.antmillion.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,12 +10,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class MemberDTO {
+public class SocialDTO {
+	private Long kakao_id;
 	private Long user_id;
-    private Integer rank_id;
-    private String email;
-    private String password;
-    private String nickname;
-    private Integer point;
-    private String provider;
 }

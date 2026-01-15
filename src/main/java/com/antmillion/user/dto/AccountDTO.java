@@ -1,4 +1,4 @@
-package com.antmillion.dto;
+package com.antmillion.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,8 +10,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class MessageDTO {
-	private Long message_id;
-    private String message_content;
-    private String message_type;
+public class AccountDTO {
+	 private Long account_id;
+	    private Long user_id;
+	    private String account_number;
+	    private Long balance;
 }

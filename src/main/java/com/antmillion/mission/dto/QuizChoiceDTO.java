@@ -1,6 +1,4 @@
-package com.antmillion.dto;
-
-import java.time.LocalDateTime;
+package com.antmillion.mission.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,9 +10,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class QuizLogDTO {
-	private Long quiz_log_id;
-    private Long user_id;
+public class QuizChoiceDTO {
+	private Long quiz_choice_id;
     private Long quiz_id;
-    private LocalDateTime solved_at;
+    private Integer choice_no;
+    private String choice_text;
 }

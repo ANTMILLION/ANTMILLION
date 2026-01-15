@@ -1,16 +1,16 @@
-package com.antmillion.mypage;
+package com.antmillion.main.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping({"/mypage"})
+@RequestMapping({"/", "/antmillion", "/antmillion/"})
 @Controller
-public class MyPageController {
+public class MainController {
 
     @GetMapping
     public String mainPage() {
-        return "mypage/mypage";
+        return "main/main";
     }
 
 }

@@ -1,4 +1,4 @@
-package com.antmillion.dto;
+package com.antmillion.stock.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

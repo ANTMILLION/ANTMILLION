@@ -1,4 +1,4 @@
-package com.antmillion.dto;
+package com.antmillion.stock.dto;
 
 import java.time.LocalDateTime;
 
@@ -12,10 +12,12 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class CommunityDTO {
-	private Long post_id;
+public class HistoryDTO {
+	private Long history_id;
     private Long user_id;
+    private Long message_id;
     private String stock_code;
-    private String content;
-    private LocalDateTime posted_date;
+    private String message_detail;
+    private LocalDateTime time;
+    private Boolean is_read;
 }

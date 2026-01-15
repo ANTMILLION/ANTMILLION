@@ -1,4 +1,6 @@
-package com.antmillion.dto;
+package com.antmillion.mission.dto;
+
+import java.math.BigDecimal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,9 +12,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class QuizChoiceDTO {
-	private Long quiz_choice_id;
-    private Long quiz_id;
-    private Integer choice_no;
-    private String choice_text;
+public class MissionDTO {
+	private Long mission_id;
+    private String mission_name;
 }

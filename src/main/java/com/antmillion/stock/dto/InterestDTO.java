@@ -1,4 +1,6 @@
-package com.antmillion.dto;
+package com.antmillion.stock.dto;
+
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,9 +12,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class AntRankDTO {
-    private Integer rank_id;
-    private String rank_type;
-    private Integer required_point;
-    private String rank_image;
+public class InterestDTO {
+	private String stock_code;
+    private Long account_id;
+    private LocalDateTime created_at;
 }
