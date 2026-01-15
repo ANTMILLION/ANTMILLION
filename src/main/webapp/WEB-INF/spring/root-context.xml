@@ -36,26 +36,4 @@
 
 	<mybatis-spring:scan
 		base-package="com.antmillion.mappers" />
-
-	<bean id="redisConnectionFactory" class="org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory"
-		  p:hostName="${redis.host}"
-		  p:port="${redis.port}" />
-	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
-		  p:connectionFactory-ref="redisConnectionFactory">
-
-		<property name="keySerializer">
-			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
-		</property>
-
-		<property name="valueSerializer">
-			<bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"/>
-		</property>
-
-		<property name="hashKeySerializer">
-			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
-		</property>
-		<property name="hashValueSerializer">
-			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
-		</property>
-	</bean>
 </beans>
