@@ -1,7 +1,3 @@
-/* ===========================
-   메인 페이지 스타일 (main.css)
-   =========================== */
-
 :root {
     --primary-bg: #F5F7FB;
     --secondary-bg: #FFFFFF;
@@ -27,10 +23,6 @@ body {
     overflow-x: hidden;
 }
 
-/* ===========================
-   레이아웃
-   =========================== */
-
 .main-app-container {
     display: flex;
     min-height: 100vh;
@@ -53,7 +45,6 @@ body {
     margin: 0 auto;
 }
 
-/* 1401px 이상에서만 명시적 배치 */
 @media (min-width: 1401px) {
     .main-grid-rank {
         grid-column: 1;
@@ -80,10 +71,6 @@ body {
         grid-row: 3;
     }
 }
-
-/* ===========================
-   카드 공통 스타일
-   =========================== */
 
 .main-rank-card,
 .main-mission-card,
@@ -117,10 +104,6 @@ body {
     letter-spacing: -0.3px;
     margin: 0;
 }
-
-/* ===========================
-   랭크 카드
-   =========================== */
 
 .main-rank-card {
     position: relative;
@@ -215,10 +198,6 @@ body {
     color: var(--text-tertiary);
 }
 
-/* ===========================
-   미션 카드
-   =========================== */
-
 .main-mission-card {
     background: linear-gradient(135deg, #FFF5F7 0%, #FFF 100%);
     border: 1px solid #FFE0E9;
@@ -271,10 +250,6 @@ body {
 .main-mission-button:active {
     transform: translateY(0);
 }
-
-/* ===========================
-   암호화폐 카드
-   =========================== */
 
 .main-crypto-card {
     display: grid;
@@ -381,10 +356,6 @@ body {
     height: 100% !important;
 }
 
-/* ===========================
-   주식 섹션
-   =========================== */
-
 .main-stock-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -403,10 +374,6 @@ body {
     min-width: 0;
     overflow: hidden;
 }
-
-/* ===========================
-   주식 리스트
-   =========================== */
 
 .main-stocklist-header {
     display: flex;
@@ -641,36 +608,6 @@ body {
     color: #1572fc;
 }
 
-/* 사용되지 않는 미니 바 차트 스타일 (필요시 주석 해제)
-.main-mini-bar-chart {
-    display: flex;
-    width: 100%;
-    height: 4px;
-    border-radius: 4px;
-    overflow: hidden;
-    background-color: #E5E7EB;
-}
-
-.main-mini-bar-chart .main-bar {
-    height: 4px;
-    width: calc(var(--value) * 1%);
-    transition: width 0.3s ease;
-    flex-shrink: 0;
-}
-
-.main-mini-bar-chart .main-bar:first-child {
-    background-color: var(--color-positive);
-}
-
-.main-mini-bar-chart .main-bar:last-child {
-    background-color: var(--color-negative);
-}
-*/
-
-/* ===========================
-   주식 차트
-   =========================== */
-
 .main-chart-header {
     margin-bottom: 20px;
 }
@@ -699,10 +636,6 @@ body {
     height: 100% !important;
 }
 
-/* ===========================
-   애니메이션
-   =========================== */
-
 @keyframes main-fadeInUp {
     from {
         opacity: 0;
@@ -714,7 +647,6 @@ body {
     }
 }
 
-/* 초기 로드시에만 애니메이션 적용 */
 @media (min-width: 1401px) {
     .main-rank-card,
     .main-mission-card,
@@ -746,11 +678,6 @@ body {
     }
 }
 
-/* ===========================
-   반응형 디자인
-   =========================== */
-
-/* 1400px 이하 - 태블릿 */
 @media (max-width: 1400px) {
     .main-main-content {
         padding: 80px 32px;
@@ -761,11 +688,25 @@ body {
         gap: 24px;
     }
 
-    .main-grid-rank { order: 1; }
-    .main-grid-mission { order: 2; }
-    .main-grid-kospi { order: 3; }
-    .main-grid-kosdaq { order: 4; }
-    .main-grid-table { order: 5; }
+    .main-grid-rank {
+        order: 1;
+    }
+
+    .main-grid-mission {
+        order: 2;
+    }
+
+    .main-grid-kospi {
+        order: 3;
+    }
+
+    .main-grid-kosdaq {
+        order: 4;
+    }
+
+    .main-grid-table {
+        order: 5;
+    }
 
     .main-stock-section {
         grid-template-columns: 1fr;
@@ -789,7 +730,6 @@ body {
     }
 }
 
-/* 1200px 이하 - 작은 태블릿 */
 @media (max-width: 1200px) {
     .main-main-content {
         padding: 80px 24px;
@@ -837,7 +777,6 @@ body {
     }
 }
 
-/* 1000px 이하 - 큰 모바일 */
 @media (max-width: 1000px) {
     .main-stocklist-table-header,
     .main-stocklist-item {
@@ -865,7 +804,6 @@ body {
     }
 }
 
-/* 768px 이하 */
 @media (max-width: 768px) {
     .main-main-content {
         margin-left: 50px;
@@ -910,10 +848,12 @@ body {
     }
 
     .main-stocklist-item {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 16px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: auto auto auto;
+        gap: 12px 16px;
+        padding: 20px;
+        align-items: start;
     }
 
     .main-stocklist-item:hover {
@@ -921,23 +861,61 @@ body {
     }
 
     .main-stocklist-favorite {
-        justify-content: space-between;
-        width: 100%;
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: column;
+        gap: 4px;
+        align-items: center;
     }
 
     .main-stocklist-info {
-        order: -1;
-        width: 100%;
+        grid-column: 2;
+        grid-row: 1;
+        width: auto;
     }
 
-    .main-stocklist-price,
-    .main-stocklist-change {
+    .main-stocklist-favorite-btn {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .main-stocklist-price {
+        grid-column: 1 / 2;
+        grid-row: 2;
         text-align: left;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .main-stocklist-change {
+        grid-column: 2 / 4;
+        grid-row: 2;
+        text-align: right;
+        margin-left: 0;
+        justify-self: end;
+        font-size: 16px;
     }
 
     .main-stocklist-sentiment {
-        justify-content: flex-start;
+        grid-column: 1 / -1;
+        grid-row: 3;
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .main-stocklist-sentiment-bar {
+        width: 100%;
+        height: 10px;
+        margin: 4px 0;
+    }
+
+    .main-stocklist-sentiment-labels {
+        width: 100%;
+        font-size: 12px;
     }
 
     .main-stocklist-name {
@@ -946,7 +924,6 @@ body {
     }
 }
 
-/* 480px 이하 */
 @media (max-width: 480px) {
     .main-main-content {
         padding: 120px 15px 15px;
@@ -988,12 +965,12 @@ body {
     }
 
     .main-stocklist-sentiment-bar {
-        width: 70px;
-        height: 6px;
+        width: 100%; /* 기존 70px 제거 */
+        height: 8px;
     }
 
     .main-stocklist-sentiment-labels {
-        width: 70px;
-        font-size: 9px;
+        width: 100%; /* 기존 70px 제거 */
+        font-size: 11px;
     }
 }
