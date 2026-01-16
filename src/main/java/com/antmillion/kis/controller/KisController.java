@@ -15,7 +15,12 @@ public class KisController {
 
     @GetMapping("/auth")
     public String auth() {
-        return kisService.getKisAccessToken();
+
+        String kisAccessToken = kisService.getKisAccessToken();
+        if (kisAccessToken != null) {
+            return "success";
+        }
+        return "fail";
     }
 
 }
