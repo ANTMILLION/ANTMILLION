@@ -34,5 +34,5 @@
 	</bean>
 
 	<mybatis-spring:scan
-		base-package="com.antmillion.mappers" />
+		base-package="com.antmillion.*.mapper" />
 </beans>
