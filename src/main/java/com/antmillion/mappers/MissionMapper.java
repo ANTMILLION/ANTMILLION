@@ -1,5 +1,6 @@
 package com.antmillion.mappers;
 
+import com.antmillion.mission.dto.QuizChoiceDTO;
 import com.antmillion.mission.dto.QuizLogDTO;
 import com.antmillion.mission.dto.QuizQuestionDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,6 +12,9 @@ import java.util.List;
 public interface MissionMapper {
     // 오늘의 퀴즈 조회
     List<QuizQuestionDTO> selectQuizByDate(@Param("quizDate") String quizDate);
+
+    // 퀴즈 보기 조회 (quizId 기준)
+    List<QuizChoiceDTO> selectQuizChoicesByQuizIds(@Param("quizIds") List<Long> quizIds);
 
     // 이미 푼 문제인지 확인
     int countSolvedHistory(@Param("userId") Long userId, @Param("quizId") Long quizId);

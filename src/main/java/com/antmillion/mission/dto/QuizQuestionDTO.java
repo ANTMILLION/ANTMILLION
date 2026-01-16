@@ -22,7 +22,4 @@ public class QuizQuestionDTO {
     private String explanation;
     private Integer point;
     private LocalDateTime quizDate;
-
-    // 객관식일 경우 보기들을 담아서 화면에 보내줄 리스트
-    private List<QuizChoiceDTO> choices;
 }
