@@ -1,34 +1,38 @@
 package com.antmillion.kis.service;
 
-import com.antmillion.kis.dto.KisAccessToken;
 import com.antmillion.kis.dto.KisAccessTokenResponse;
-import com.antmillion.mappers.KisAccessTokenMapper;
+import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class KisService {
 
-    private final KisAccessTokenMapper  kisAccessTokenMapper;
+    private final KisAccessTokenRedisRepository kisAccessTokenRedisRepository;
     private final KisApiService kisApiService;
 
+    /**
+     * KIS 액세스 토큰 조회/발급
+     * Redis에 유효한 토큰이 있으면 반환, 없으면 신규 발급 후 Redis에 저장
+     */
     public String getKisAccessToken() {
-        Optional<KisAccessToken> saved = kisAccessTokenMapper.findLatestAccessToken();
-        if (saved.isPresent() && saved.get().getExpiresAt().isAfter(LocalDateTime.now())) { // 서버 위치 기준 시간이라 나중에 변경해야할 수도 있음
-            return saved.get().getToken();
+        // Redis에서 토큰 조회
+        Optional<String> saved = kisAccessTokenRedisRepository.findAccessToken();
+        if (saved.isPresent()) {
+            return saved.get();
         }
 
-        //신규 발급
+        // 신규 발급
         KisAccessTokenResponse response = kisApiService.issueAccessToken();
-        //DB 저장
-        KisAccessToken accessToken = new KisAccessToken();
-        accessToken.setToken(response.getAccess_token());
-        accessToken.setExpiresAt(LocalDateTime.now().plusSeconds(response.getExpires_in()));
-        kisAccessTokenMapper.save(accessToken);
+        
+        // Redis 저장 (TTL 자동 설정)
+        kisAccessTokenRedisRepository.save(
+            response.getAccess_token(), 
+            response.getExpires_in()
+        );
 
         return response.getAccess_token();
     }
