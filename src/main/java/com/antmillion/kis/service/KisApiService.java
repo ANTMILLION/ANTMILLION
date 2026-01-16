@@ -1,6 +1,7 @@
 package com.antmillion.kis.service;
 
 import com.antmillion.kis.config.KisConfig;
+import com.antmillion.kis.dto.ChartStockPriceRequest;
 import com.antmillion.kis.dto.KisAccessTokenRequest;
 import com.antmillion.kis.dto.KisAccessTokenResponse;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -57,6 +59,10 @@ public class KisApiService {
 
         ResponseEntity<KisAccessTokenResponse> response = restTemplate.postForEntity(url, request, KisAccessTokenResponse.class);
         return response.getBody();
+    }
+
+    public List<ChartStockPriceRequest> getHistoricalStockPrices() {
+        return null;
     }
 
 }
