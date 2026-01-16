@@ -2,7 +2,7 @@ package com.antmillion.kis.service;
 
 import com.antmillion.kis.dto.KisAccessToken;
 import com.antmillion.kis.dto.KisAccessTokenResponse;
-import com.antmillion.kis.repository.KisAccessTokenMapper;
+import com.antmillion.mappers.KisAccessTokenMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

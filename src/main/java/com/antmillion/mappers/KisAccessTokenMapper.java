@@ -1,4 +1,4 @@
-package com.antmillion.kis.repository;
+package com.antmillion.mappers;
 
 import com.antmillion.kis.dto.KisAccessToken;
 
