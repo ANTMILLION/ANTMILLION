@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.antmillion.mappers.MissionMapper">
 
-    <resultMap id="quizDetailMap" type="com.antmillion.mission.dto.QuizQuestionDTO">
+    <resultMap id="quizQuestionMap" type="com.antmillion.mission.dto.QuizQuestionDTO">
         <id property="quizId" column="quiz_id"/>
         <result property="missionId" column="mission_id"/>
         <result property="type" column="type"/>
@@ -12,33 +12,42 @@
         <result property="explanation" column="explanation"/>
         <result property="point" column="point"/>
         <result property="quizDate" column="quiz_date"/>
-
-        <collection property="choices" ofType="com.antmillion.mission.dto.QuizChoiceDTO">
-            <id property="quizChoiceId" column="quiz_choice_id"/>
-            <result property="quizId" column="c_quiz_id"/>
-            <result property="choiceNo" column="choice_no"/>
-            <result property="choiceText" column="choice_text"/>
-        </collection>
     </resultMap>
 
-    <select id="selectQuizByDate" resultMap="quizDetailMap">
+    <select id="selectQuizByDate" resultMap="quizQuestionMap">
         SELECT
-            q.quiz_id,
-            q.mission_id,
-            q.type,
-            q.question,
-            q.answer,
-            q.explanation,
-            q.point,
-            q.quiz_date,
-            c.quiz_choice_id,
-            c.quiz_id AS c_quiz_id,
-            c.choice_no,
-            c.choice_text
-        FROM quiz_question q
-        LEFT JOIN quiz_choice c ON q.quiz_id = c.quiz_id
-        WHERE DATE_FORMAT(q.quiz_date, '%Y-%m-%d') = #{quizDate}
-        ORDER BY q.quiz_id ASC, c.choice_no ASC
+            quiz_id,
+            mission_id,
+            type,
+            question,
+            answer,
+            explanation,
+            point,
+            quiz_date
+        FROM quiz_question
+        WHERE DATE_FORMAT(quiz_date, '%Y-%m-%d') = #{quizDate}
+        ORDER BY quiz_id ASC
+    </select>
+
+    <resultMap id="quizChoiceMap" type="com.antmillion.mission.dto.QuizChoiceDTO">
+        <id property="quizChoiceId" column="quiz_choice_id"/>
+        <result property="quizId" column="quiz_id"/>
+        <result property="choiceNo" column="choice_no"/>
+        <result property="choiceText" column="choice_text"/>
+    </resultMap>
+
+    <select id="selectQuizChoicesByQuizIds" resultMap="quizChoiceMap">
+        SELECT
+        quiz_choice_id,
+        quiz_id,
+        choice_no,
+        choice_text
+        FROM quiz_choice
+        WHERE quiz_id IN
+        <foreach collection="quizIds" item="quizId" open="(" separator="," close=")">
+            #{quizId}
+        </foreach>
+        ORDER BY quiz_id ASC, choice_no ASC
     </select>
 
     <insert id="insertQuizLog" parameterType="com.antmillion.mission.dto.QuizLogDTO">
