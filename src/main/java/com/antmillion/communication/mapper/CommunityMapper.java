@@ -1,4 +1,4 @@
-package com.antmillion.mappers;
+package com.antmillion.communication.mapper;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Param;

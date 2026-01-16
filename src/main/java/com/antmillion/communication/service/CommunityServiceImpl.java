@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.antmillion.communication.dto.CommunityDTO;
 import com.antmillion.communication.dto.CommunityDetailResponseDTO;
-import com.antmillion.mappers.CommunityMapper;
+import com.antmillion.communication.mapper.CommunityMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
