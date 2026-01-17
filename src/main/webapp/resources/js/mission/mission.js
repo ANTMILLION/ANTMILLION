@@ -43,6 +43,7 @@ function fetchDailyQuiz() {
                 options: q.choices.map((c, index) => ({
                     id: c.quizChoiceId,
                     text: c.choiceText,
+                    // 임시로 1번 보기를 정답으로 처리, 추후에 변경
                     isCorrect: (index === 0)
                 }))
             }));
