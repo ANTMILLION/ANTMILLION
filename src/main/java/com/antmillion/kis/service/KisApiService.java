@@ -4,7 +4,9 @@ import com.antmillion.kis.config.KisConfig;
 import com.antmillion.kis.constant.KisApiConstant;
 import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
+import com.antmillion.kis.repository.KisChartRedisRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,6 +19,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class KisApiService {
@@ -24,6 +27,7 @@ public class KisApiService {
     private final KisConfig config;
     private final RestTemplate restTemplate;
     private final KisAccessTokenRedisRepository kisAccessTokenRedisRepository;
+    private final KisChartRedisRepository kisChartRedisRepository;
 
     /**
      * KIS 액세스 토큰 조회/발급
@@ -33,11 +37,13 @@ public class KisApiService {
         // Redis에서 토큰 조회
         Optional<String> saved = kisAccessTokenRedisRepository.findAccessToken();
         if (saved.isPresent()) {
+            log.info("기존 토큰 재사용");
             return saved.get();
         }
 
         // 신규 발급
-        KisAccessTokenResponse response = issueAccessToken();
+        log.info("토큰 신규 발급");
+        KisAccessTokenResponse response = issueAccessTokenAPI();
 
         // Redis 저장 (TTL 자동 설정)
         kisAccessTokenRedisRepository.save(
@@ -53,8 +59,7 @@ public class KisApiService {
      * 24시간 유효, 6시간마다 재발급 가능, api 호출 시 1분간 재호출 제한
      * @return 접근 토큰, 유효시간
      */
-    private KisAccessTokenResponse issueAccessToken() {
-
+    private KisAccessTokenResponse issueAccessTokenAPI() {
         String url = config.getBaseUrl() + KisApiConstant.OAUTH_TOKEN_PATH;
         KisAccessTokenRequest body = new KisAccessTokenRequest();
         body.setAppkey(config.appKey);
@@ -74,6 +79,24 @@ public class KisApiService {
      * @return 캔들 차트 데이터 리스트
      */
     public List<ChartStockPrice> getPeriodStockPrices(ChartStockPriceRequest request) {
+        //Redis에 있는지 먼저 확인
+        Optional<List<ChartStockPrice>> cached = kisChartRedisRepository.getChartData(
+                request.getStockCode(),
+                request.getPeriodCode()
+        );
+
+        if (cached.isPresent()) {
+            log.info("기간별 차트 데이터 재사용");
+            return cached.get();
+        }
+
+        log.info("한국투자증권 기간별 시세 api 호출");
+        KisChartStockPriceResponse response = periodStockPricesAPI(request);
+        kisChartRedisRepository.save(request.getStockCode(), request.getPeriodCode(), response.getOutput2());
+        return response.getOutput2();
+    }
+
+    private KisChartStockPriceResponse periodStockPricesAPI(ChartStockPriceRequest request) {
         //1.접근 토큰 얻기
         String token = getKisAccessToken();
         //2.헤더 설정
@@ -86,7 +109,7 @@ public class KisApiService {
         //5.응답 처리
         KisChartStockPriceResponse responseBody = response.getBody();
         if (responseBody != null && responseBody.getOutput2() != null) {
-            return responseBody.getOutput2();
+            return responseBody;
         }
         throw new RuntimeException("기간별 차트 데이터 조회 실패");
     }
