@@ -45,6 +45,14 @@ body {
     margin: 0 auto;
 }
 
+.main-mission-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: white;
+}
+
 @media (min-width: 1401px) {
     .main-grid-rank {
         grid-column: 1;
