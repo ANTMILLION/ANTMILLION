@@ -1,6 +1,6 @@
 package com.antmillion.kis.controller;
 
-import com.antmillion.kis.service.KisService;
+import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,16 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/kis")
 public class KisController {
 
-    private final KisService kisService;
+    private final KisApiService kisApiService;
 
     @GetMapping("/auth")
     public String auth() {
-
-        String kisAccessToken = kisService.getKisAccessToken();
-        if (kisAccessToken != null) {
-            return "success";
-        }
-        return "fail";
+        return kisApiService.getKisAccessToken();
     }
 
 }
