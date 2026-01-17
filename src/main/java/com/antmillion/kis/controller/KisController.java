@@ -13,9 +13,17 @@ public class KisController {
 
     private final KisApiService kisApiService;
 
+    /**
+     * 한국투자증권 api의 응답을 확인하기위한 컨트롤러
+     * 실제로 사용할 때는 KisService만 사욯하면 될듯
+     *
+     */
+
     @GetMapping("/auth")
     public String auth() {
         return kisApiService.getKisAccessToken();
     }
+
+
 
 }
