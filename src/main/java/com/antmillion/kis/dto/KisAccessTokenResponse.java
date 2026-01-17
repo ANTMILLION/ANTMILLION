@@ -1,12 +1,16 @@
 package com.antmillion.kis.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class KisAccessTokenResponse {
-    private String access_token;
-    private String token_type;
-    private Long expires_in;
+    @JsonProperty("access_token")
+    private String accessToken;
+    @JsonProperty("token_type")
+    private String tokenType;
+    @JsonProperty("expires_in")
+    private Long expiresIn;
 }

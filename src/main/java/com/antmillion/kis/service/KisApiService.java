@@ -37,11 +37,11 @@ public class KisApiService {
 
         // Redis 저장 (TTL 자동 설정)
         kisAccessTokenRedisRepository.save(
-                response.getAccess_token(),
-                response.getExpires_in()
+                response.getAccessToken(),
+                response.getExpiresIn()
         );
 
-        return response.getAccess_token();
+        return response.getAccessToken();
     }
 
     public KisAccessTokenResponse issueAccessToken() {
