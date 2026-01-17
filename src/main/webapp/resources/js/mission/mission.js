@@ -1,4 +1,3 @@
-// 퀴즈 데이터 (서버에서 AJAX로 가져올 예정)
 let quizData = [];
 let currentQuizIndex = 0;
 let correctAnswers = 0;
@@ -6,33 +5,55 @@ let isAnswering = false;
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function () {
-    loadQuizData();
+    fetchDailyQuiz();
 });
 
-// 퀴즈 데이터 로드 (AJAX)
-function loadQuizData() {
-    // 임시 데이터
-    quizData = [
-        {
-            id: 1,
-            question: "위험을 줄이기 위해 자산을 여러 곳에 나누어 투자하는 원칙을 분산투자라고 한다.",
-            options: [
-                {id: 1, text: "O", isCorrect: true},
-                {id: 2, text: "X", isCorrect: false}
-            ]
+function formatTodayKorean() {
+    const today = new Date();
+    const month = today.getMonth() + 1;
+    const date = today.getDate();
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const day = dayNames[today.getDay()];
+    return `${month}월 ${date}일 ${day}요일 오늘의 경제 퀴즈`;
+}
+
+// 서버 API 호출하여 데이터 가져오기
+function fetchDailyQuiz() {
+    $.ajax({
+        url: '/antmillion/mission/daily',
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            if (!data || data.length === 0) {
+                alert("오늘의 퀴즈가 없습니다!");
+                return;
+            }
+
+            // 날짜 변경
+            const quizTitle = document.querySelector('.mission-quiz-date');
+            if (quizTitle) {
+                quizTitle.textContent = formatTodayKorean();
+            }
+
+            quizData = data.map(q => ({
+                id: q.quizId,
+                type: q.type,
+                question: q.question,
+                point: q.point,
+                options: q.choices.map((c, index) => ({
+                    id: c.quizChoiceId,
+                    text: c.choiceText,
+                    isCorrect: (index === 0)
+                }))
+            }));
+
+            currentQuizIndex = 0;
+            loadQuiz(currentQuizIndex);
         },
-        {
-            id: 2,
-            question: "주가가 하락할 때 주식을 빌려 파는 것은?",
-            options: [
-                {id: 3, text: "매수", isCorrect: false},
-                {id: 4, text: "공매도", isCorrect: true},
-                {id: 5, text: "손절매", isCorrect: false},
-                {id: 6, text: "물타기", isCorrect: false}
-            ]
+        error: function (xhr, status, error) {
+            console.error('퀴즈 데이터를 가져오는 중 오류 발생:', error);
         }
-    ];
-    loadQuiz(currentQuizIndex);
+    });
 }
 
 // 퀴즈 로드
