@@ -1,20 +1,21 @@
 package com.antmillion.kis.service;
 
 import com.antmillion.kis.config.KisConfig;
-import com.antmillion.kis.dto.ChartStockPriceRequest;
-import com.antmillion.kis.dto.KisAccessTokenRequest;
-import com.antmillion.kis.dto.KisAccessTokenResponse;
+import com.antmillion.kis.constant.KisApiConstant;
+import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Optional;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -40,11 +41,11 @@ public class KisApiService {
 
         // Redis 저장 (TTL 자동 설정)
         kisAccessTokenRedisRepository.save(
-                response.getAccess_token(),
-                response.getExpires_in()
+                response.getAccessToken(),
+                response.getExpiresIn()
         );
 
-        return response.getAccess_token();
+        return response.getAccessToken();
     }
 
     /**
@@ -54,7 +55,7 @@ public class KisApiService {
      */
     private KisAccessTokenResponse issueAccessToken() {
 
-        String url = config.baseUrl + "/oauth2/tokenP";
+        String url = config.getBaseUrl() + KisApiConstant.OAUTH_TOKEN_PATH;
         KisAccessTokenRequest body = new KisAccessTokenRequest();
         body.setAppkey(config.appKey);
         body.setAppsecret(config.appSecret);
@@ -72,14 +73,35 @@ public class KisApiService {
      * @param request  조회 조건 (종목코드, 기간, 날짜 등)
      * @return 캔들 차트 데이터 리스트
      */
-    public List<ChartStockPriceRequest> getPeriodStockPrices(ChartStockPriceRequest request) {
+    public List<ChartStockPrice> getPeriodStockPrices(ChartStockPriceRequest request) {
+        //1.접근 토큰 얻기
         String token = getKisAccessToken();
+        //2.헤더 설정
         HttpHeaders headers = createPeriodApiHeader(token);
-        String url = buildPeriodApiUrl();
-        return null;
+        //3.URL 생성
+        String url = buildPeriodApiUrl(request);
+        //4.API 호출
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisChartStockPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisChartStockPriceResponse.class);
+        //5.응답 처리
+        KisChartStockPriceResponse responseBody = response.getBody();
+        if (responseBody != null && responseBody.getOutput2() != null) {
+            return responseBody.getOutput2();
+        }
+        throw new RuntimeException("기간별 차트 데이터 조회 실패");
     }
 
-    private String buildPeriodApiUrl() {
+    private String buildPeriodApiUrl(ChartStockPriceRequest request) {
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PERIOD_PRICE_PATH);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                .queryParam("FID_INPUT_ISCD", request.getStockCode())
+                .queryParam("FID_INPUT_DATE_1", request.getStartDate())
+                .queryParam("FID_INPUT_DATE_2", request.getEndDate())
+                .queryParam("FID_PERIOD_DIV_CODE", request.getPeriodCode())
+                .queryParam("FID_ORG_ADJ_PRC", request.getAdjPrice())
+                .build().toUriString();
     }
 
     private HttpHeaders createPeriodApiHeader(String token) {
