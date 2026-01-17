@@ -4,12 +4,10 @@ import com.antmillion.kis.dto.ChartStockPrice;
 import com.antmillion.kis.dto.ChartStockPriceRequest;
 import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -31,21 +29,39 @@ public class KisController {
     }
 
     /**
-     * 삼성전자 26년 1월 1일부터 26년 1월 17일까지 일봉 데이터 반환 테스트
+     * 일봉 : 60일치
+     * 주봉 : 52주치
+     * 월봉 : 24개월치
+     * 년봉 : 10년치
      */
-    @GetMapping("/periodChart")
+    @GetMapping("/periodChart/{stockCode}")
     public List<ChartStockPrice> periodChart(
+            @PathVariable("stockCode") String stockCode,
+            @RequestParam("period") String period
     ) {
+        ZoneId KST = ZoneId.of("Asia/Seoul");
+        LocalDateTime endDate = LocalDateTime.now(KST);
+
+        LocalDateTime startDate;
+        switch (period) {
+            case "W": { startDate = endDate.minusWeeks(52); break; }
+            case "M": { startDate = endDate.minusMonths(48); break; }
+            case "Y": { startDate = endDate.minusYears(30); break; }
+            default: { startDate = endDate.minusDays(100); }
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String startDateStr = startDate.format(formatter);
+        String endDateStr = endDate.format(formatter);
         ChartStockPriceRequest request = ChartStockPriceRequest.builder()
                 .marketCode("J") //KRX 고정
-                .stockCode("005930")
-                .periodCode("D")
-                .startDate("20260101")
-                .endDate("20260117")
+                .stockCode(stockCode)
+                .periodCode(period)
+                .startDate(startDateStr)
+                .endDate(endDateStr)
                 .adjPrice("0") //수정주가 고정
                 .build();
         return kisApiService.getPeriodStockPrices(request);
     }
-
 
 }
