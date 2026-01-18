@@ -46,14 +46,14 @@
                 <div class="main-crypto-header">
                     <div class="main-crypto-info">
                         <h3 class="main-crypto-name">코스피</h3>
-                        <p class="main-crypto-symbol">Ethereum</p>
+                        <p class="main-crypto-symbol">KOSPI</p>
                     </div>
                 </div>
-                <div class="main-crypto-price">$23,738</div>
+                <div class="main-crypto-price">현재 수치</div>
                 <div class="main-crypto-change">
-                    <span class="main-change-label">PNL Daily</span>
-                    <span class="main-change-value main-positive">+$189.91</span>
-                    <span class="main-change-percent main-positive">+24.68%</span>
+                    <span class="main-change-label">전일대비</span>
+                    <span class="main-change-value main-positive">전일대비 금액</span>
+                    <span class="main-change-percent main-positive">전일대비 등락률</span>
                 </div>
                 <div class="main-crypto-chart">
                     <canvas id="main-ethereumChart"></canvas>
@@ -75,14 +75,14 @@
                 <div class="main-crypto-header">
                     <div class="main-crypto-info">
                         <h3 class="main-crypto-name">코스닥</h3>
-                        <p class="main-crypto-symbol">Bitcoin</p>
+                        <p class="main-crypto-symbol">KOSDAQ</p>
                     </div>
                 </div>
-                <div class="main-crypto-price">$23,738</div>
+                <div class="main-crypto-price">현재 수치</div>
                 <div class="main-crypto-change">
-                    <span class="main-change-label">PNL Daily</span>
-                    <span class="main-change-value main-negative">-$16.78</span>
-                    <span class="main-change-percent main-positive">+14.67%</span>
+                    <span class="main-change-label">전일대비</span>
+                    <span class="main-change-value main-negative">전일대비 금액</span>
+                    <span class="main-change-percent main-positive">전일대비 등락률</span>
                 </div>
                 <div class="main-crypto-chart">
                     <canvas id="main-bitcoinChart"></canvas>
