@@ -1,6 +1,6 @@
 $(document).ready(function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const stockCode = urlParams.get('stockCode');
+    const stockCode = urlParams.get('code');
     
     if (!stockCode) {
         console.error('종목 코드가 없습니다.');
@@ -26,7 +26,7 @@ $(document).ready(function() {
 
 function loadCommunityList(stockCode) {
     $.ajax({
-        url: '/antmillion/community/list',
+        url: (typeof contextPath !== 'undefined' ? contextPath : '/antmillion') + '/community/list',
         type: 'GET',
         data: { stockCode: stockCode },
         success: function(response) {
@@ -86,7 +86,7 @@ function writeCommunity(stockCode) {
     }
     
     $.ajax({
-        url: '/antmillion/community/write',
+        url: (typeof contextPath !== 'undefined' ? contextPath : '/antmillion') + '/community/write',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
