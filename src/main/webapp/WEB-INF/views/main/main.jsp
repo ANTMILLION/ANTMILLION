@@ -55,9 +55,7 @@
                     <span class="main-change-value main-positive">전일대비 금액</span>
                     <span class="main-change-percent main-positive">전일대비 등락률</span>
                 </div>
-                <div class="main-market-index-chart">
-                    <canvas id="main-kospiChart"></canvas>
-                </div>
+                <div class="main-market-index-chart" id="main-kospi-chart"></div>
             </div>
 
 
@@ -84,9 +82,7 @@
                     <span class="main-change-value main-negative">전일대비 금액</span>
                     <span class="main-change-percent main-positive">전일대비 등락률</span>
                 </div>
-                <div class="main-market-index-chart">
-                    <canvas id="main-kosdaqChart"></canvas>
-                </div>
+                <div class="main-market-index-chart" id="main-kosdaq-chart"></div>
             </div>
 
             <!-- 주식 테이블과 차트 영역 -->
@@ -133,6 +129,8 @@
         history.scrollRestoration = 'manual';
     }
 </script>
+<!-- Adding the standalone version of Lightweight charts -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script> const contextPath = '${cpath}'; </script>
 <script src="${cpath}/resources/js/main/main.js"></script>
 </body>

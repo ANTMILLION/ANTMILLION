@@ -348,6 +348,10 @@ body {
     color: var(--color-negative);
 }
 
+#tv-attr-logo {
+    display: none !important;
+}
+
 .main-market-index-chart {
     flex: 1;
     position: relative;
@@ -359,7 +363,7 @@ body {
     grid-row: 1 / 5;
 }
 
-.main-market-index-chart canvas {
+.main-market-index-chart {
     width: 100% !important;
     height: 100% !important;
 }
