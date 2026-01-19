@@ -1,4 +1,4 @@
-package com.antmillion.mappers;
+package com.antmillion.mission.mapper;
 
 import com.antmillion.mission.dto.QuizChoiceDTO;
 import com.antmillion.mission.dto.QuizLogDTO;
