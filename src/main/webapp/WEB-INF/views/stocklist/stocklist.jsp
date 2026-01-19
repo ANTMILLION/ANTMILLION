@@ -42,7 +42,10 @@
         </div>
     </main>
 </div>
-<script> const contextPath = '${cpath}'; </script>
+<script>
+    // contextPath 변수 설정 (stocklist.js에서 사용)
+    var contextPath = '${cpath}';
+</script>
 <script src="${cpath}/resources/js/stocklist/stocklist.js"></script>
 </body>
 </html>
