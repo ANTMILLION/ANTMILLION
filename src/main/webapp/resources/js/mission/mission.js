@@ -20,7 +20,7 @@ function formatTodayKorean() {
 // 서버 API 호출하여 데이터 가져오기
 function getDailyQuiz() {
     $.ajax({
-        url: '/antmillion/mission/daily',
+        url: cpath + '/mission/daily',
         type: 'GET',
         dataType: 'json',
         success: function (data) {
@@ -195,7 +195,7 @@ function submitAnswer(quizId, optionId, buttonElement) {
         choiceNo : optionId
     }
     $.ajax({
-        url: '/antmillion/mission/check',
+        url: cpath + '/mission/check',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(requestData),
