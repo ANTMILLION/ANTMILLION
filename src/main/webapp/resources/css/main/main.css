@@ -82,7 +82,7 @@ body {
 
 .main-rank-card,
 .main-mission-card,
-.main-crypto-card {
+.main-market-index-card {
     background: var(--secondary-bg);
     border-radius: 20px;
     padding: 20px;
@@ -100,7 +100,7 @@ body {
 
 .main-rank-card:hover,
 .main-mission-card:hover,
-.main-crypto-card:hover {
+.main-market-index-card:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
@@ -259,7 +259,7 @@ body {
     transform: translateY(0);
 }
 
-.main-crypto-card {
+.main-market-index-card {
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto auto 1fr;
@@ -267,7 +267,7 @@ body {
     column-gap: 12px;
 }
 
-.main-crypto-header {
+.main-market-index-header {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -276,21 +276,21 @@ body {
     grid-row: 1;
 }
 
-.main-crypto-info h3 {
+.main-market-index-info h3 {
     font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 2px 0;
 }
 
-.main-crypto-symbol {
+.main-market-index-symbol {
     font-size: 11px;
     color: var(--text-tertiary);
     font-family: var(--font-english);
     margin: 0;
 }
 
-.main-crypto-price {
+.main-market-index-price {
     font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);
@@ -301,7 +301,7 @@ body {
     grid-row: 2;
 }
 
-.main-crypto-change {
+.main-market-index-change {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -339,16 +339,20 @@ body {
 }
 
 .main-change-percent.main-positive {
-    background-color: rgba(16, 185, 129, 0.1);
+    background-color: rgb(252, 240, 240);
     color: var(--color-positive);
 }
 
 .main-change-percent.main-negative {
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: rgb(237, 244, 253);
     color: var(--color-negative);
 }
 
-.main-crypto-chart {
+#tv-attr-logo {
+    display: none !important;
+}
+
+.main-market-index-chart {
     flex: 1;
     position: relative;
     min-height: 0;
@@ -359,7 +363,7 @@ body {
     grid-row: 1 / 5;
 }
 
-.main-crypto-chart canvas {
+.main-market-index-chart {
     width: 100% !important;
     height: 100% !important;
 }
@@ -658,7 +662,7 @@ body {
 @media (min-width: 1401px) {
     .main-rank-card,
     .main-mission-card,
-    .main-crypto-card,
+    .main-market-index-card,
     .main-stock-table-card,
     .main-stock-chart-card {
         animation: main-fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
@@ -672,11 +676,11 @@ body {
         animation-delay: 0.15s;
     }
 
-    .main-crypto-card:nth-of-type(2) {
+    .main-market-index-card:nth-of-type(2) {
         animation-delay: 0.1s;
     }
 
-    .main-crypto-card:nth-of-type(4) {
+    .main-market-index-card:nth-of-type(4) {
         animation-delay: 0.15s;
     }
 
@@ -824,7 +828,7 @@ body {
 
     .main-rank-card,
     .main-mission-card,
-    .main-crypto-card {
+    .main-market-index-card {
         height: auto;
         min-height: 200px;
         padding: 20px;
@@ -839,7 +843,7 @@ body {
         height: 300px;
     }
 
-    .main-crypto-price {
+    .main-market-index-price {
         font-size: 20px;
     }
 
@@ -847,7 +851,7 @@ body {
         font-size: 16px;
     }
 
-    .main-crypto-header {
+    .main-market-index-header {
         gap: 8px;
     }
 
@@ -939,13 +943,13 @@ body {
 
     .main-rank-card,
     .main-mission-card,
-    .main-crypto-card,
+    .main-market-index-card,
     .main-stock-table-card,
     .main-stock-chart-card {
         padding: 16px;
     }
 
-    .main-crypto-price {
+    .main-market-index-price {
         font-size: 18px;
     }
 
