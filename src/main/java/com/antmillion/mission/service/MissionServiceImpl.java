@@ -1,11 +1,10 @@
 package com.antmillion.mission.service;
 
-import com.antmillion.mission.dto.QuizChoiceDTO;
-import com.antmillion.mission.dto.QuizQuestionDTO;
-import com.antmillion.mission.dto.QuizQuestionResponseDTO;
+import com.antmillion.mission.dto.*;
 import com.antmillion.mission.mapper.MissionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -63,5 +62,29 @@ public class MissionServiceImpl implements MissionService {
             responseList.add(responseDTO);
         }
         return responseList;
+    }
+
+    @Override
+    @Transactional
+    public boolean checkAndLogAnswer(QuizSubmissionRequestDTO requestDTO) {
+        // 해당 퀴즈의 정답 조회
+        Integer realAnswer = missionMapper.selectAnswerByQuizId(requestDTO.getQuizId());
+        if (realAnswer == null) {
+            throw new IllegalArgumentException("존재하지 않는 퀴즈입니다.");
+        }
+
+        // 채점
+        boolean isCorrect = realAnswer.equals(requestDTO.getChoiceNo());
+        if(isCorrect) {
+            int count = missionMapper.countSolvedHistory(requestDTO.getUserId(), requestDTO.getQuizId());
+            if (count == 0) {
+                QuizLogDTO logDTO = QuizLogDTO.builder()
+                        .userId(requestDTO.getUserId())
+                        .quizId(requestDTO.getQuizId())
+                        .build();
+                missionMapper.insertQuizLog(logDTO);
+            }
+        }
+        return isCorrect;
     }
 }

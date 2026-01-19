@@ -67,4 +67,10 @@
         WHERE user_id = #{userId}
         AND DATE_FORMAT(solved_at, '%Y-%m-%d') = CURDATE()
     </select>
+
+    <select id="selectAnswerByQuizId" resultType="Integer">
+        SELECT answer
+        FROM quiz_question
+        WHERE quiz_id = #{quizId}
+    </select>
 </mapper>

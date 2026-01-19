@@ -20,8 +20,11 @@ public interface MissionMapper {
     int countSolvedHistory(@Param("userId") Long userId, @Param("quizId") Long quizId);
 
     // 퀴즈 풀이 이력 저장
-    int insertQuizLog(QuizLogDTO quizLog);
+    void insertQuizLog(QuizLogDTO quizLog);
 
     // 오늘 맞춘 문제 개수 조회
     int countTodaySolved(@Param("userId") Long userId);
+
+    // 정답 번호 조회
+    Integer selectAnswerByQuizId(@Param("quizId") Long quizId);
 }
