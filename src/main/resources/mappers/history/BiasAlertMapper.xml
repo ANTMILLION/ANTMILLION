@@ -3,8 +3,18 @@
 
 <mapper namespace="com.antmillion.history.mapper.BiasAlertMapper">
 
-    <!-- 특정 종목의 보유 정보 조회 (편향 체크용) -->
-    <select id="selectAssetForBiasCheck" resultType="com.antmillion.history.dto.BiasAlertDTO">
+    <!-- ⭐ ResultMap 추가 -->
+    <resultMap id="BiasAlertResultMap" type="com.antmillion.history.dto.BiasAlertDTO">
+        <result property="stockCode" column="stockCode"/>
+        <result property="stockName" column="stockName"/>
+        <result property="quantity" column="quantity"/>
+        <result property="avgPrice" column="avgPrice"/>
+        <result property="purchaseDate" column="purchaseDate"/>
+        <result property="holdingDays" column="holdingDays"/>
+    </resultMap>
+
+    <!-- 특정 종목의 보유 정보 조회 -->
+    <select id="selectAssetForBiasCheck" resultMap="BiasAlertResultMap">
         SELECT 
             a.stock_code AS stockCode,
             s.stock_name AS stockName,
@@ -19,7 +29,7 @@
           AND a.quantity > 0
     </select>
     
-    <!-- 현재가 조회 (임시 하드코딩 - 추후 API 연동 필요) -->
+    <!-- 현재가 조회 -->
     <select id="selectCurrentPrice" resultType="java.math.BigDecimal">
         SELECT 
             CASE 

@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const hasBias = sessionStorage.getItem('safeBias');
     if (hasBias === 'true') {
         showBiasAlert();
-        console.log('세션 기반 안전선호 경고 복원');
+        console.log('[초기 로드] 세션 기반 안전선호 경고 복원');
     }
 
     const userProfile = document.getElementById('userProfile');
@@ -141,6 +141,19 @@ document.addEventListener('DOMContentLoaded', function () {
             notifBox.style.display = 'none';
         }
     });
+});
+
+// ⭐ 뒤로가기/앞으로가기 대응
+window.addEventListener('pageshow', function(event) {
+    console.log('[pageshow] 이벤트 발생, bfcache:', event.persisted);
+    const hasBias = sessionStorage.getItem('safeBias');
+    if (hasBias === 'true') {
+        const badge = document.getElementById('biasAlertBadge');
+        if (badge && badge.style.display !== 'flex') {
+            showBiasAlert();
+            console.log('[뒤로가기] 세션 기반 안전선호 경고 복원');
+        }
+    }
 });
 
 

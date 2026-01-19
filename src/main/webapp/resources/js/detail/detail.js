@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 buyBar.style.width = '78%';
                 sellBar.style.width = '22%';
                 
+                // 매수 탭에서는 경고를 유지 (숨기지 않음)
                 console.log('[경고] 매수 탭 - 경고 유지');
                    
             } else if (type === 'sell') {
