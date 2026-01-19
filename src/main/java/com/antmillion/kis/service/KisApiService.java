@@ -5,6 +5,7 @@ import com.antmillion.kis.constant.KisApiConstant;
 import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
 import com.antmillion.kis.repository.KisChartRedisRepository;
+import com.antmillion.kis.repository.KisMarketIndexChartRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -28,6 +29,7 @@ public class KisApiService {
     private final RestTemplate restTemplate;
     private final KisAccessTokenRedisRepository kisAccessTokenRedisRepository;
     private final KisChartRedisRepository kisChartRedisRepository;
+    private final KisMarketIndexChartRepository kisMarketIndexChartRepository;
 
     /**
      * KIS 액세스 토큰 조회/발급
@@ -96,11 +98,16 @@ public class KisApiService {
         return response.getOutput2();
     }
 
+    /**
+     * 한국투자증권 국내주식 기간별 시세 조회 API 호출
+     * @param request  조회 조건 (종목코드, 기간, 날짜 등)
+     * @return 한국투자증권 API 반환값
+     */
     private KisChartStockPriceResponse periodStockPricesAPI(ChartStockPriceRequest request) {
         //1.접근 토큰 얻기
         String token = getKisAccessToken();
         //2.헤더 설정
-        HttpHeaders headers = createPeriodApiHeader(token);
+        HttpHeaders headers = createApiHeader(token, "FHKST03010100");
         //3.URL 생성
         String url = buildPeriodApiUrl(request);
         //4.API 호출
@@ -114,6 +121,11 @@ public class KisApiService {
         throw new RuntimeException("기간별 차트 데이터 조회 실패");
     }
 
+    /**
+     * 한국투자증권 국내 주식 기간별 시세 조회 API URL 생성
+     * @param request  조회 조건 (종목코드, 기간, 날짜 등)
+     * @return 한국투자증권 API URL
+     */
     private String buildPeriodApiUrl(ChartStockPriceRequest request) {
         final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PERIOD_PRICE_PATH);
         return UriComponentsBuilder
@@ -127,16 +139,74 @@ public class KisApiService {
                 .build().toUriString();
     }
 
-    private HttpHeaders createPeriodApiHeader(String token) {
+    /**
+     * 한국투자증권 API 호출을 위한 헤더 생성
+     * @param token 접근 토큰
+     * @param trId 거래 id
+     * @return 캔들 차트 데이터 리스트
+     */
+    private HttpHeaders createApiHeader(String token, String trId) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("content-type", "application/json; charset=utf-8");
         headers.setBearerAuth(token);
         headers.set("appkey", config.appKey);
         headers.set("appsecret", config.appSecret);
-        headers.set("tr_id", "FHKST03010100");  // 국내주식 기간별시세 TR_ID
+        headers.set("tr_id", trId);
         headers.set("custtype", "P");
         return headers;
 
+    }
+
+    /**
+     * 한국투자증권 API 호출을 위한 헤더 생성
+     * @param request 조회 조건 (종목코드, 기간, 날짜 등)
+     * @return 코스피, 코스닥 캔들 차트 데이터 리스트
+     */
+    public List<MarketIndexPrice> getMarketIndexPrices(MarketIndexPriceRequest request) {
+        Optional<List<MarketIndexPrice>> cached = kisMarketIndexChartRepository.getChartData(request.getIndexCode());
+        if (cached.isPresent()) {
+            log.info("{} 차트 데이터 재사용",  request.getIndexCode());
+            return cached.get();
+        }
+
+        log.info("한국투자증권 국내업종 일자별지수 api 호출");
+        KisMarketIndexPriceResponse response = marketIndexPricesAPI(request);
+        kisMarketIndexChartRepository.save(request.getIndexCode(), response.getOutput2());
+        return response.getOutput2();
+    }
+
+    /**
+     * 한국투자증권 국내업종 일자별지수 API 호출
+     * @param request 조회 조건 (종목코드, 기간, 날짜 등)
+     * @return 코스피, 코스닥 캔들 차트 데이터 리스트
+     */
+    private KisMarketIndexPriceResponse marketIndexPricesAPI(MarketIndexPriceRequest request) {
+        String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHPUP02120000");
+        String url = buildMarketIndexApiUrl(request);
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisMarketIndexPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisMarketIndexPriceResponse.class);
+        KisMarketIndexPriceResponse responseBody = response.getBody();
+        if (responseBody != null && responseBody.getOutput2() != null) {
+            return responseBody;
+        }
+        throw new RuntimeException("국내 시장 지수 차트 데이터 조회 실패");
+    }
+
+    /**
+     * 한국투자증권 국내업종 일자별지수 API URL 생성
+     * @param request 조회 조건 (종목코드, 기간, 날짜 등)
+     * @return 한국투자증권 국내업종 일자별지수 API URL
+     */
+    private String buildMarketIndexApiUrl(MarketIndexPriceRequest request) {
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.MARKET_INDEX_PATH);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_PERIOD_DIV_CODE", request.getPeriodCode())
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                .queryParam("FID_INPUT_ISCD", request.getIndexCode())
+                .queryParam("FID_INPUT_DATE_1", request.getEndDate())
+                .build().toUriString();
     }
 
 }

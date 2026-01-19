@@ -2,6 +2,8 @@ package com.antmillion.kis.controller;
 
 import com.antmillion.kis.dto.ChartStockPrice;
 import com.antmillion.kis.dto.ChartStockPriceRequest;
+import com.antmillion.kis.dto.MarketIndexPrice;
+import com.antmillion.kis.dto.MarketIndexPriceRequest;
 import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -62,6 +64,22 @@ public class KisController {
                 .adjPrice("0") //수정주가 고정
                 .build();
         return kisApiService.getPeriodStockPrices(request);
+    }
+
+    @GetMapping("/marketIndex/{indexCode}")
+    public List<MarketIndexPrice> marketIndexChart(
+        @PathVariable("indexCode") String indexCode
+    ) {
+        ZoneId KST = ZoneId.of("Asia/Seoul");
+        LocalDateTime endDate = LocalDateTime.now(KST);
+        String endDateStr = endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        MarketIndexPriceRequest request = MarketIndexPriceRequest.builder()
+                .periodCode("D")
+                .marketCode("U")
+                .indexCode(indexCode)
+                .endDate(endDateStr)
+                .build();
+        return kisApiService.getMarketIndexPrices(request);
     }
 
 }
