@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.antmillion.history.mapper.BiasAlertMapper">
+
+    <!-- 특정 종목의 보유 정보 조회 (편향 체크용) -->
+    <select id="selectAssetForBiasCheck" resultType="com.antmillion.history.dto.BiasAlertDTO">
+        SELECT 
+            a.stock_code AS stockCode,
+            s.stock_name AS stockName,
+            a.quantity,
+            a.avg_price AS avgPrice,
+            a.updated_at AS purchaseDate,
+            DATEDIFF(NOW(), a.updated_at) AS holdingDays
+        FROM asset a
+        JOIN stock s ON a.stock_code = s.stock_code
+        WHERE a.account_id = #{accountId}
+          AND a.stock_code = #{stockCode}
+          AND a.quantity > 0
+    </select>
+    
+    <!-- 현재가 조회 (임시 하드코딩 - 추후 API 연동 필요) -->
+    <select id="selectCurrentPrice" resultType="java.math.BigDecimal">
+        SELECT 
+            CASE 
+                WHEN #{stockCode} = '005930' THEN 72100.00
+                WHEN #{stockCode} = '000660' THEN 51000.00
+                WHEN #{stockCode} = '035720' THEN 185000.00
+                ELSE 50000.00
+            END AS currentPrice
+    </select>
+
+</mapper>
