@@ -339,12 +339,12 @@ body {
 }
 
 .main-change-percent.main-positive {
-    background-color: rgba(16, 185, 129, 0.1);
+    background-color: rgb(252, 240, 240);
     color: var(--color-positive);
 }
 
 .main-change-percent.main-negative {
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: rgb(237, 244, 253);
     color: var(--color-negative);
 }
 

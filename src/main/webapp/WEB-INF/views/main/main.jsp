@@ -79,7 +79,7 @@
                 <div class="main-market-index-price">현재 수치</div>
                 <div class="main-market-index-change">
                     <span class="main-change-label">전일대비</span>
-                    <span class="main-change-value main-negative">전일대비 금액</span>
+                    <span class="main-change-value main-positive">전일대비 금액</span>
                     <span class="main-change-percent main-positive">전일대비 등락률</span>
                 </div>
                 <div class="main-market-index-chart" id="main-kosdaq-chart"></div>

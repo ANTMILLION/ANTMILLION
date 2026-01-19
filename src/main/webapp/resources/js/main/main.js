@@ -245,6 +245,11 @@ function renderMarketIndexHeader(cardEl, today, yesterday) {
     presentPriceEl.textContent = today+'';
     changeValueEl.textContent = `${diff > 0 ? '+' : ''}${diff.toFixed(2)}`;
     changePercentEl.textContent = `${diff > 0 ? '+' : ''}${diffPercent.toFixed(2)}%`;
+    const isPositive = diff > 0;
+    [changeValueEl, changePercentEl].forEach(el => {
+        el.classList.toggle('main-positive', isPositive);
+        el.classList.toggle('main-negative', !isPositive);
+    });
 }
 
 // 미션 버튼 이벤트
