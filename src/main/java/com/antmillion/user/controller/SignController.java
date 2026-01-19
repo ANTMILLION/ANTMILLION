@@ -170,6 +170,6 @@ public class SignController {
         CookieUtil.deleteCookie(response, "AT");
         CookieUtil.deleteCookie(response, "RT");
 
-        return "redirect:/login";
+        return "redirect:/";
     }
 }
