@@ -25,7 +25,7 @@ function getDailyQuiz() {
         dataType: 'json',
         success: function (data) {
             if (!data || data.length === 0) {
-                alert("오늘의 퀴즈가 없습니다!");
+                showCompletion();
                 return;
             }
 

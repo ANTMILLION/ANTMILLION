@@ -20,6 +20,8 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public List<QuizQuestionResponseDTO> getDailyQuiz() {
+        Long userId = 1L;
+
         // 오늘 날짜 구하기 (yyyy-MM-dd)
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
@@ -28,6 +30,12 @@ public class MissionServiceImpl implements MissionService {
 
         // 퀴즈가 없으면 빈 리스트 반환 (에러 방지)
         if (questions.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 오늘 미션 완료 했는지 확인
+        int solvedCount = missionMapper.countTodaySolved(userId);
+        if (solvedCount >= questions.size()) {
             return new ArrayList<>();
         }
 
