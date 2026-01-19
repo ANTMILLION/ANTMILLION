@@ -97,6 +97,12 @@ public class MissionServiceImpl implements MissionService {
                         .quizId(requestDTO.getQuizId())
                         .build();
                 missionMapper.insertQuizLog(logDTO);
+
+                // 포인트 조회
+                int quizPoint = missionMapper.selectQuizPointByQuizId(requestDTO.getQuizId());
+
+                // 포인트 지급
+                missionMapper.updateUserPoint(requestDTO.getUserId(),  quizPoint);
             }
         }
         return isCorrect;

@@ -73,4 +73,15 @@
         FROM quiz_question
         WHERE quiz_id = #{quizId}
     </select>
+
+    <select id="selectQuizPointByQuizId" resultType="int">
+        SELECT point
+        FROM quiz_question
+        WHERE quiz_id = #{quizId}
+    </select>
+
+    <update id="updateUserPoint">
+        UPDATE member SET point = point + #{point}
+        WHERE user_id = #{userId}
+    </update>
 </mapper>
