@@ -1,70 +1,182 @@
 package com.antmillion.auth.service;
 
+import java.security.SecureRandom;
+import java.util.UUID;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.antmillion.auth.dto.MemberAuthDTO;
+import com.antmillion.auth.dto.AuthMemberDTO;
+import com.antmillion.auth.dto.SignUpRequest;
 import com.antmillion.auth.jwt.JwtProvider;
+import com.antmillion.auth.mapper.AccountMapper;
+import com.antmillion.auth.mapper.AuthMemberMapper;
 import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.auth.token.RefreshTokenStore;
+import com.antmillion.user.dto.AccountDTO;
+import com.antmillion.user.dto.MemberDTO;
 
 @Service
 public class SignService {
 
-  private final MemberMapper memberMapper;
-  private final PasswordEncoder passwordEncoder;
-  private final JwtProvider jwtProvider;
-  private final RefreshTokenStore refreshStore;
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final int ACCOUNT_NUMBER_DIGITS = 12;
+    private static final int ACCOUNT_NUMBER_RETRY = 5;
 
-  public SignService(MemberMapper memberMapper,
-                     PasswordEncoder passwordEncoder,
-                     JwtProvider jwtProvider,
-                     RefreshTokenStore refreshStore) {
-    this.memberMapper = memberMapper;
-    this.passwordEncoder = passwordEncoder;
-    this.jwtProvider = jwtProvider;
-    this.refreshStore = refreshStore;
-  }
+    private final AuthMemberMapper authMemberMapper;
+    private final MemberMapper memberMapper;
+    private final AccountMapper accountMapper;
 
-  public TokenPair login(String email, String rawPassword) {
-	  MemberAuthDTO member = memberMapper.selectByEmail(email);
-	  if (member == null) throw new IllegalArgumentException("NO_USER");
+    private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
+    private final RefreshTokenStore refreshStore;
 
-	  if (member.getPassword() == null || !passwordEncoder.matches(rawPassword, member.getPassword())) {
-	    throw new IllegalArgumentException("BAD_CREDENTIALS");
-	  }
-
-	  long userId = member.getUserId();
-	  Integer rankId = member.getRankId();
-	  String provider = member.getProvider();
-
-	  String accessJti = java.util.UUID.randomUUID().toString();
-	  String refreshJti = java.util.UUID.randomUUID().toString();
-
-	  String at = jwtProvider.createAccessToken(userId, rankId, provider, accessJti);
-	  String rt = jwtProvider.createRefreshToken(userId, refreshJti);
-
-	  refreshStore.save(userId, rt, jwtProvider.getRefreshTtlSeconds());
-
-	  return new TokenPair(at, rt, jwtProvider.getAccessTtlSeconds(), jwtProvider.getRefreshTtlSeconds());
-	  }
-
-  public static class TokenPair {
-    private final String accessToken;
-    private final String refreshToken;
-    private final long accessTtlSeconds;
-    private final long refreshTtlSeconds;
-
-    public TokenPair(String accessToken, String refreshToken, long accessTtlSeconds, long refreshTtlSeconds) {
-      this.accessToken = accessToken;
-      this.refreshToken = refreshToken;
-      this.accessTtlSeconds = accessTtlSeconds;
-      this.refreshTtlSeconds = refreshTtlSeconds;
+    public SignService(
+            AuthMemberMapper authMemberMapper,
+            MemberMapper memberMapper,
+            AccountMapper accountMapper,
+            PasswordEncoder passwordEncoder,
+            JwtProvider jwtProvider,
+            RefreshTokenStore refreshStore
+    ) {
+        this.authMemberMapper = authMemberMapper;
+        this.memberMapper = memberMapper;
+        this.accountMapper = accountMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtProvider = jwtProvider;
+        this.refreshStore = refreshStore;
     }
-    public String getAccessToken() { return accessToken; }
-    public String getRefreshToken() { return refreshToken; }
-    public long getAccessTtlSeconds() { return accessTtlSeconds; }
-    public long getRefreshTtlSeconds() { return refreshTtlSeconds; }
-  }
+
+    @Transactional
+    public SignUpResult signUpLocal(SignUpRequest req) {
+
+        // step2에서 nickname까지 채워져 들어오는 전제
+        if (req.getEmail() == null || req.getEmail().trim().isEmpty()) {
+            throw new IllegalStateException("이메일이 비어있습니다.");
+        }
+        if (req.getPassword() == null || req.getPassword().trim().isEmpty()) {
+            throw new IllegalStateException("비밀번호가 비어있습니다.");
+        }
+        if (req.getNickname() == null || req.getNickname().trim().isEmpty()) {
+            throw new IllegalStateException("닉네임이 비어있습니다.");
+        }
+
+        // 1) 중복 체크 (DB에도 UNIQUE 권장)
+        if (memberMapper.countByEmail(req.getEmail()) > 0) {
+            throw new IllegalStateException("이미 사용 중인 이메일입니다.");
+        }
+        if (memberMapper.countByNickname(req.getNickname()) > 0) {
+            throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
+        }
+
+        // 2) member insert
+        MemberDTO member = new MemberDTO();
+        member.setRankId(1);
+        member.setPoint(0);
+        member.setProvider("LOCAL");
+        member.setEmail(req.getEmail());
+        member.setPassword(passwordEncoder.encode(req.getPassword()));
+        member.setNickname(req.getNickname());
+
+        memberMapper.insertMember(member);
+
+        Long userId = member.getUserId();
+        if (userId == null) {
+            throw new IllegalStateException("회원가입에 실패했습니다. (userId 생성 실패)");
+        }
+
+        // 3) account insert (초기 잔고 5천만)
+        AccountDTO account = new AccountDTO();
+        account.setUserId(userId);
+        account.setBalance(50_000_000L);
+
+        for (int i = 0; i < ACCOUNT_NUMBER_RETRY; i++) {
+            try {
+                account.setAccountNumber(generateAccountNumber());
+                accountMapper.insertAccount(account);
+
+                return new SignUpResult(userId, account.getAccountNumber(), account.getBalance());
+            } catch (DuplicateKeyException e) {
+                // account_number UNIQUE인 경우 중복 발생 가능 → 재생성 재시도
+            }
+        }
+
+        throw new IllegalStateException("계좌번호 생성에 실패했습니다. 다시 시도해주세요.");
+    }
+
+    public TokenPair login(String email, String rawPassword) {
+        AuthMemberDTO member = authMemberMapper.selectByEmail(email);
+        if (member == null) {
+            throw new IllegalArgumentException("NO_USER");
+        }
+
+        if (member.getPassword() == null || !passwordEncoder.matches(rawPassword, member.getPassword())) {
+            throw new IllegalArgumentException("BAD_CREDENTIALS");
+        }
+
+        Long userId = Long.valueOf(member.getUserId());
+        Integer rankId = member.getRankId();
+        String provider = member.getProvider();
+
+        String accessJti = UUID.randomUUID().toString();
+        String refreshJti = UUID.randomUUID().toString();
+
+        String accessToken = jwtProvider.createAccessToken(userId, rankId, provider, accessJti);
+        String refreshToken = jwtProvider.createRefreshToken(userId, refreshJti);
+
+        refreshStore.save(userId, refreshToken, jwtProvider.getRefreshTtlSeconds());
+
+        return new TokenPair(
+                accessToken,
+                refreshToken,
+                jwtProvider.getAccessTtlSeconds(),
+                jwtProvider.getRefreshTtlSeconds()
+        );
+    }
+
+    // 예: 12자리 숫자 계좌번호
+    private String generateAccountNumber() {
+        StringBuilder sb = new StringBuilder(ACCOUNT_NUMBER_DIGITS);
+        for (int i = 0; i < ACCOUNT_NUMBER_DIGITS; i++) {
+            sb.append(RANDOM.nextInt(10));
+        }
+        return sb.toString();
+    }
+
+    public static class TokenPair {
+        private final String accessToken;
+        private final String refreshToken;
+        private final long accessTtlSeconds;
+        private final long refreshTtlSeconds;
+
+        public TokenPair(String accessToken, String refreshToken, long accessTtlSeconds, long refreshTtlSeconds) {
+            this.accessToken = accessToken;
+            this.refreshToken = refreshToken;
+            this.accessTtlSeconds = accessTtlSeconds;
+            this.refreshTtlSeconds = refreshTtlSeconds;
+        }
+
+        public String getAccessToken() { return accessToken; }
+        public String getRefreshToken() { return refreshToken; }
+        public long getAccessTtlSeconds() { return accessTtlSeconds; }
+        public long getRefreshTtlSeconds() { return refreshTtlSeconds; }
+    }
+
+    public static class SignUpResult {
+        private final Long userId;
+        private final String accountNumber;
+        private final Long balance;
+
+        public SignUpResult(Long userId, String accountNumber, Long balance) {
+            this.userId = userId;
+            this.accountNumber = accountNumber;
+            this.balance = balance;
+        }
+
+        public Long getUserId() { return userId; }
+        public String getAccountNumber() { return accountNumber; }
+        public Long getBalance() { return balance; }
+    }
 }

@@ -5,17 +5,34 @@
 
 <mapper namespace="com.antmillion.auth.mapper.MemberMapper">
 
-	<select id="selectByEmail" parameterType="string"
-		resultType="com.antmillion.auth.dto.MemberAuthDTO">
-		SELECT
-		user_id AS userId,
-		email,
-		password,
-		rank_id AS rankId,
-		provider AS provider
-		FROM member
-		WHERE email = #{email}
-		LIMIT 1
-	</select>
+  <resultMap id="MemberMap" type="com.antmillion.user.dto.MemberDTO">
+    <id property="userId" column="user_id"/>
+    <result property="rankId" column="rank_id"/>
+    <result property="email" column="email"/>
+    <result property="password" column="password"/>
+    <result property="nickname" column="nickname"/>
+    <result property="point" column="point"/>
+    <result property="provider" column="provider"/>
+  </resultMap>
+
+  <insert id="insertMember" parameterType="com.antmillion.user.dto.MemberDTO"
+          useGeneratedKeys="true" keyProperty="userId">
+    INSERT INTO member (rank_id, email, password, nickname, point, provider)
+    VALUES (#{rankId}, #{email}, #{password}, #{nickname}, #{point}, #{provider})
+  </insert>
+
+  <select id="countByEmail" resultType="int">
+    SELECT COUNT(*) FROM member WHERE email = #{email}
+  </select>
+
+  <select id="countByNickname" resultType="int">
+    SELECT COUNT(*) FROM member WHERE nickname = #{nickname}
+  </select>
+
+  <select id="selectByEmail" resultMap="MemberMap">
+    SELECT user_id, rank_id, email, password, nickname, point, provider
+    FROM member
+    WHERE email = #{email}
+  </select>
 
 </mapper>

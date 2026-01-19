@@ -27,18 +27,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        String auth = req.getHeader("Authorization");
+        String token = resolveToken(req);
 
-        // 토큰이 아예 없으면: 비로그인 요청 -> 그냥 통과
-        if (auth == null || !auth.startsWith("Bearer ")) {
+        if (token == null || token.isBlank()) {
             chain.doFilter(req, res);
             return;
         }
-
-        String token = auth.substring(7);
-
+        
         if (!jwtProvider.isValid(token)) {
-            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            SecurityContextHolder.clearContext();
+            chain.doFilter(req, res);
             return;
         }
 
@@ -54,5 +52,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(req, res);
+    }
+
+    private String resolveToken(HttpServletRequest req) {
+        String auth = req.getHeader("Authorization");
+        if (auth != null && auth.startsWith("Bearer ")) {
+            return auth.substring(7);
+        }
+        
+        return CookieUtil.getCookieValue(req, "AT");
     }
 }

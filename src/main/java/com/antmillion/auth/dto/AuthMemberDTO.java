@@ -6,11 +6,13 @@ import lombok.ToString;
 
 @Getter@Setter
 @ToString
-public class MemberAuthDTO {
+public class AuthMemberDTO {
   private long userId;
   private String email;
   private String password;  // bcrypt 해시
+  private String nickname;
   private Integer rankId;
+  private Integer point;
   private String provider;
 
 }
