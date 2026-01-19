@@ -10,14 +10,11 @@
 <link rel="stylesheet" href="${cpath}/resources/css/mission/mission.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
-
 </head>
 <body>
 	<div class="mission-app-container">
 		<%@ include file="../common/sidebar.jsp"%>
-
 		<%@ include file="../common/header.jsp"%>
-
 		<main class="mission-main-content">
 			<!-- 진행률 카드 -->
 			<div class="mission-progress-card">
@@ -35,7 +32,7 @@
 			<!-- 퀴즈 카드 -->
 			<div class="mission-quiz-card" id="mission-quizCard">
 				<div class="mission-quiz-header">
-					<h3 class="mission-quiz-date">1월 2일 금요일 경제 퀴즈</h3>
+					<h3 class="mission-quiz-date"></h3>
 					<!-- 포인트 메시지 -->
 					<div class="mission-points-message" id="mission-pointsMessage"
 						style="display: none;">100 포인트 획득하였습니다.</div>
@@ -80,7 +77,7 @@
 				<p class="mission-modal-message">퀴즈를 맞히고 똑똑한개미 랭크를 높여보세요!</p>
 			</div>
 		</div>
-
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script src="${cpath}/resources/js/mission/mission.js"></script>
 	</div>
 </body>

@@ -1,6 +1,7 @@
 package com.antmillion.mission.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,5 +21,5 @@ public class QuizQuestionDTO {
     private Integer answer;
     private String explanation;
     private Integer point;
-    private LocalDateTime date;
+    private LocalDateTime quizDate;
 }
