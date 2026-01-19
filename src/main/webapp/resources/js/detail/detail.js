@@ -1,4 +1,28 @@
-// 탭 전환 기능
+// ===== Mock 데이터 (테스트용) =====
+const mockStockData = {
+    stockCode: '005930',
+    stockName: '삼성전자',
+    avgPrice: 70000,      // 평균 매수가
+    currentPrice: 72100,  // 현재가
+    quantity: 10,
+    purchaseDate: '2025-01-17',
+    holdingDays: 2
+};
+
+// 수익률 계산
+function calculateProfitRate() {
+    const profit = mockStockData.currentPrice - mockStockData.avgPrice;
+    const profitRate = (profit / mockStockData.avgPrice) * 100;
+    return profitRate.toFixed(2);
+}
+
+// 안전선호 체크 (수익률 3% 이상)
+function checkSafeHavenBias() {
+    const profitRate = parseFloat(calculateProfitRate());
+    return profitRate >= 3;
+}
+
+// ===== 탭 전환 기능 =====
 document.querySelectorAll('.detail-tab, .detail-tab-active').forEach(tab => {
     tab.addEventListener('click', function() {
         const type = this.dataset.type;
@@ -41,6 +65,7 @@ document.querySelectorAll('.detail-tab, .detail-tab-active').forEach(tab => {
             sellPercent.style.width = '22%';
             buyBar.style.width = '78%';
             sellBar.style.width = '22%';
+               
         } else if (type === 'sell') {
             btn.textContent = '매도';
             btn.style.background = '#2271e9';
@@ -55,6 +80,23 @@ document.querySelectorAll('.detail-tab, .detail-tab-active').forEach(tab => {
             sellPercent.style.width = '78%';
             buyBar.style.width = '22%';
             sellBar.style.width = '78%';
+            
+            // ⭐ 매도 탭 클릭 시 안전선호 체크
+            if (checkSafeHavenBias()) {
+                const profitRate = calculateProfitRate();
+                console.log(`안전선호 경고: 현재 +${profitRate}% 수익 중`);
+                
+                // 헤더에 경고 표시
+                if (typeof showBiasAlert === 'function') {
+                    showBiasAlert();
+                }
+            }
         }
     });
 });
+
+// ===== 디버그용 콘솔 출력 =====
+console.log('=== 매매 편향 체크 시스템 로드 완료 ===');
+console.log('Mock 데이터:', mockStockData);
+console.log('현재 수익률:', calculateProfitRate() + '%');
+console.log('안전선호 편향:', checkSafeHavenBias() ? '감지됨 (3% 이상)' : '정상');
