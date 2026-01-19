@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.antmillion.history.mapper.HistoryMapper">
+
+	<select id="selectHistoryList"
+		resultType="com.antmillion.history.dto.HistoryDTO">
+		SELECT
+		h.history_id AS historyId,
+		h.user_id AS userId,
+		h.message_id AS messageId,
+		h.order_id AS orderId,
+		h.message_detail AS messageDetail,
+		h.time,
+		h.is_read AS isRead,
+		s.stock_name AS stockName,
+		m.message_content AS messageContent,
+		m.message_type AS messageType,
+		o.transaction_type AS transactionType, o.quantity AS quantity, o.order_price AS
+		orderPrice, (o.quantity * o.order_price) AS totalAmount FROM history h
+		INNER JOIN message m ON h.message_id = m.message_id
+		LEFT JOIN stock_order o ON h.order_id = o.order_id
+		LEFT JOIN stock s ON o.stock_code = s.stock_code
+		WHERE h.user_id = #{userId}
+		ORDER BY h.time DESC
+	</select>
+
+</mapper>

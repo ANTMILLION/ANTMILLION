@@ -42,22 +42,20 @@
             </div>
 
             <!-- 코스피 카드 -->
-            <div class="main-crypto-card main-grid-kospi">
-                <div class="main-crypto-header">
-                    <div class="main-crypto-info">
-                        <h3 class="main-crypto-name">코스피</h3>
-                        <p class="main-crypto-symbol">KOSPI</p>
+            <div class="main-market-index-card main-grid-kospi">
+                <div class="main-market-index-header">
+                    <div class="main-market-index-info">
+                        <h3 class="main-market-index-name">코스피</h3>
+                        <p class="main-market-index-symbol">KOSPI</p>
                     </div>
                 </div>
-                <div class="main-crypto-price">현재 수치</div>
-                <div class="main-crypto-change">
+                <div class="main-market-index-price">현재 수치</div>
+                <div class="main-market-index-change">
                     <span class="main-change-label">전일대비</span>
                     <span class="main-change-value main-positive">전일대비 금액</span>
                     <span class="main-change-percent main-positive">전일대비 등락률</span>
                 </div>
-                <div class="main-crypto-chart">
-                    <canvas id="main-ethereumChart"></canvas>
-                </div>
+                <div class="main-market-index-chart" id="main-kospi-chart"></div>
             </div>
 
 
@@ -71,22 +69,20 @@
             </div>
 
             <!-- 코스닥 카드 -->
-            <div class="main-crypto-card main-grid-kosdaq">
-                <div class="main-crypto-header">
-                    <div class="main-crypto-info">
-                        <h3 class="main-crypto-name">코스닥</h3>
-                        <p class="main-crypto-symbol">KOSDAQ</p>
+            <div class="main-market-index-card main-grid-kosdaq">
+                <div class="main-market-index-header">
+                    <div class="main-market-index-info">
+                        <h3 class="main-market-index-name">코스닥</h3>
+                        <p class="main-market-index-symbol">KOSDAQ</p>
                     </div>
                 </div>
-                <div class="main-crypto-price">현재 수치</div>
-                <div class="main-crypto-change">
+                <div class="main-market-index-price">현재 수치</div>
+                <div class="main-market-index-change">
                     <span class="main-change-label">전일대비</span>
-                    <span class="main-change-value main-negative">전일대비 금액</span>
+                    <span class="main-change-value main-positive">전일대비 금액</span>
                     <span class="main-change-percent main-positive">전일대비 등락률</span>
                 </div>
-                <div class="main-crypto-chart">
-                    <canvas id="main-bitcoinChart"></canvas>
-                </div>
+                <div class="main-market-index-chart" id="main-kosdaq-chart"></div>
             </div>
 
             <!-- 주식 테이블과 차트 영역 -->
@@ -133,6 +129,8 @@
         history.scrollRestoration = 'manual';
     }
 </script>
+<!-- Adding the standalone version of Lightweight charts -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script> const contextPath = '${cpath}'; </script>
 <script src="${cpath}/resources/js/main/main.js"></script>
 </body>

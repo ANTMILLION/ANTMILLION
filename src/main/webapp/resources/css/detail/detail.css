@@ -302,6 +302,8 @@ body {
 
 .detail-red-text { color: var(--color-positive); }
 
+.detail-blue-text { color: var(--color-negative); }
+
 .detail-percent-labels {
 	display: flex;
 	justify-content: space-between;
