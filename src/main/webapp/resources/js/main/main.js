@@ -166,8 +166,8 @@ function attachMainStockItemListeners() {
 }
 
 // 차트 인스턴스 저장
-let ethereumChart = null;
-let bitcoinChart = null;
+let kospiChart = null;
+let kosdaqChart = null;
 
 // DOM이 로드되면 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -181,9 +181,6 @@ function initializeMainPage() {
     // 차트 초기화
     initializeCharts();
     
-    // 랭크 이미지 업로드 기능
-    initializeRankImageUpload();
-    
     // 미션 버튼 이벤트
     initializeMissionButton();
     
@@ -196,15 +193,15 @@ function initializeCharts() {
     // Chart.js가 로드되어 있는지 확인
     if (typeof Chart === 'undefined') {
         // Chart.js가 없으면 간단한 SVG 차트로 대체
-        drawSimpleChart('main-ethereumChart', generateChartData(30, 20000, 25000, true));
-        drawSimpleChart('main-bitcoinChart', generateChartData(30, 20000, 25000, false));
+        drawSimpleChart('main-kospiChart', generateChartData(30, 20000, 25000, true));
+        drawSimpleChart('main-kosdaqChart', generateChartData(30, 20000, 25000, false));
         return;
     }
     
-    // Ethereum 차트
-    const ethCanvas = document.getElementById('main-ethereumChart');
+    // kospi 차트
+    const ethCanvas = document.getElementById('main-kospiChart');
     if (ethCanvas) {
-        ethereumChart = createCryptoChart(ethCanvas, {
+        kospiChart = createMarketIndexChart(ethCanvas, {
             color: '#8B9FFF',
             gradient1: 'rgba(139, 159, 255, 0.3)',
             gradient2: 'rgba(139, 159, 255, 0)',
@@ -212,10 +209,10 @@ function initializeCharts() {
         });
     }
     
-    // Bitcoin 차트
-    const btcCanvas = document.getElementById('main-bitcoinChart');
+    // kosdaq 차트
+    const btcCanvas = document.getElementById('main-kosdaqChart');
     if (btcCanvas) {
-        bitcoinChart = createCryptoChart(btcCanvas, {
+        kosdaqChart = createMarketIndexChart(btcCanvas, {
             color: '#FFB347',
             gradient1: 'rgba(255, 179, 71, 0.3)',
             gradient2: 'rgba(255, 179, 71, 0)',
@@ -225,7 +222,7 @@ function initializeCharts() {
 }
 
 // Chart.js 차트 생성
-function createCryptoChart(canvas, options) {
+function createMarketIndexChart(canvas, options) {
     const ctx = canvas.getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, options.gradient1);
@@ -333,13 +330,13 @@ function drawSimpleChart(canvasId, data) {
     
     const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
     stop1.setAttribute('offset', '0%');
-    stop1.setAttribute('style', canvasId === 'main-ethereumChart'
+    stop1.setAttribute('style', canvasId === 'main-kospiChart'
         ? 'stop-color:rgba(139, 159, 255, 0.4);stop-opacity:1' 
         : 'stop-color:rgba(255, 179, 71, 0.4);stop-opacity:1');
     
     const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
     stop2.setAttribute('offset', '100%');
-    stop2.setAttribute('style', canvasId === 'main-ethereumChart'
+    stop2.setAttribute('style', canvasId === 'main-kospiChart'
         ? 'stop-color:rgba(139, 159, 255, 0);stop-opacity:1' 
         : 'stop-color:rgba(255, 179, 71, 0);stop-opacity:1');
     
@@ -359,7 +356,7 @@ function drawSimpleChart(canvasId, data) {
     const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     linePath.setAttribute('d', pathData);
     linePath.setAttribute('fill', 'none');
-    linePath.setAttribute('stroke', canvasId === 'main-ethereumChart' ? '#8B9FFF' : '#FFB347');
+    linePath.setAttribute('stroke', canvasId === 'main-kospiChart' ? '#8B9FFF' : '#FFB347');
     linePath.setAttribute('stroke-width', '2');
     svg.appendChild(linePath);
     
@@ -389,65 +386,6 @@ function generateChartData(points, min, max, isIncreasing) {
     }
     
     return { labels, values };
-}
-
-// 랭크 이미지 업로드 기능
-function initializeRankImageUpload() {
-    const rankImageContainer = document.querySelector('.rank-image-container');
-    const rankImage = document.getElementById('main-rankImage');
-    
-    if (rankImageContainer && rankImage) {
-        // 클릭 시 파일 선택 다이얼로그 표시
-        rankImageContainer.addEventListener('click', function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            
-            input.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        rankImage.src = e.target.result;
-                        window.showNotification('이미지가 업로드되었습니다.', 'success');
-                    };
-                    
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            input.click();
-        });
-        
-        // 드래그 앤 드롭 지원
-        rankImageContainer.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.style.opacity = '0.7';
-        });
-        
-        rankImageContainer.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.style.opacity = '1';
-        });
-        
-        rankImageContainer.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.style.opacity = '1';
-            
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    rankImage.src = e.target.result;
-                    window.showNotification('이미지가 업로드되었습니다.', 'success');
-                };
-                
-                reader.readAsDataURL(file);
-            }
-        });
-    }
 }
 
 // 미션 버튼 이벤트
@@ -674,17 +612,17 @@ function animateMiniCharts() {
 function startRealtimeUpdates() {
     // 10초마다 데이터 업데이트
     setInterval(() => {
-        updateCryptoPrices();
+        updateMarketIndexPrices();
         updateStockPrices();
     }, 10000);
 }
 
-function updateCryptoPrices() {
+function updateMarketIndexPrices() {
     // 실제로는 API에서 데이터를 가져옴
-    const cryptoCards = document.querySelectorAll('.main-crypto-card');
+    const marketIndexCards = document.querySelectorAll('.main-market-index-card');
     
-    cryptoCards.forEach(card => {
-        const priceElement = card.querySelector('.main-crypto-price');
+    marketIndexCards.forEach(card => {
+        const priceElement = card.querySelector('.main-market-index-price');
         const changeValueElement = card.querySelector('.main-change-value');
         const changePercentElement = card.querySelector('.main-change-percent');
         
@@ -734,20 +672,20 @@ function refreshData() {
     window.showNotification('데이터를 새로고침하는 중...', 'info');
     
     // 차트 데이터 업데이트
-    if (ethereumChart) {
+    if (kospiChart) {
         const newData = generateChartData(30, 20000, 25000, true);
-        ethereumChart.data.datasets[0].data = newData.values;
-        ethereumChart.update('none');
+        kospiChart.data.datasets[0].data = newData.values;
+        kospiChart.update('none');
     }
     
-    if (bitcoinChart) {
+    if (kosdaqChart) {
         const newData = generateChartData(30, 20000, 25000, false);
-        bitcoinChart.data.datasets[0].data = newData.values;
-        bitcoinChart.update('none');
+        kosdaqChart.data.datasets[0].data = newData.values;
+        kosdaqChart.update('none');
     }
     
     // 가격 데이터 업데이트
-    updateCryptoPrices();
+    updateMarketIndexPrices();
     updateStockPrices();
     
     setTimeout(() => {
