@@ -708,6 +708,13 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    
+    /* 박스 형태를 만드는 핵심 속성 */
+    padding: 20px;            /* 박스 내부 여백 */
+    background-color: #fff;   /* 박스 배경색 (흰색) */
+    border: 1px solid #eee;   /* 연한 테두리 */
+    border-radius: 12px;      /* 모서리를 둥글게 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05); /* 은은한 그림자 */
 }
 
 .mypage-alert-header {
@@ -986,4 +993,77 @@ body {
 .mypage-realized-item:nth-child(4),
 .mypage-trading-item:nth-child(4) {
     animation-delay: 0.2s;
+}
+
+
+/* 심리경고 컨테이너 */
+.mypage-warning-container {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.warning-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff4d4f; /* 경고 레드 */
+    margin-bottom: 15px;
+    display: block;
+}
+
+/* 내부 매매내역 카드 */
+.inner-trade-card {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.trade-info-top, .trade-info-main {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.trade-date { color: #999; font-size: 13px; }
+.stock-name { font-weight: bold; font-size: 16px; }
+.trade-amount { font-weight: bold; font-size: 16px; }
+
+/* 매수/매도 라벨 색상 */
+.trade-type.buy { color: #ff4d4f; font-weight: bold; }
+.trade-type.sell { color: #1890ff; font-weight: bold; }
+
+.trade-quantity, .unit-price {
+    margin-left: 10px;
+    color: #666;
+}
+
+.mypage-alert-description {
+    line-height: 1.6;
+    color: #333;
+    font-size: 14px;
+}
+.mypage-warning-header {
+    display: flex;          /* 가로로 나열 */
+    align-items: center;    /* 세로 중앙 정렬 */
+    gap: 8px;               /* 아이콘과 글자 사이 간격 */
+    margin-bottom: 15px;
+}
+
+.warning-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff4d4f;
+    display: inline-block;  /* block 대신 inline-block으로 변경 */
+    margin-bottom: 0;       /* 마진 제거 */
+}
+
+.warning-help-icon {
+    color: #ccc;
+    cursor: help;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
 }

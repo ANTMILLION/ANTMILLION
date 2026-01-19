@@ -1,4 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -58,6 +60,43 @@
                 </div>
                 </section>
         </div>
+        
+        <div class="mypage-alert-list">
+    <c:forEach var="history" items="${historyList}">
+        <div class="mypage-warning-container">
+            <div class="mypage-warning-header">
+                <span class="warning-icon">⚠️</span>
+                <span class="warning-title">${history.messageContent}</span>
+                <span class="info-icon">ⓘ</span>
+            </div>
+
+            <div class="inner-trade-card">
+                <div class="trade-info-top">
+                    <span class="trade-date">
+                        <fmt:formatDate value="${history.time}" pattern="yyyy/MM/dd HH:mm:ss"/>
+                    </span>
+                </div>
+                <div class="trade-info-main">
+                    <div class="stock-name-label">매매내역</div>
+                    <div class="stock-info-row">
+                        <span class="stock-name">${history.stockName}</span>
+                        <span class="trade-amount">1,017,000원</span>
+                    </div>
+                    <div class="trade-type-row">
+                        <span class="trade-type buy">매수</span>
+                        <span class="trade-quantity">10주</span>
+                        <span class="unit-price">77,000원</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="mypage-alert-description">
+                ${history.messageDetail}
+            </p>
+        </div>
+    </c:forEach>
+</div>
+        
     </main>
 
 
