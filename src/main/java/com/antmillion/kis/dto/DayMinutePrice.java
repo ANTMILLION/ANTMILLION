@@ -3,18 +3,12 @@ package com.antmillion.kis.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-public class DayMinuteFlatDTO {
+@Setter
+public class DayMinutePrice {
 	@JsonProperty("stck_cntg_hour")
 	private String stckCntgHour; // 주식 체결시간
 	@JsonProperty("stck_oprc")
