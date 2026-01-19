@@ -33,14 +33,20 @@ public class MissionServiceImpl implements MissionService {
             return new ArrayList<>();
         }
 
-        // 오늘 미션 완료 했는지 확인
-        int solvedCount = missionMapper.countTodaySolved(userId);
-        if (solvedCount >= questions.size()) {
+        List<Long> solvedQuizIds = missionMapper.selectTodaySolvedQuizIds(userId);
+
+        // 안 푼 문제만 필터링
+        List<QuizQuestionDTO> unsolvedQuestions = questions.stream()
+                .filter(q -> !solvedQuizIds.contains(q.getQuizId()))
+                .collect(Collectors.toList());
+
+        // 오늘 미션 완료면 빈 리스트 반환 (에러 방지)
+        if (unsolvedQuestions.isEmpty()) {
             return new ArrayList<>();
         }
 
         // 퀴즈 ID들만 추출 (보기 조회를 위해)
-        List<Long> quizIds = questions.stream()
+        List<Long> quizIds = unsolvedQuestions.stream()
                 .map(QuizQuestionDTO::getQuizId)
                 .collect(Collectors.toList());
 
@@ -54,7 +60,7 @@ public class MissionServiceImpl implements MissionService {
         // 결과 DTO (Question + Choices)
         List<QuizQuestionResponseDTO> responseList = new ArrayList<>();
 
-        for (QuizQuestionDTO q : questions) {
+        for (QuizQuestionDTO q : unsolvedQuestions) {
             // 해당 문제의 보기 리스트 가져오기 (없으면 빈 리스트)
             List<QuizChoiceDTO> quizChoices = choicesMap.getOrDefault(q.getQuizId(), new ArrayList<>());
 

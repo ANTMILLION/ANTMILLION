@@ -22,9 +22,9 @@ public interface MissionMapper {
     // 퀴즈 풀이 이력 저장
     void insertQuizLog(QuizLogDTO quizLog);
 
-    // 오늘 맞춘 문제 개수 조회
-    int countTodaySolved(@Param("userId") Long userId);
-
     // 정답 번호 조회
     Integer selectAnswerByQuizId(@Param("quizId") Long quizId);
+
+    // 어떤 문제를 풀었는지 확인
+    List<Long> selectTodaySolvedQuizIds(@Param("userId") Long userId);
 }

@@ -61,8 +61,8 @@
         WHERE user_id = #{userId} AND quiz_id = #{quizId}
     </select>
 
-    <select id="countTodaySolved" resultType="int">
-        SELECT COUNT(*)
+    <select id="selectTodaySolvedQuizIds" resultType="long">
+        SELECT quiz_id
         FROM quiz_log
         WHERE user_id = #{userId}
         AND DATE_FORMAT(solved_at, '%Y-%m-%d') = CURDATE()
