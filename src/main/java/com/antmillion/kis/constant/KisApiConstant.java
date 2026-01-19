@@ -1,0 +1,15 @@
+package com.antmillion.kis.constant;
+
+public class KisApiConstant {
+
+    public static final String REAL_BASE_URL = "https://openapi.koreainvestment.com:9443";
+    public static final String VIRTUAL_BASE_URL = "https://openapivts.koreainvestment.com:29443";
+
+    public static final String OAUTH_TOKEN_PATH = "/oauth2/tokenP";
+    public static final String PERIOD_PRICE_PATH = "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice";
+
+    private KisApiConstant() {
+        // 인스턴스화 방지
+    }
+
+}
