@@ -84,4 +84,10 @@
         UPDATE member SET point = point + #{point}
         WHERE user_id = #{userId}
     </update>
+
+    <select id="selectUserPoint" resultType="int">
+        SELECT point
+        FROM member
+        WHERE user_id = #{userId}
+    </select>
 </mapper>
