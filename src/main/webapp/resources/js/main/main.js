@@ -35,8 +35,8 @@ function createMainStockItemHTML(stock, index) {
             <div class="main-stocklist-change">${stock.acml_vol}</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
-                    <div class="main-stocklist-sentiment-buy" style="width: ${stock.buyRatio}%;"></div>
-                    <div class="main-stocklist-sentiment-sell" style="width: ${stock.sellRatio}%;"></div>
+                    <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
+                    <div class="main-stocklist-sentiment-sell" style="width: 50%;"></div>
                 </div>
                 <div class="main-stocklist-sentiment-labels">
                     <span class="main-stocklist-sentiment-buy-label">50</span>
