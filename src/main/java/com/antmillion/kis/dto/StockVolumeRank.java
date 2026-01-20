@@ -17,4 +17,6 @@ public class StockVolumeRank {
     private String presentPrice; //주식 현재가
     @JsonProperty("acml_vol")
     private String acmVolume; //누적 거래량
+
+    private Boolean isFavorite = false;
 }
