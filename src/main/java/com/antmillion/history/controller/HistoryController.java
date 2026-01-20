@@ -1,22 +1,23 @@
 package com.antmillion.history.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.antmillion.history.service.HistoryService;
 import com.antmillion.history.dto.HistoryDTO;
+import com.antmillion.history.service.HistoryService;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/history/api")
 public class HistoryController {
-
-    @Autowired
-    private HistoryService historyService;
+	
+	 private final HistoryService historyService;
 
     @GetMapping("/list")
     public List<HistoryDTO> getHistoryList(

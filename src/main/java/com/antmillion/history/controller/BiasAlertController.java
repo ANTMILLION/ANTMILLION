@@ -10,15 +10,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.antmillion.history.dto.BiasAlertDTO;
 import com.antmillion.history.service.BiasAlertService;
 
+import lombok.RequiredArgsConstructor;
+
 /**
  * 매매 편향 경고 API 컨트롤러
  */
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/bias-alert")
 public class BiasAlertController {
 
-    @Autowired
-    private BiasAlertService biasAlertService;
+
+	private final BiasAlertService biasAlertService;
 
     /**
      * 안전선호 편향 체크

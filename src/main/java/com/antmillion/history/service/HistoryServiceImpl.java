@@ -2,17 +2,19 @@ package com.antmillion.history.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import com.antmillion.history.dto.HistoryDTO;
 import com.antmillion.history.mapper.HistoryMapper;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class HistoryServiceImpl implements HistoryService {
 
-    @Autowired
-    private HistoryMapper historyMapper;
+	private final HistoryMapper historyMapper;
 
     @Override
     public List<HistoryDTO> getHistoryList(Long userId) {
