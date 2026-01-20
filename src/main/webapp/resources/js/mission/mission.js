@@ -245,7 +245,7 @@ function updateRankProgress(data) {
     percent = Math.max(0, Math.min(100, percent));
 
     // 남은 포인트 메시지 설정
-    if (data.nextRankPoint === 0) {
+    if (data.rankName === "챌린저") {
         $('#mission-reward-message').text("축하합니다! 최고 레벨에 도달했습니다!");
     } else {
         $('#mission-reward-message').text(`다음 랭크까지 ${data.neededPoint.toLocaleString()} 포인트가 남았습니다.`);
