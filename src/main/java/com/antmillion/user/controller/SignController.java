@@ -157,19 +157,19 @@ public class SignController {
         return "redirect:/";
     }
 
-    // 로그아웃
-    @PostMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
-        String rt = CookieUtil.getCookieValue(request, "RT");
-        if (rt != null && jwtProvider.isValid(rt)) {
-            Claims claims = jwtProvider.parseClaims(rt);
-            long userId = Long.parseLong(claims.getSubject());
-            refreshTokenStore.delete(userId);
-        }
-
-        CookieUtil.deleteCookie(response, "AT");
-        CookieUtil.deleteCookie(response, "RT");
-
-        return "redirect:/";
-    }
+	/*
+	 * // 로그아웃
+	 * 
+	 * @PostMapping("/logout") public String logout(HttpServletRequest request,
+	 * HttpServletResponse response) { String rt =
+	 * CookieUtil.getCookieValue(request, "RT"); if (rt != null &&
+	 * jwtProvider.isValid(rt)) { Claims claims = jwtProvider.parseClaims(rt); long
+	 * userId = Long.parseLong(claims.getSubject());
+	 * refreshTokenStore.delete(userId); }
+	 * 
+	 * CookieUtil.deleteCookie(response, "AT"); CookieUtil.deleteCookie(response,
+	 * "RT");
+	 * 
+	 * return "redirect:/"; }
+	 */
 }

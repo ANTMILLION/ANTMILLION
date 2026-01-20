@@ -27,20 +27,15 @@
         </a>
     </nav>
     <div class="sidebar-menu-bottom">
-        <a href="${cpath}/logout" class="sidebar-menu-item" onclick="logout()">
-            <span><img src="${cpath}/resources/images/icon/logout.png" alt="로그아웃"></span>
-            <span>로그아웃</span>
-        </a>
+        <form action="${cpath}/logout" method="post" onsubmit="return confirm('로그아웃 하시겠습니까?');">
+            <button type="submit" class="sidebar-menu-item btn-link">
+                <span><img src="${cpath}/resources/images/icon/logout.png" alt="로그아웃"></span>
+                <span>로그아웃</span>
+            </button>
+        </form>
     </div>
 </aside>
 <script>
-    function logout() {
-        if (e) e.preventDefault();
-        if (confirm('로그아웃 하시겠습니까?')) {
-            location.href = '${cpath}/logout'; //추후 수정 필요
-        }
-    }
-
     // 현재 페이지에 따라 active 클래스 추가
     document.addEventListener('DOMContentLoaded', () => {
         const cpath = '${cpath}';

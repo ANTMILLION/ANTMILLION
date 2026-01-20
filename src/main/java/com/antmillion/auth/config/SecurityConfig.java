@@ -11,8 +11,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import com.antmillion.auth.jwt.CookieUtil;
 import com.antmillion.auth.jwt.JwtAuthFilter;
 import com.antmillion.auth.jwt.JwtProvider;
+import com.antmillion.auth.token.RefreshTokenStore;
+
+import io.jsonwebtoken.Claims;
 
 @Configuration
 @EnableWebSecurity
@@ -20,9 +24,11 @@ import com.antmillion.auth.jwt.JwtProvider;
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
+    private final RefreshTokenStore refreshTokenStore;
 
-    public SecurityConfig(JwtProvider jwtProvider) {
+    public SecurityConfig(JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore) {
         this.jwtProvider = jwtProvider;
+		this.refreshTokenStore = refreshTokenStore;
     }
 
     @Bean
@@ -62,12 +68,25 @@ public class SecurityConfig {
             )
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
+            .logout(logout -> logout
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))
+                .addLogoutHandler((req, res, auth) -> {
+                    String rt = CookieUtil.getCookieValue(req, "RT");
+                    if (rt != null && jwtProvider.isValid(rt)) {
+                        Claims claims = jwtProvider.parseClaims(rt);
+                        long userId = Long.parseLong(claims.getSubject());
+                        refreshTokenStore.delete(userId);
+                    }
+                    CookieUtil.deleteCookie(res, "AT");
+                    CookieUtil.deleteCookie(res, "RT");
+                })
+                .logoutSuccessUrl("/")
+            )
             .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
-                String cpath = req.getContextPath();
-                res.sendRedirect(cpath + "/login");
+                res.sendRedirect(req.getContextPath() + "/login");
             }));
-        http.addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+          http.addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+          return http.build();
     }
 }
