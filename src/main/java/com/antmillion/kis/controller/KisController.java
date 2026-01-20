@@ -5,6 +5,7 @@ import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -79,7 +80,25 @@ public class KisController {
         return kisApiService.getMarketIndexPrices(request);
     }
     
-    // 국내 당일 분봉 조회
+    // 국내 일별 분봉 조회
+    @GetMapping("/stream/{stockCode}")
+    public List<StreamMinutePrice> getStreamMinute(@PathVariable String stockCode) {
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String today = localDate.format(formatter);
+    	
+    	StreamMinutePriceRequest request = StreamMinutePriceRequest.builder()
+                .condMrktDivCode("J")
+                .inputIscd(stockCode)
+                .inputHour1("153000")
+                .inputDate1(today)
+                .pwDataIncuYn("N")
+                .fakeTickIncuYn("")
+                .build();
+
+        return kisApiService.getStreamMinutePrices(request);
+    }
+    
     @GetMapping("/candle/{stockCode}")
     public List<DayMinutePrice> getRealtimeCandle(@PathVariable String stockCode) {
         DayMinutePriceRequest request = DayMinutePriceRequest.builder()
