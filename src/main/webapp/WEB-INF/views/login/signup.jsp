@@ -21,9 +21,10 @@
 
       <form class="form" method="post" action="${cpath}/signup">
         <div class="row">
-          <input type="text" name="email" placeholder="이메일을 입력하세요" value="${email}" />
-          <button class="btn small primary" type="button">중복 확인</button>
-        </div>
+            <input id="emailInput" type="text" name="email" placeholder="이메일을 입력하세요" value="${email}" />
+               <button id="emailCheckBtn" class="btn small primary" type="button">중복 확인</button>
+           </div>
+            <div id="emailCheckMsg"></div>
 
         <input type="password" name="password" placeholder="비밀번호" />
         <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" />
@@ -46,5 +47,20 @@
     </div>
   </div>
 </div>
+<script>
+  const cpath = '${cpath}';
+  const emailBtn = document.getElementById('emailCheckBtn');
+  const emailInput = document.getElementById('emailInput');
+  const emailMsg = document.getElementById('emailCheckMsg');
+
+  emailBtn.addEventListener('click', async () => {
+    const email = (emailInput.value || '').trim();
+    const res = await fetch(`${cpath}/signup/check-email?email=` + encodeURIComponent(email));
+    const data = await res.json();
+
+    emailMsg.className = data.available ? 'msg-ok' : 'msg-danger';
+    emailMsg.textContent = data.message;
+  });
+</script>
 </body>
 </html>

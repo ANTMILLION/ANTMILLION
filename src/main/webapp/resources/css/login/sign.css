@@ -96,6 +96,7 @@ input:focus{
 .btn.kakao{background:var(--kakao); color:#111;}
 
 .msg-danger{color:var(--danger); font-size:14px; margin:4px 0 8px;}
+.msg-ok{ color:#10b981; font-size:14px; margin:4px 0 8px; }
 
 .center-links{
   text-align:center;

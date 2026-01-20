@@ -20,9 +20,10 @@
 
       <form class="form" method="post" action="${cpath}/signup/step2">
         <div class="row">
-          <input type="text" name="nickname" placeholder="닉네임을 입력하세요" value="${nickname}" />
-          <button class="btn small primary" type="button">중복 확인</button>
+            <input id="nicknameInput" type="text" name="nickname" placeholder="닉네임을 입력하세요" value="${nickname}" />
+            <button id="nicknameCheckBtn" class="btn small primary" type="button">중복 확인</button>
         </div>
+        <div id="nicknameCheckMsg"></div>
 
         <div class="helper">* 닉네임은 모의투자 기록 내역에 표시됩니다.</div>
 
@@ -47,5 +48,20 @@
     </div>
   </div>
 </div>
+<script>
+  const cpath = '${cpath}';
+  const nickBtn = document.getElementById('nicknameCheckBtn');
+  const nickInput = document.getElementById('nicknameInput');
+  const nickMsg = document.getElementById('nicknameCheckMsg');
+
+  nickBtn.addEventListener('click', async () => {
+    const nickname = (nickInput.value || '').trim();
+    const res = await fetch(`${cpath}/signup/check-nickname?nickname=` + encodeURIComponent(nickname));
+    const data = await res.json();
+
+    nickMsg.className = data.available ? 'msg-ok' : 'msg-danger';
+    nickMsg.textContent = data.message;
+  });
+</script>
 </body>
 </html>

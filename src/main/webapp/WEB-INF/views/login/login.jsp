@@ -23,7 +23,9 @@
 				<form class="form" method="post" action="${cpath}/login">
 					<input type="text" name="email" placeholder="이메일을 입력하세요" /> <input
 						type="password" name="password" placeholder="비밀번호를 입력하세요" />
-					<div class="msg-danger">이메일 또는 비밀번호가 올바르지 않습니다.</div>
+					<c:if test="${not empty loginError}">
+                        <div class="msg-danger">${loginError}</div>
+                    </c:if>
 					<button class="btn primary" type="submit">로그인</button>
 				</form>
 
