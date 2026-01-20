@@ -208,5 +208,58 @@ public class KisApiService {
                 .queryParam("FID_INPUT_DATE_1", request.getEndDate())
                 .build().toUriString();
     }
-
+    
+    
+    // 당일분봉조회 추가하기
+    
+    
+    
+    /***
+     * 한국투자증권 국내업종 일별분봉조회
+     * @param request 조회 조건 (분류코드, 종목코드, 시간, 날짜 등)
+     * @return 일별분봉조회 데이터 리스트
+     */
+    public List<StreamMinutePrice> getStreamMinutePrices(StreamMinutePriceRequest request){
+    	StreamMinutePriceResponse response = streamMinutePricesAPI(request);
+    	return response.getOutput2();
+    	// Redis에 있는지 확인하고 반환, 만약 Redis에 데이터가 하나도 없으면 그때만 한투 api 직접호출
+    }
+    
+    /**
+     * 한국투자증권 국내업종 일별분봉조회 API 호출
+     * @param request 조회 조건 (분류코드, 종목코드, 시간, 날짜 등)
+     * @return 일별분봉조회 데이터 리스트
+     * 
+     */
+    private StreamMinutePriceResponse streamMinutePricesAPI(StreamMinutePriceRequest request) {
+    	String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHKST03010230");
+        headers.set("tr_cont", "N"); // 연속 거래 여부
+        String url = buildStreamMinuteApiUrl(request);
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<StreamMinutePriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, StreamMinutePriceResponse.class);
+        StreamMinutePriceResponse responseBody = response.getBody();
+        if(responseBody != null) {
+        	return responseBody;
+        }
+        throw new RuntimeException("국내 시장 일별 분봉 데이터 조회 실패");
+    }
+    
+    /**
+     * 한국투자증권 국내업종 일별분봉조회 API URL 생성
+     * @param request 조회 조건 (분류코드, 종목코드, 시간, 날짜 등)
+     * @return 한국투자증권 국내업종 일별분봉조회 API URL
+     */
+    private String buildStreamMinuteApiUrl(StreamMinutePriceRequest request) {
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.STREAM_MINUTE_PATH);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getCondMrktDivCode()) // 조건 시장 분류 코드(J : KRX)
+				.queryParam("FID_INPUT_ISCD", request.getInputIscd()) // 입력 종목코드
+				.queryParam("FID_INPUT_HOUR_1", request.getInputHour1()) // 입력 시간1 (15:30 고정)
+				.queryParam("FID_INPUT_DATE_1", request.getInputDate1()) // 입력 날짜
+				.queryParam("FID_PW_DATA_INCU_YN", request.getPwDataIncuYn()) // 과거 데이터 포함 여부 (당일 실시간 N 고정)
+				.queryParam("FID_FAKE_TICK_INCU_YN", request.getFakeTickIncuYn()) // 허봉 포함 여부 (공백 필수 입력)
+				.build().toUriString();
+    }
 }
