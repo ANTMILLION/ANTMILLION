@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.antmillion.kis.dto.DayMinuteFlatDTO;
+import com.antmillion.kis.dto.DayMinutePrice;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +26,7 @@ public class DayMinuteRedisChartService {
     }
 
     // 데이터 누적해서 쌓기 (RPUSH)
-    public void insertMinuteData(String stockCode, DayMinuteFlatDTO stockMinuteFlatDTO) {
+    public void insertMinuteData(String stockCode, DayMinutePrice stockMinuteFlatDTO) {
         // 키 형식: stock:chart:1min:종목코드:yyyyMMdd
 	    String key = getTodayKey(stockCode);
 	    
@@ -34,7 +34,7 @@ public class DayMinuteRedisChartService {
 	    List<Object> lastDataList = redisTemplate.opsForList().range(key, -1, -1);
 	    
 	    if (!lastDataList.isEmpty()) {
-	        DayMinuteFlatDTO lastDto = (DayMinuteFlatDTO) lastDataList.get(0);
+	        DayMinutePrice lastDto = (DayMinutePrice) lastDataList.get(0);
 	        // 시간이 똑같으면 저장하지 않고 리턴
 	        if (lastDto.getStckCntgHour().equals(stockMinuteFlatDTO.getStckCntgHour())) {
 	            return; 
