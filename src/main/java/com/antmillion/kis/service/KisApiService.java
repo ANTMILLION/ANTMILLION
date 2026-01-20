@@ -5,7 +5,8 @@ import com.antmillion.kis.constant.KisApiConstant;
 import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
 import com.antmillion.kis.repository.KisChartRedisRepository;
-import com.antmillion.kis.repository.KisMarketIndexChartRepository;
+import com.antmillion.kis.repository.KisMarketIndexChartRedisRepository;
+import com.antmillion.kis.repository.KisStockVolumeRankRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -32,7 +33,8 @@ public class KisApiService {
     private final RestTemplate restTemplate;
     private final KisAccessTokenRedisRepository kisAccessTokenRedisRepository;
     private final KisChartRedisRepository kisChartRedisRepository;
-    private final KisMarketIndexChartRepository kisMarketIndexChartRepository;
+    private final KisMarketIndexChartRedisRepository kisMarketIndexChartRepository;
+    private final KisStockVolumeRankRedisRepository kisStockVolumeRankRedisRepository;
 
     /**
      * KIS 액세스 토큰 조회/발급
@@ -146,7 +148,7 @@ public class KisApiService {
      * 한국투자증권 API 호출을 위한 헤더 생성
      * @param token 접근 토큰
      * @param trId 거래 id
-     * @return 캔들 차트 데이터 리스트
+     * @return 한국투자증권 api 요청 헤더
      */
     private HttpHeaders createApiHeader(String token, String trId) {
         HttpHeaders headers = new HttpHeaders();
@@ -161,7 +163,7 @@ public class KisApiService {
     }
 
     /**
-     * 한국투자증권 API 호출을 위한 헤더 생성
+     * 시장 지수 차트 데이터 조회
      * @param request 조회 조건 (종목코드, 기간, 날짜 등)
      * @return 코스피, 코스닥 캔들 차트 데이터 리스트
      */
@@ -181,7 +183,7 @@ public class KisApiService {
     /**
      * 한국투자증권 국내업종 일자별지수 API 호출
      * @param request 조회 조건 (종목코드, 기간, 날짜 등)
-     * @return 코스피, 코스닥 캔들 차트 데이터 리스트
+     * @return 한국투자증권 api 반환값
      */
     private KisMarketIndexPriceResponse marketIndexPricesAPI(MarketIndexPriceRequest request) {
         String token = getKisAccessToken();
@@ -259,4 +261,54 @@ public class KisApiService {
 				.queryParam("FID_ETC_CLS_CODE", request.getEtcClsCode()) // 기타 구분 코드("0")
 				.build().toUriString();
     }
+
+    /**
+     * 거래량순 종목리스트 조회
+     * @param request 조회 조건 (기간, 날짜 등)
+     * @return 거래량순 종목리스트 상위 30개
+     */
+    public List<StockVolumeRank> getStockVolumeRanks(StockVolumeRankRequest request) {
+        Optional<List<StockVolumeRank>> cached =  kisStockVolumeRankRedisRepository.getStockVolumeRanks();
+        if (cached.isPresent()) {
+            log.info("거래량 순위 데이터 재사용");
+            return cached.get();
+        }
+
+        log.info("한국투자증권 거래량순위 API 호출");
+        KisStockVolumeRankResponse response = stockVolumeRankAPI(request);
+        kisStockVolumeRankRedisRepository.save(response.getOutput());
+        return  response.getOutput();
+    }
+
+    private KisStockVolumeRankResponse stockVolumeRankAPI(StockVolumeRankRequest request) {
+        String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHPST01710000");
+        String url = buildStockVolumeRankUrl(request);
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisStockVolumeRankResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisStockVolumeRankResponse.class);
+        KisStockVolumeRankResponse responseBody = response.getBody();
+        if (responseBody != null) {
+            return responseBody;
+        }
+        throw new RuntimeException("거래량 순위 데이터 조회 실패");
+    }
+
+    private String buildStockVolumeRankUrl(StockVolumeRankRequest request) {
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.STOCK_VOLUME_RANK);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                .queryParam("FID_COND_SCR_DIV_CODE", request.getScreenCode())
+                .queryParam("FID_INPUT_ISCD", request.getInputCode())
+                .queryParam("FID_DIV_CLS_CODE", request.getDivClassCode())
+                .queryParam("FID_BLNG_CLS_CODE", request.getBlngClassCode())
+                .queryParam("FID_TRGT_CLS_CODE", request.getTargetClassCode())
+                .queryParam("FID_TRGT_EXLS_CLS_CODE", request.getTargetExlsClassCode())
+                .queryParam("FID_INPUT_PRICE_1", request.getInputPrice1())
+                .queryParam("FID_INPUT_PRICE_2", request.getInputPrice2())
+                .queryParam("FID_VOL_CNT", request.getVolumeCount())
+                .queryParam("FID_INPUT_DATE_1", request.getInputDate1())
+                .build().toUriString();
+    }
+
 }

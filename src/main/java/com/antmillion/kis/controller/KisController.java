@@ -1,11 +1,6 @@
 package com.antmillion.kis.controller;
 
-import com.antmillion.kis.dto.ChartStockPrice;
-import com.antmillion.kis.dto.ChartStockPriceRequest;
-import com.antmillion.kis.dto.DayMinutePrice;
-import com.antmillion.kis.dto.DayMinutePriceRequest;
-import com.antmillion.kis.dto.MarketIndexPrice;
-import com.antmillion.kis.dto.MarketIndexPriceRequest;
+import com.antmillion.kis.dto.*;
 import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -93,7 +88,25 @@ public class KisController {
                 .pwDataIncuYn("Y") // 과거 데이터 30개 포함
                 .etcClsCode("0")
                 .build();
-
         return kisApiService.getDayMinutePrices(request);
     }
+    // 거래량순 조회
+    @GetMapping("/volumeRank")
+    public List<StockVolumeRank> kisStockVolumeRank() {
+        StockVolumeRankRequest request = StockVolumeRankRequest.builder()
+                .marketCode("J") //고정 : KRX
+                .screenCode("20171") //고정
+                .inputCode("0000") //고정 : 종목코드 전체
+                .divClassCode("0") //고정 : 전체 (보통주, 우선주)
+                .blngClassCode("0") //고정 : 평균거래량
+                .targetClassCode("111111111") //고정
+                .targetExlsClassCode("0000001100") //고정 : ETF, ETN 제외
+                .inputPrice1("0") //고정 : 전체 가격 대상
+                .inputPrice2("0") //고정 : 전체 가격 대상
+                .volumeCount("0") //고정 : 전체 거래량 대상
+                .inputDate1("0") //고정
+                .build();
+        return kisApiService.getStockVolumeRanks(request);
+    }
+
 }
