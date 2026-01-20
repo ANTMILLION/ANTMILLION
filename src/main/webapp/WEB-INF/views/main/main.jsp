@@ -107,8 +107,8 @@
                 <!-- 주식 차트 -->
                 <div class="main-stock-chart-card">
                     <div class="main-chart-header">
-                        <h3 class="main-chart-stock-name">삼성전자</h3>
-                        <p class="main-chart-stock-code">005930</p>
+                        <h3 class="main-chart-stock-name"></h3>
+                        <p class="main-chart-stock-code"></p>
                     </div>
                     <div class="main-stock-chart-container">
                         <canvas id="main-stockChart"></canvas>
