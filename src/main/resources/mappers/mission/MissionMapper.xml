@@ -61,10 +61,27 @@
         WHERE user_id = #{userId} AND quiz_id = #{quizId}
     </select>
 
-    <select id="countTodaySolved" resultType="int">
-        SELECT COUNT(*)
+    <select id="selectTodaySolvedQuizIds" resultType="long">
+        SELECT quiz_id
         FROM quiz_log
         WHERE user_id = #{userId}
         AND DATE_FORMAT(solved_at, '%Y-%m-%d') = CURDATE()
     </select>
+
+    <select id="selectAnswerByQuizId" resultType="Integer">
+        SELECT answer
+        FROM quiz_question
+        WHERE quiz_id = #{quizId}
+    </select>
+
+    <select id="selectQuizPointByQuizId" resultType="int">
+        SELECT point
+        FROM quiz_question
+        WHERE quiz_id = #{quizId}
+    </select>
+
+    <update id="updateUserPoint">
+        UPDATE member SET point = point + #{point}
+        WHERE user_id = #{userId}
+    </update>
 </mapper>
