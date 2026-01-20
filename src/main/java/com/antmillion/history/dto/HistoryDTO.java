@@ -1,9 +1,17 @@
 package com.antmillion.history.dto;
 
 import java.util.Date;
-import lombok.Data;
 
-@Data
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+@Getter@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class HistoryDTO {
     private Long historyId;
     private Long userId;

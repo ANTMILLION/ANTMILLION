@@ -1,12 +1,11 @@
 package com.antmillion.mission.controller;
 
 import com.antmillion.mission.dto.QuizQuestionResponseDTO;
+import com.antmillion.mission.dto.QuizSubmissionRequestDTO;
 import com.antmillion.mission.service.MissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,5 +25,11 @@ public class MissionController {
     @ResponseBody
     public List<QuizQuestionResponseDTO> getDailyQuizData() {
         return missionService.getDailyQuiz();
+    }
+
+    @PostMapping("/check")
+    @ResponseBody
+    public boolean checkAnswer(@RequestBody QuizSubmissionRequestDTO requestDTO) {
+        return missionService.checkAndLogAnswer(requestDTO);
     }
 }
