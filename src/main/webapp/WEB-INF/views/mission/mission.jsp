@@ -38,32 +38,43 @@
 						style="display: none;">100 포인트 획득하였습니다.</div>
 				</div>
 				<div id="mission-quizContent">
-					<div class="mission-quiz-question" id="mission-quizQuestion">
-						위험을 줄이기 위해 자산을 여러 곳에 나누어 투자하는 원칙을 분산투자라고 한다.</div>
-					<div class="mission-quiz-options" id="mission-quizOptions">
-						<!-- 동적으로 생성됨 -->
-					</div>
+					<div class="mission-quiz-question" id="mission-quizQuestion"></div>
+					<div class="mission-quiz-options" id="mission-quizOptions"></div>
 				</div>
 
 				<!-- 완료 화면 -->
 				<div class="mission-completion-screen" id="mission-completionScreen">
 					<div class="mission-ant-ranks">
-						<img src="${cpath}/resources/images/profile/bronze-ant.png"
-							alt="브론즈" /> <img
-							src="${cpath}/resources/images/profile/silver-ant.png" alt="실버" />
-						<img src="${cpath}/resources/images/profile/gold-ant.png" alt="골드" />
-						<img src="${cpath}/resources/images/profile/diamond-ant.png"
-							alt="다이아" /> <img
-							src="${cpath}/resources/images/profile/challenger-ant.png"
-							alt="챌린저" />
+						<div class="mission-rank-item">
+							<img id="mission-rank-img-브론즈" src="${cpath}/resources/images/profile/bronze-ant.png" alt="브론즈" />
+							<div class="mission-rank-label" data-rank="브론즈">브론즈 개미</div>
+						</div>
+						<div class="mission-rank-item">
+							<img id="mission-rank-img-실버" src="${cpath}/resources/images/profile/silver-ant.png" alt="실버" />
+							<div class="mission-rank-label" data-rank="실버">실버 개미</div>
+						</div>
+						<div class="mission-rank-item">
+							<img id="mission-rank-img-골드" src="${cpath}/resources/images/profile/gold-ant.png" alt="골드" />
+							<div class="mission-rank-label" data-rank="골드">골드 개미</div>
+						</div>
+						<div class="mission-rank-item">
+							<img id="mission-rank-img-다이아몬드" src="${cpath}/resources/images/profile/diamond-ant.png" alt="다이아몬드" />
+							<div class="mission-rank-label" data-rank="다이아몬드">다이아몬드 개미</div>
+						</div>
+						<div class="mission-rank-item">
+							<img id="mission-rank-img-챌린저" src="${cpath}/resources/images/profile/challenger-ant.png" alt="챌린저" />
+							<div class="mission-rank-label" data-rank="챌린저">챌린저 개미</div>
+						</div>
+						<h3 id="mission-reward-rankName"></h3>
 					</div>
 					<div class="mission-reward-info">
 						<div class="mission-points-progress">
-							<div class="mission-points-bar"></div>
-							<span class="mission-points-label">680포인트</span> <span
-								class="mission-points-label">1000포인트</span>
+							<div class="mission-points-bar" id="mission-reward-progressBar" style="width: 0%"></div>
+							<span class="mission-points-label" id="mission-reward-currentRankStartPoint">0 P</span>
+							<span class="mission-points-label" id="mission-reward-currentPoint">0 P</span>
+							<span class="mission-points-label" id="mission-reward-nextRankPoint">0 P</span>
 						</div>
-						<div class="mission-next-level">다음 랭크까지 320포인트가 남았습니다.</div>
+						<div class="mission-next-level" id="mission-reward-message"></div>
 					</div>
 				</div>
 			</div>
