@@ -25,8 +25,17 @@ $(document).ready(function() {
 });
 
 function loadCommunityList(stockCode) {
+    // ⭐ 수정: contextPath에 / 추가 (절대 경로로 만들기)
+    const basePath = (typeof contextPath !== 'undefined' && contextPath) 
+        ? (contextPath.startsWith('/') ? contextPath : '/' + contextPath)
+        : '/antmillion';
+    
+    console.log('[커뮤니티] basePath:', basePath);
+    const apiUrl = basePath + '/community/list';
+    console.log('[커뮤니티] API URL:', apiUrl);
+    
     $.ajax({
-        url: (typeof contextPath !== 'undefined' ? contextPath : '/antmillion') + '/community/list',
+        url: apiUrl,
         type: 'GET',
         data: { stockCode: stockCode },
         success: function(response) {
@@ -37,6 +46,8 @@ function loadCommunityList(stockCode) {
         },
         error: function(xhr, status, error) {
             console.error('AJAX 오류:', error);
+            console.error('상태 코드:', xhr.status);
+            console.error('응답:', xhr.responseText);
             $('#communityListContainer').html('<p>커뮤니티를 불러올 수 없습니다.</p>');
         }
     });
@@ -85,8 +96,13 @@ function writeCommunity(stockCode) {
         return;
     }
     
+    // ⭐ 수정: contextPath에 / 추가 (절대 경로로 만들기)
+    const basePath = (typeof contextPath !== 'undefined' && contextPath) 
+        ? (contextPath.startsWith('/') ? contextPath : '/' + contextPath)
+        : '/antmillion';
+    
     $.ajax({
-        url: (typeof contextPath !== 'undefined' ? contextPath : '/antmillion') + '/community/write',
+        url: basePath + '/community/write',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({

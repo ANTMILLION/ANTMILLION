@@ -78,6 +78,9 @@
 			</div>
 		</div>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script>
+			const cpath = "${pageContext.request.contextPath}";
+		</script>
 		<script src="${cpath}/resources/js/mission/mission.js"></script>
 	</div>
 </body>

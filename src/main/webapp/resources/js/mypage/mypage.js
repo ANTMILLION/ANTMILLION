@@ -641,3 +641,70 @@ function formatPercent(num) {
     const sign = num >= 0 ? '+' : '';
     return `${sign}${num}%`;
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadHistoryData();
+});
+
+function loadHistoryData() {
+    fetch('/antmillion/history/api/list')
+        .then(response => response.json())
+        .then(data => {
+            const alertList = document.querySelector('.mypage-alert-list');
+            
+            if (data && data.length > 0) {
+                alertList.innerHTML = ''; 
+                
+                data.forEach(history => {
+                    // 날짜 포맷팅 (YYYY/MM/DD HH:mm:ss)
+                    const date = new Date(history.time);
+                    const formattedDate = date.getFullYear() + '/' + 
+                                        ('0' + (date.getMonth() + 1)).slice(-2) + '/' + 
+                                        ('0' + date.getDate()).slice(-2) + ' ' + 
+                                        ('0' + date.getHours()).slice(-2) + ':' + 
+                                        ('0' + date.getMinutes()).slice(-2) + ':' + 
+                                        ('0' + date.getSeconds()).slice(-2);
+
+                    // 매수/매도 텍스트 및 클래스 설정
+                    const typeText = history.transactionType === 'BUY' ? '매수' : '매도';
+                    const typeClass = history.transactionType === 'BUY' ? 'buy' : 'sell';
+                    
+                    // 총 금액 계산 (이미지에 나온 1,017,000원 형태)
+                    const totalAmount = (history.quantity * history.orderPrice).toLocaleString();
+                    const unitPrice = history.orderPrice.toLocaleString();
+
+                    // 수정한 HTML 구조 (이미지와 동일하게 정보 추가)
+                    const historyHtml = `
+                        <div class="mypage-warning-container">
+                            <div class="mypage-warning-header">
+                                <span class="warning-title">⚠️ ${history.messageContent}</span>
+                                <span class="warning-help-icon">ⓘ</span>
+                            </div>
+                            
+                            <div class="inner-trade-card">
+                                <div class="trade-info-top">
+                                    <span class="trade-label">매매내역</span>
+                                    <span class="trade-date">${formattedDate}</span>
+                                </div>
+                                <div class="trade-info-main">
+                                    <span class="stock-name">${history.stockName}</span>
+                                    <span class="total-amount">${totalAmount}원</span>
+                                </div>
+                                <div class="trade-type-row">
+                                    <span class="trade-type ${typeClass}">${typeText}</span>
+                                    <span class="trade-quantity">${history.quantity}주</span>
+                                    <span class="unit-price">${unitPrice}원</span>
+                                </div>
+                            </div>
+                            
+                            <p class="mypage-alert-description">${history.messageDetail}</p>
+                        </div>`;
+                    
+                    alertList.insertAdjacentHTML('beforeend', historyHtml);
+                });
+            } else {
+                alertList.innerHTML = '<p class="no-data">심리경고 내역이 없습니다.</p>';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
