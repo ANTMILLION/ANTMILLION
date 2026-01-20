@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @Repository
 @RequiredArgsConstructor
-public class KisMarketIndexChartRepository {
+public class KisMarketIndexChartRedisRepository {
 
     private static final String KIS_MARKET_INDEX_CHART_KEY = "market:index";
     private static final long CACHE_EXPIRE_HOURS = 24; // 24시간 캐시 유지
