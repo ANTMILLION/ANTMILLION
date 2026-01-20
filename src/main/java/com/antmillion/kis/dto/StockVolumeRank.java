@@ -9,12 +9,12 @@ import lombok.Setter;
 public class StockVolumeRank {
     @JsonProperty("hts_kor_isnm")
     private String stockName; //종목명
-    @JsonProperty("stck_clpr")
-    private String closePrice; //주식 종가
-    @JsonProperty("stck_oprc")
-    private String openPrice; //주식 시가
-    @JsonProperty("stck_hgpr")
-    private String highPrice; //주식 최고가
-    @JsonProperty("stck_lwpr")
-    private String lowPrice; //주식 최저가
+    @JsonProperty("mksc_shrn_iscd")
+    private String stockCode; //종목코드
+    @JsonProperty("data_rank")
+    private String rank; //순위
+    @JsonProperty("stck_prpr")
+    private String presentPrice; //주식 현재가
+    @JsonProperty("acml_vol")
+    private String acmVolume; //누적 거래량
 }
