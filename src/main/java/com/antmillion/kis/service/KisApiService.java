@@ -17,8 +17,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -208,5 +211,52 @@ public class KisApiService {
                 .queryParam("FID_INPUT_DATE_1", request.getEndDate())
                 .build().toUriString();
     }
-
+    
+    
+    /***
+     * 한국투자증권 국내업종 당일분봉조회
+     * @param request 조회 조건 (분류코드, 종목코드, 시간 등)
+     * @return 당일분봉조회 데이터 리스트
+     */
+    public List<DayMinutePrice> getDayMinutePrices(DayMinutePriceRequest request){
+    	DayMinutePriceResponse response = dayMinutePricesAPI(request);
+    	return response.getOutput2();
+    	// Redis에 있는지 확인하고 반환, 만약 Redis에 데이터가 하나도 없으면 그때만 한투 api 직접호출
+    }
+    /**
+     * 한국투자증권 국내업종 당일분봉조회 API 호출
+     * @param request 조회 조건 (분류코드, 종목코드, 시간 등)
+     * @return 당일분봉조회 데이터 리스트
+     * 
+     */
+    private DayMinutePriceResponse dayMinutePricesAPI(DayMinutePriceRequest request) {
+    	String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHKST03010200");
+        String url = buildDayMinuteApiUrl(request);
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<DayMinutePriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, DayMinutePriceResponse.class);
+        DayMinutePriceResponse responseBody = response.getBody();
+        if(responseBody != null) {
+        	return responseBody;
+        }
+        throw new RuntimeException("국내 시장 당일 분봉 데이터 조회 실패");
+    }
+    
+    /**
+     * 한국투자증권 국내업종 당일분봉조회 API URL 생성
+     * @param request 조회 조건 (분류코드, 종목코드, 시간 등)
+     * @return 한국투자증권 국내업종 당일분봉조회 API URL
+     */
+    private String buildDayMinuteApiUrl(DayMinutePriceRequest request) {
+		String now = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.DAY_MINUTE_PATH);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getCondMrktDivCode()) // 조건 시장 분류 코드(J : KRX)
+				.queryParam("FID_INPUT_ISCD", request.getInputIscd()) // 입력 종목코드
+				.queryParam("FID_INPUT_HOUR_1", now) // 입력 시간(현재 시간, 1분봉)
+				.queryParam("FID_PW_DATA_INCU_YN", request.getPwDataIncuYn()) // 과거 데이터 포함 여부(Y : 최근 30개 output2 받을 수 있음)
+				.queryParam("FID_ETC_CLS_CODE", request.getEtcClsCode()) // 기타 구분 코드("0")
+				.build().toUriString();
+    }
 }

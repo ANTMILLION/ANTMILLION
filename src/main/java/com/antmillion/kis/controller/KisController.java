@@ -2,6 +2,8 @@ package com.antmillion.kis.controller;
 
 import com.antmillion.kis.dto.ChartStockPrice;
 import com.antmillion.kis.dto.ChartStockPriceRequest;
+import com.antmillion.kis.dto.DayMinutePrice;
+import com.antmillion.kis.dto.DayMinutePriceRequest;
 import com.antmillion.kis.dto.MarketIndexPrice;
 import com.antmillion.kis.dto.MarketIndexPriceRequest;
 import com.antmillion.kis.service.KisApiService;
@@ -81,5 +83,17 @@ public class KisController {
                 .build();
         return kisApiService.getMarketIndexPrices(request);
     }
+    
+    // 국내 당일 분봉 조회
+    @GetMapping("/candle/{stockCode}")
+    public List<DayMinutePrice> getRealtimeCandle(@PathVariable String stockCode) {
+        DayMinutePriceRequest request = DayMinutePriceRequest.builder()
+                .condMrktDivCode("J")
+                .inputIscd(stockCode)
+                .pwDataIncuYn("Y") // 과거 데이터 30개 포함
+                .etcClsCode("0")
+                .build();
 
+        return kisApiService.getDayMinutePrices(request);
+    }
 }
