@@ -3,7 +3,6 @@ package com.antmillion.history.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.antmillion.history.dto.BiasAlertDTO;
@@ -12,17 +11,16 @@ import com.antmillion.history.dto.HistoryDTO;
 import com.antmillion.history.mapper.BiasAlertMapper;
 import com.antmillion.history.mapper.HistoryMapper;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BiasAlertService {
 
-    @Autowired
-    private BiasAlertMapper biasAlertMapper;
-
-    @Autowired
-    private HistoryMapper historyMapper;
+	    private final BiasAlertMapper biasAlertMapper;
+	    private final HistoryMapper historyMapper;
 
     // 안전선호 편향 기준
     private static final BigDecimal SAFE_HAVEN_PROFIT_THRESHOLD = new BigDecimal("3.0");
