@@ -15,7 +15,7 @@ import lombok.ToString;
 @ToString
 public class BiasAlertDTO {
     
-
+	private Long userId;
     private String stockCode;
     private String stockName;  
     private Integer quantity;

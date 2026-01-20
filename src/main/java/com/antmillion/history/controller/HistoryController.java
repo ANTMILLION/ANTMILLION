@@ -3,12 +3,15 @@ package com.antmillion.history.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController; // 중요!
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.antmillion.history.service.HistoryService;
 import com.antmillion.history.dto.HistoryDTO;
+
 import java.util.List;
 
-@RestController // 데이터를 전송하는 API 컨트롤러로 설정
+@RestController
 @RequestMapping("/history/api")
 public class HistoryController {
 
@@ -16,9 +19,18 @@ public class HistoryController {
     private HistoryService historyService;
 
     @GetMapping("/list")
-    public List<HistoryDTO> getHistoryList() {
-        Long userId = 1L; // 실제 세션에서 가져올 ID
-        // DB에서 데이터를 가져와 JSON 형태로 반환합니다.
+    public List<HistoryDTO> getHistoryList(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate
+    ) {
+        Long userId = 1L;
+
+        // 날짜가 있으면 날짜 기준 조회
+        if (startDate != null && endDate != null) {
+            return historyService.getHistoryListByDate(userId, startDate, endDate);
+        }
+
+        // 날짜 없으면 기존 전체 조회
         return historyService.getHistoryList(userId);
     }
 }

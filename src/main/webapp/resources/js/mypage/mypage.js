@@ -1,8 +1,17 @@
 // ===========================
-// 마이페이지 JavaScript (mypage.js)
+// BiasType 매핑
 // ===========================
+const biasTypeMap = {
+    SAFE_HAVEN: { title: "안전선호 편향 경고", icon: "⚠️" },
+    LOSS_AVERSION: { title: "손실회피 편향 경고", icon: "⚠️" },
+    CONFIRMATION: { title: "확증 편향 경고", icon: "⚠️" },
+    SUNK_COST: { title: "매몰비용 오류 경고", icon: "⚠️" },
+    ANCHORING: { title: "앵커링 편향 경고", icon: "⚠️" }
+};
 
+// ===========================
 // 샘플 데이터
+// ===========================
 const sampleData = {
     // 주식잔고 데이터
     stockHoldings: [
@@ -126,7 +135,6 @@ const sampleData = {
                 unexecutedQty: 0,
                 unexecutedAmount: 0,
                 time: '11:20:11',
-                // 서브 정보
                 orderPrice: 77000,
                 executedPrice: 77000,
                 orderAmount: 0,
@@ -141,7 +149,6 @@ const sampleData = {
                 unexecutedQty: 0,
                 unexecutedAmount: 0,
                 time: '11:20:11',
-                // 서브 정보
                 orderPrice: 77000,
                 executedPrice: 77000,
                 orderAmount: 0,
@@ -156,7 +163,6 @@ const sampleData = {
                 unexecutedQty: 0,
                 unexecutedAmount: 0,
                 time: '11:20:11',
-                // 서브 정보
                 orderPrice: 77000,
                 executedPrice: 77000,
                 orderAmount: 0,
@@ -171,7 +177,6 @@ const sampleData = {
                 unexecutedQty: 0,
                 unexecutedAmount: 0,
                 time: '10:54:01',
-                // 서브 정보
                 orderPrice: 77000,
                 executedPrice: 77000,
                 orderAmount: 0,
@@ -186,7 +191,6 @@ const sampleData = {
                 unexecutedQty: 1,
                 unexecutedAmount: 742000,
                 time: '11:20:11',
-                // 서브 정보
                 orderPrice: 742000,
                 executedPrice: '-',
                 orderAmount: 742000,
@@ -246,58 +250,29 @@ const sampleData = {
             amount: 1540000,
             detail: '77,000원'
         }
-    ],
-    
-    // 심리경고 알림 데이터
-    alerts: [
-        {
-            date: '2026.01.02',
-            stock: '신한지주',
-            type: 'buy',
-            shares: 10,
-            price: 700000,
-            changeRate: -10
-        },
-        {
-            date: '2026.01.02',
-            stock: '신한지주',
-            type: 'buy',
-            shares: 10,
-            price: 700000,
-            changeRate: -10
-        },
-        {
-            date: '2026.01.02',
-            stock: '신한지주',
-            type: 'buy',
-            shares: 10,
-            price: 700000,
-            changeRate: -10
-        },
-        {
-            date: '2026.01.02',
-            stock: '신한지주',
-            type: 'buy',
-            shares: 10,
-            price: 700000,
-            changeRate: -10
-        }
     ]
 };
 
 // ===========================
 // DOM 요소
 // ===========================
-let stockList, realizedList, executedTable, tradingList, alertList;
+let stockList, realizedList, executedTable, tradingList;
 let tabButtons, subTabButtons, filterButtons;
 
 // ===========================
 // 초기화
 // ===========================
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("마이페이지 로드 완료");
+    
     initializeElements();
     setupEventListeners();
     renderInitialData();
+    
+    // ✅ 심리경고 전용 초기화
+    initializeHistoryDates();
+    loadHistoryData();
+    setupHistoryEventListeners();
 });
 
 function initializeElements() {
@@ -306,7 +281,6 @@ function initializeElements() {
     realizedList = document.getElementById('realizedList');
     executedTable = document.getElementById('executedTable');
     tradingList = document.getElementById('tradingList');
-    alertList = document.getElementById('alertList');
     
     // 버튼 요소
     tabButtons = document.querySelectorAll('.mypage-tab-button');
@@ -371,12 +345,10 @@ function setupDateFilters() {
         });
     });
     
-    // 날짜 변경 이벤트 (나중에 API 호출 등을 위해 추가)
+    // 날짜 변경 이벤트
     dateInputs.forEach(input => {
         input.addEventListener('change', function() {
             console.log(`Date changed: ${this.id} = ${this.value}`);
-            // 여기에 날짜 필터링 로직 추가 가능
-            // 예: filterByDateRange(this.id, this.value);
         });
     });
 }
@@ -431,7 +403,6 @@ function renderInitialData() {
     renderRealizedProfits();
     renderExecutedOrders('all');
     renderTradingHistory('all');
-    renderAlerts();
 }
 
 // ===========================
@@ -441,7 +412,7 @@ function renderStockHoldings() {
     if (!stockList) return;
     
     stockList.innerHTML = sampleData.stockHoldings.map(stock => {
-        const profitClass = stock.profit > 0 ? 'positive' : stock.profit <  0 ? 'negative' : 'neutral';
+        const profitClass = stock.profit > 0 ? 'positive' : stock.profit < 0 ? 'negative' : 'neutral';
         const profitSign = stock.profit > 0 ? '+' : '';
         
         return `
@@ -590,40 +561,158 @@ function renderTradingHistory(filter) {
     }).join('');
 }
 
-// ===========================
-// 심리경고 알림 렌더링
-// ===========================
-function renderAlerts() {
-    if (!alertList) return;
+/**
+ * 심리경고 날짜 필드 초기화 (오늘 날짜로)
+ */
+function initializeHistoryDates() {
+    const today = new Date().toISOString().split('T')[0];
     
-    alertList.innerHTML = sampleData.alerts.map(alert => {
-        const typeText = alert.type === 'buy' ? '매수' : '매도';
-        const changeClass = alert.changeRate >= 0 ? 'positive' : 'negative';
-        const changeSign = alert.changeRate >= 0 ? '+' : '';
-        
-        return `
-            <div class="mypage-alert-item">
-                <div class="mypage-alert-item-date">${alert.date}</div>
-                <div class="mypage-alert-item-stock">${alert.stock}</div>
-                <div class="mypage-alert-item-detail">${typeText} ${alert.shares}주</div>
-                <div class="mypage-alert-item-price ${changeClass}">
-                    ${alert.price.toLocaleString()}원 (${changeSign}${alert.changeRate}%)
-                </div>
-            </div>
-        `;
-    }).join('');
+    const startDateInput = document.getElementById("alertStartDate");
+    const endDateInput = document.getElementById("alertEndDate");
+    
+    if (startDateInput) {
+        startDateInput.value = today;
+        console.log("심리경고 시작 날짜 초기화:", today);
+    }
+    
+    if (endDateInput) {
+        endDateInput.value = today;
+        console.log("심리경고 종료 날짜 초기화:", today);
+    }
 }
 
-// ===========================
-// 알림 필터 변경
-// ===========================
-const alertFilter = document.getElementById('alertFilter');
-if (alertFilter) {
-    alertFilter.addEventListener('change', function() {
-        const filterValue = this.value;
-        // 여기에 필터링 로직 추가
-        console.log('Alert filter changed to:', filterValue);
-    });
+/**
+ * 심리경고 데이터 로드
+ */
+function loadHistoryData() {
+    const alertList = document.querySelector(".mypage-alert-list");
+    if (!alertList) {
+        console.error("심리경고 목록 요소를 찾을 수 없습니다.");
+        return;
+    }
+
+    const startDateInput = document.getElementById("alertStartDate");
+    const endDateInput = document.getElementById("alertEndDate");
+    
+    if (!startDateInput || !endDateInput) {
+        console.error("날짜 입력 필드를 찾을 수 없습니다.");
+        return;
+    }
+
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+
+    console.log("심리경고 조회 - startDate:", startDate, "endDate:", endDate);
+
+    let url = "/antmillion/history/api/list";
+
+    if (startDate && endDate) {
+        url += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+
+    console.log("요청 URL:", url);
+
+    fetch(url)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log("받은 데이터:", data);
+            
+            if (!data || data.length === 0) {
+                alertList.innerHTML = "<p class='no-data'>해당 기간의 심리경고가 없습니다.</p>";
+                return;
+            }
+
+            alertList.innerHTML = "";
+
+            data.forEach(history => {
+                const date = new Date(history.time);
+                const formattedDate = 
+                    date.getFullYear() + "/" +
+                    String(date.getMonth() + 1).padStart(2, '0') + "/" +
+                    String(date.getDate()).padStart(2, '0') + " " +
+                    String(date.getHours()).padStart(2, '0') + ":" +
+                    String(date.getMinutes()).padStart(2, '0') + ":" +
+                    String(date.getSeconds()).padStart(2, '0');
+
+                const biasInfo = biasTypeMap[history.biasType] || {
+                    title: "심리 편향 경고",
+                    icon: "⚠️"
+                };
+
+                const transactionClass = history.transactionType === '매수' ? 'buy' : 'sell';
+                const transactionText = history.transactionType || '-';
+
+                // ✅ 수정된 HTML 구조
+                const html = `
+                    <div class="mypage-warning-container">
+                        <div class="mypage-warning-header">
+                            <span class="warning-icon">⚠️</span>
+                            <span class="warning-title">${biasInfo.title}</span>
+                            <span class="info-icon">ⓘ</span>
+                        </div>
+
+                        <div class="inner-trade-card">
+                            <div class="trade-info-top">
+                                <span class="trade-label">매매내역</span>
+                                <span class="trade-date">${formattedDate}</span>
+                            </div>
+                            <div class="trade-info-main">
+                                <span class="stock-name">${history.stockName || "-"}</span>
+                                <span class="trade-amount">
+                                    ${history.totalAmount ? history.totalAmount.toLocaleString() : "0"}원
+                                </span>
+                            </div>
+                            <div class="trade-info-bottom">
+                                <span class="trade-type ${transactionClass}">${transactionText}</span>
+                                <span class="trade-quantity">${history.quantity || 0}주</span>
+                                <span class="unit-price">
+                                    ${history.orderPrice ? history.orderPrice.toLocaleString() : "0"}원
+                                </span>
+                            </div>
+                        </div>
+
+                        <p class="mypage-alert-description">
+                            ${history.messageDetail || ""}
+                        </p>
+                    </div>
+                `;
+                
+                alertList.insertAdjacentHTML("beforeend", html);
+            });
+            
+            console.log("렌더링 완료");
+        })
+        .catch(error => {
+            console.error("심리경고 데이터 로드 실패:", error);
+            alertList.innerHTML = "<p class='no-data'>심리경고 데이터를 불러오지 못했습니다.</p>";
+        });
+}
+
+/**
+ * 심리경고 이벤트 리스너 설정
+ */
+function setupHistoryEventListeners() {
+    const startDateInput = document.getElementById("alertStartDate");
+    const endDateInput = document.getElementById("alertEndDate");
+    
+    if (startDateInput) {
+        startDateInput.addEventListener("change", function() {
+            console.log("심리경고 시작 날짜 변경:", this.value);
+            loadHistoryData();
+        });
+    }
+    
+    if (endDateInput) {
+        endDateInput.addEventListener("change", function() {
+            console.log("심리경고 종료 날짜 변경:", this.value);
+            loadHistoryData();
+        });
+    }
 }
 
 // ===========================
@@ -640,71 +729,4 @@ function formatCurrency(num) {
 function formatPercent(num) {
     const sign = num >= 0 ? '+' : '';
     return `${sign}${num}%`;
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    loadHistoryData();
-});
-
-function loadHistoryData() {
-    fetch('/antmillion/history/api/list')
-        .then(response => response.json())
-        .then(data => {
-            const alertList = document.querySelector('.mypage-alert-list');
-            
-            if (data && data.length > 0) {
-                alertList.innerHTML = ''; 
-                
-                data.forEach(history => {
-                    // 날짜 포맷팅 (YYYY/MM/DD HH:mm:ss)
-                    const date = new Date(history.time);
-                    const formattedDate = date.getFullYear() + '/' + 
-                                        ('0' + (date.getMonth() + 1)).slice(-2) + '/' + 
-                                        ('0' + date.getDate()).slice(-2) + ' ' + 
-                                        ('0' + date.getHours()).slice(-2) + ':' + 
-                                        ('0' + date.getMinutes()).slice(-2) + ':' + 
-                                        ('0' + date.getSeconds()).slice(-2);
-
-                    // 매수/매도 텍스트 및 클래스 설정
-                    const typeText = history.transactionType === 'BUY' ? '매수' : '매도';
-                    const typeClass = history.transactionType === 'BUY' ? 'buy' : 'sell';
-                    
-                    // 총 금액 계산 (이미지에 나온 1,017,000원 형태)
-                    const totalAmount = (history.quantity * history.orderPrice).toLocaleString();
-                    const unitPrice = history.orderPrice.toLocaleString();
-
-                    // 수정한 HTML 구조 (이미지와 동일하게 정보 추가)
-                    const historyHtml = `
-                        <div class="mypage-warning-container">
-                            <div class="mypage-warning-header">
-                                <span class="warning-title">⚠️ ${history.messageContent}</span>
-                                <span class="warning-help-icon">ⓘ</span>
-                            </div>
-                            
-                            <div class="inner-trade-card">
-                                <div class="trade-info-top">
-                                    <span class="trade-label">매매내역</span>
-                                    <span class="trade-date">${formattedDate}</span>
-                                </div>
-                                <div class="trade-info-main">
-                                    <span class="stock-name">${history.stockName}</span>
-                                    <span class="total-amount">${totalAmount}원</span>
-                                </div>
-                                <div class="trade-type-row">
-                                    <span class="trade-type ${typeClass}">${typeText}</span>
-                                    <span class="trade-quantity">${history.quantity}주</span>
-                                    <span class="unit-price">${unitPrice}원</span>
-                                </div>
-                            </div>
-                            
-                            <p class="mypage-alert-description">${history.messageDetail}</p>
-                        </div>`;
-                    
-                    alertList.insertAdjacentHTML('beforeend', historyHtml);
-                });
-            } else {
-                alertList.innerHTML = '<p class="no-data">심리경고 내역이 없습니다.</p>';
-            }
-        })
-        .catch(error => console.error('Error:', error));
 }
