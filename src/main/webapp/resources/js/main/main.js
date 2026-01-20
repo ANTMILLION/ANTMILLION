@@ -2,27 +2,6 @@
    메인 페이지 JavaScript (com.antmillion.main.js)
    =========================== */
 
-// Mock 데이터 (상위 6개만)
-const mainStocks = [
-    { id: 1, name: '삼성전자', logo: 'samsung', price: '140,900원', change: '+1.43%', isPositive: true, buyRatio: 50, sellRatio: 50, isFavorite: false },
-    { id: 2, name: 'SK하이닉스', logo: 'sk', price: '742,500원', change: '+2.27%', isPositive: true, buyRatio: 43, sellRatio: 57, isFavorite: true },
-    { id: 3, name: '현대차', logo: 'hyundai', price: '326,500원', change: '+6.00%', isPositive: true, buyRatio: 75, sellRatio: 25, isFavorite: false },
-    { id: 4, name: '한미반도체', logo: 'hanmi', price: '186,300원', change: '+1.41%', isPositive: true, buyRatio: 41, sellRatio: 59, isFavorite: false },
-    { id: 5, name: 'KODEX 레버리지', logo: 'kodex', price: '57,300원', change: '+1.64%', isPositive: true, buyRatio: 44, sellRatio: 56, isFavorite: false }
-];
-
-// 로고 이미지 URL 매핑
-const logoMap = {
-    'samsung': 'https://via.placeholder.com/40?text=LOGO',
-    'sk': 'https://via.placeholder.com/40?text=LOGO',
-    'hyundai': 'https://via.placeholder.com/40?text=LOGO',
-    'hanmi': 'https://via.placeholder.com/40?text=LOGO',
-    'kodex': 'https://via.placeholder.com/40?text=LOGO',
-    'doosan': 'https://via.placeholder.com/40?text=LOGO',
-    'hanwha': 'https://via.placeholder.com/40?text=LOGO',
-    'hyundai-motor': 'https://via.placeholder.com/40?text=LOGO'
-};
-
 // 날짜 포멧 변경
 function formatDate(yyyymmdd) {
     return {
@@ -34,33 +13,34 @@ function formatDate(yyyymmdd) {
 
 // 종목 아이템 HTML 생성 함수
 function createMainStockItemHTML(stock, index) {
-    const changeClass = stock.isPositive ? 'positive' : 'negative';
+    //const changeClass = stock.isPositive ? 'positive' : 'negative';
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
-    const logoUrl = logoMap[stock.logo] || 'https://via.placeholder.com/40?text=LOGO';
-
+    //todo: 등락률 자리에 거래량을 임시로 넣어둠
+    //todo: 즐겨찾기 일단 남겨둠
+    //todo: 거래비율 자리에 50, 50 임시로 넣어둠
     return `
-        <div class="main-stocklist-item" data-id="${stock.id}">
+        <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
             <div class="main-stocklist-favorite">
                 <span class="main-stocklist-rank">${index + 1}</span>
-                <button class="main-stocklist-favorite-btn ${favoriteClass}" data-id="${stock.id}">${favoriteIcon}</button>
+                <button class="main-stocklist-favorite-btn ${favoriteClass}" data-id="${stock.mksc_shrn_iscd}">${favoriteIcon}</button>
             </div>
             <div class="main-stocklist-info">
                 <div class="main-stocklist-logo">
-                    <img src="${logoUrl}" alt="${stock.name}">
+                    <img src="" alt="${stock.hts_kor_isnm}">
                 </div>
-                <span class="main-stocklist-name">${stock.name}</span>
+                <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
-            <div class="main-stocklist-price">${stock.price}</div>
-            <div class="main-stocklist-change ${changeClass}">${stock.change}</div>
+            <div class="main-stocklist-price">${stock.stck_prpr}</div>
+            <div class="main-stocklist-change">${stock.acml_vol}</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
-                    <div class="main-stocklist-sentiment-buy" style="width: ${stock.buyRatio}%;"></div>
-                    <div class="main-stocklist-sentiment-sell" style="width: ${stock.sellRatio}%;"></div>
+                    <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
+                    <div class="main-stocklist-sentiment-sell" style="width: 50%;"></div>
                 </div>
                 <div class="main-stocklist-sentiment-labels">
-                    <span class="main-stocklist-sentiment-buy-label">${stock.buyRatio}</span>
-                    <span class="main-stocklist-sentiment-sell-label">${stock.sellRatio}</span>
+                    <span class="main-stocklist-sentiment-buy-label">50</span>
+                    <span class="main-stocklist-sentiment-sell-label">50</span>
                 </div>
             </div>
         </div>
@@ -72,13 +52,32 @@ function renderMainStocks() {
     const container = document.getElementById('main-stocklist-Container');
     if (!container) return;
 
-    // HTML 생성
-    const html = mainStocks.map((stock, index) => createMainStockItemHTML(stock, index)).join('');
-    container.innerHTML = html;
+    fetch(contextPath + '/api/kis/volumeRank')
+        .then(res => res.json())
+        .then(data => {
+            const html = data
+                .slice(0, 5) //상위 5개만
+                .map((stock, index) => createMainStockItemHTML(stock, index)).join('');
+            container.innerHTML = html;
+            // 이벤트 리스너 재등록
+            attachMainFavoriteListeners();
+            attachMainStockItemListeners();
 
-    // 이벤트 리스너 재등록
-    attachMainFavoriteListeners();
-    attachMainStockItemListeners();
+            if (data.length > 0) {
+                const firstStock = data[0];
+                const chartStockName = document.querySelector('.main-chart-stock-name');
+                const chartStockCode = document.querySelector('.main-chart-stock-code');
+
+                if (chartStockName) {
+                    chartStockName.textContent = firstStock.hts_kor_isnm;
+                }
+                if (chartStockCode) {
+                    chartStockCode.textContent = firstStock.mksc_shrn_iscd;
+                }
+            }
+        });
+
+
 }
 
 // 즐겨찾기 버튼 이벤트 리스너 등록
@@ -126,9 +125,14 @@ function attachMainStockItemListeners() {
             const stockName = this.querySelector('.main-stocklist-name').textContent;
             
             // 차트 헤더 업데이트
+            const stockCode = this.getAttribute('data-id');
+            const chartStockCode = document.querySelector('.main-chart-stock-code');
             const chartStockName = document.querySelector('.main-chart-stock-name');
             if (chartStockName) {
                 chartStockName.textContent = stockName;
+            }
+            if (chartStockCode) {
+                chartStockCode.textContent = stockCode;
             }
             
             // 차트 업데이트
@@ -142,15 +146,12 @@ function attachMainStockItemListeners() {
                 return;
             }
 
+            const stockId = this.getAttribute('data-id');
             // contextPath는 JSP에서 전역 변수로 설정되어 있음
-            window.location.href = contextPath + '/stock/detail';
+            window.location.href = contextPath + '/stock/detail?code=' + stockId;
         });
     });
 }
-
-// 차트 인스턴스 저장
-let kospiChart = null;
-let kosdaqChart = null;
 
 // DOM이 로드되면 초기화
 document.addEventListener('DOMContentLoaded', function() {
