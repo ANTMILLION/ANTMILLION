@@ -16,14 +16,14 @@ import java.util.concurrent.TimeUnit;
 public class KisMarketIndexChartRedisRepository {
 
     private static final String KIS_MARKET_INDEX_CHART_KEY = "market:index";
-    private static final long CACHE_EXPIRE_HOURS = 24; // 24시간 캐시 유지
+    private static final long CACHE_EXPIRE = 60;
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
     public void save(String indexCode, List<MarketIndexPrice> chartData) {
         String key = buildKey(indexCode);
-        redisTemplate.opsForValue().set(key, chartData, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(key, chartData, CACHE_EXPIRE, TimeUnit.SECONDS);
     }
 
     public Optional<List<MarketIndexPrice>> getChartData(String indexCode) {
