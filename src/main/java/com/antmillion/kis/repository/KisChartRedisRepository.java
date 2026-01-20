@@ -1,6 +1,7 @@
 package com.antmillion.kis.repository;
 
 import com.antmillion.kis.dto.ChartStockPrice;
+import com.antmillion.kis.dto.StreamMinutePrice;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,9 @@ import java.util.concurrent.TimeUnit;
 public class KisChartRedisRepository {
 
     private static final String KIS_PERIOD_CHART_KEY = "stock:chart";
+    private static final String KIS_STREAM_MINUTE_CHART_KEY = "stream:minute";
     private static final long CACHE_EXPIRE_HOURS = 24; // 24시간 캐시 유지
+    private static final long CACHE_EXPIRE_MINUTE = 1; // 1분
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -61,5 +64,39 @@ public class KisChartRedisRepository {
     }
 
 
+    /**
+     * Redis에 일별 분봉 데이터 저장
+     */
+    public void saveStreamMinute(String stockCode, String today, List<StreamMinutePrice> streamData) {
+    	String key = buildStreamMinuteKey(stockCode, today);
+        redisTemplate.opsForValue().set(key, streamData, CACHE_EXPIRE_MINUTE, TimeUnit.MINUTES); // TTL 1분
+    }
+    
+    /**
+     * 일별 분봉 데이터 조회
+     */
+    public Optional<List<StreamMinutePrice>> getStreamMinuteChartData(String stockCode, String today) {
+        String key = buildStreamMinuteKey(stockCode, today);
+        Object data = redisTemplate.opsForValue().get(key);
+
+        if (data == null) return Optional.empty();
+
+        try {
+            List<StreamMinutePrice> chartData = objectMapper.convertValue(
+                    data,
+                    new TypeReference<List<StreamMinutePrice>>() {}
+            );
+            return Optional.of(chartData);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+    
+    /**
+     * Redis에 저장할 일별 분봉 키 생성 
+     */
+    private String buildStreamMinuteKey(String stockCode, String today) {
+        return String.format("%s:%s:%s", KIS_STREAM_MINUTE_CHART_KEY, today, stockCode);
+    }
 
 }
