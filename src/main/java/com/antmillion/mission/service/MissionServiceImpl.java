@@ -2,6 +2,8 @@ package com.antmillion.mission.service;
 
 import com.antmillion.mission.dto.*;
 import com.antmillion.mission.mapper.MissionMapper;
+import com.antmillion.user.dto.UserRankResponseDTO;
+import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MissionServiceImpl implements MissionService {
     private final MissionMapper missionMapper;
+    private final AntRankService antRankService;
 
     @Override
     public List<QuizQuestionResponseDTO> getDailyQuiz() {
@@ -106,5 +109,13 @@ public class MissionServiceImpl implements MissionService {
             }
         }
         return isCorrect;
+    }
+
+    @Override
+    public UserRankResponseDTO getUserMissionStatus(Long userId) {
+        // 사용자 포인트 확인
+        int point = missionMapper.selectUserPoint(userId);
+        // 랭크 계산
+        return antRankService.calculateRankStatus(point);
     }
 }
