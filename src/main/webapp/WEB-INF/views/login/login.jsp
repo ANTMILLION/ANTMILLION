@@ -21,8 +21,8 @@
 				<h2 class="h2">로그인</h2>
 
 				<form class="form" method="post" action="${cpath}/login">
-					<input type="text" name="email" placeholder="이메일을 입력하세요" /> <input
-						type="password" name="password" placeholder="비밀번호를 입력하세요" />
+					<input type="text" name="email" placeholder="이메일을 입력하세요" value="${email}" />
+					<input type="password" name="password" placeholder="비밀번호를 입력하세요" />
 					<c:if test="${not empty loginError}">
                         <div class="msg-danger">${loginError}</div>
                     </c:if>

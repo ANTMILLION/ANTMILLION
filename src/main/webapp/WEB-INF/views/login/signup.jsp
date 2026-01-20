@@ -21,7 +21,7 @@
 
       <form class="form" method="post" action="${cpath}/signup">
         <div class="row">
-            <input id="emailInput" type="text" name="email" placeholder="이메일을 입력하세요" value="${email}" />
+            <input id="emailInput" type="text" name="email" placeholder="이메일을 입력하세요" value="${form.email}" />
                <button id="emailCheckBtn" class="btn small primary" type="button">중복 확인</button>
            </div>
             <div id="emailCheckMsg"></div>

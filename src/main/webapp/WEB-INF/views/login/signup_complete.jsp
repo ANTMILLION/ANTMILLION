@@ -32,7 +32,7 @@
       <div class="note">* 본 계좌는 모의투자용의 가상 계좌입니다.</div>
 
       <!-- 굳이 POST일 필요 없음: 시작 버튼은 메인으로 이동 -->
-      <form method="get" action="${cpath}/" style="margin-top: 18px;">
+      <form method="get" action="${cpath}/login" style="margin-top: 18px;">
         <button class="btn primary" type="submit" style="width: 100%;">투자 시작하기</button>
       </form>
     </div>
