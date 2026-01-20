@@ -183,8 +183,80 @@ function showCompletion() {
     document.getElementById('mission-progressBar').style.width = '100%';
     document.getElementById('mission-progressStatus').textContent = '100% 달성!';
 
+    // 서버에서 랭크 정보 가져오기
+    $.ajax({
+        url: cpath + '/mission/status',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            // 모든 랭크 이미지와 라벨의 'active' 클래스 제거 (초기화)
+            $('.mission-ant-ranks img').removeClass('active');
+            $('.mission-rank-label').removeClass('active');
+
+            // 사용자 랭크에 해당하는 이미지와 라벨에 'active' 추가
+            let targetImgId = 'mission-rank-img-' + data.rankName;
+            let $targetImg = $(document.getElementById(targetImgId));
+
+            if ($targetImg.length > 0) {
+                $targetImg.addClass('active');
+                // data-rank 속성으로 매칭되는 라벨 찾기
+                $('.mission-rank-label[data-rank="' + data.rankName + '"]').addClass('active');
+            } else {
+                console.log("일치하는 랭크 이미지를 찾을 수 없습니다: " + data.rankName);
+            }
+
+            // 포인트 정보 업데이트
+            updateRankProgress(data);
+        },
+        error: function(xhr, status, error) {
+            console.error('랭크 정보 조회 실패:', error);
+            $('#mission-reward-message').text('랭크 정보를 불러오는 데 실패했습니다.');
+        }
+    });
+
     // 서버에 완료 전송
     submitCompletion();
+}
+
+// 랭크 진행률 업데이트 함수 (새로 분리)
+function updateRankProgress(data) {
+    // 포인트 라벨 업데이트
+    $('#mission-reward-currentRankStartPoint').text(data.currentRankStartPoint + ' P');
+    $('#mission-reward-nextRankPoint').text(data.nextRankPoint + ' P');
+    $('#mission-reward-currentPoint').text(data.currentPoint + ' P');
+
+    // 진행률 계산
+    let percent = 0;
+
+    if (data.nextRankPoint > 0) {
+        // 현재 랭크 구간 내에서의 진행도 계산
+        const rangeTotal = data.nextRankPoint - data.currentRankStartPoint;  // 현재 랭크 구간 전체
+        const rangeCurrent = data.currentPoint - data.currentRankStartPoint; // 현재 랭크 구간 내 진행도
+
+        if (rangeTotal > 0) {
+            percent = (rangeCurrent / rangeTotal) * 100;
+        }
+    } else {
+        // 최고 레벨인 경우
+        percent = 100;
+    }
+
+    // 퍼센트 범위 제한
+    percent = Math.max(0, Math.min(100, percent));
+
+    // 남은 포인트 메시지 설정
+    if (data.nextRankPoint === 0) {
+        $('#mission-reward-message').text("축하합니다! 최고 레벨에 도달했습니다!");
+    } else {
+        $('#mission-reward-message').text(`다음 랭크까지 ${data.neededPoint.toLocaleString()} 포인트가 남았습니다.`);
+    }
+
+    // 애니메이션 효과를 위해 약간의 지연 후 포인트 바 업데이트
+    setTimeout(() => {
+        $('#mission-reward-progressBar').css('width', percent + '%');
+        // 현재 포인트 라벨을 포인트 바 끝에 위치
+        $('#mission-reward-currentPoint').css('left', percent + '%');
+    }, 100);
 }
 
 // 정답 제출 (AJAX)
