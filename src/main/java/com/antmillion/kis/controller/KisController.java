@@ -98,7 +98,7 @@ public class KisController {
 
         return kisApiService.getStreamMinutePrices(request);
     }
-        // 국내 당일 분봉 조회
+    
     @GetMapping("/candle/{stockCode}")
     public List<DayMinutePrice> getRealtimeCandle(@PathVariable String stockCode) {
         DayMinutePriceRequest request = DayMinutePriceRequest.builder()
