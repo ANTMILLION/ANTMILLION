@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class KisStockVolumeRankRedisRepository {
     private final ObjectMapper objectMapper;
 
     public void save(List<StockVolumeRank> stockVolumeRanks) {
-        redisTemplate.opsForValue().set(KIS_VOLUME_RANK, stockVolumeRanks);
+        redisTemplate.opsForValue().set(KIS_VOLUME_RANK, stockVolumeRanks, CACHE_EXPIRE, TimeUnit.SECONDS);
     }
 
     public Optional<List<StockVolumeRank>> getStockVolumeRanks() {
