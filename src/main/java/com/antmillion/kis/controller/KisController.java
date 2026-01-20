@@ -78,7 +78,19 @@ public class KisController {
                 .build();
         return kisApiService.getMarketIndexPrices(request);
     }
-
+    
+    // 국내 당일 분봉 조회
+    @GetMapping("/candle/{stockCode}")
+    public List<DayMinutePrice> getRealtimeCandle(@PathVariable String stockCode) {
+        DayMinutePriceRequest request = DayMinutePriceRequest.builder()
+                .condMrktDivCode("J")
+                .inputIscd(stockCode)
+                .pwDataIncuYn("Y") // 과거 데이터 30개 포함
+                .etcClsCode("0")
+                .build();
+        return kisApiService.getDayMinutePrices(request);
+    }
+    // 거래량순 조회
     @GetMapping("/volumeRank")
     public List<StockVolumeRank> kisStockVolumeRank() {
         StockVolumeRankRequest request = StockVolumeRankRequest.builder()
