@@ -17,7 +17,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -219,10 +222,29 @@ public class KisApiService {
      * @param request 조회 조건 (분류코드, 종목코드, 시간, 날짜 등)
      * @return 일별분봉조회 데이터 리스트
      */
+    
+    // Redis에 있는지 확인하고 반환, 만약 Redis에 데이터가 하나도 없으면 그때만 한투 api 직접호출
     public List<StreamMinutePrice> getStreamMinutePrices(StreamMinutePriceRequest request){
+    	String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    	String stockCode = request.getInputIscd();
+    	Optional<List<StreamMinutePrice>> cachedMinute = kisChartRedisRepository.getStreamMinuteChartData(stockCode, today);
+    	
+    	if (cachedMinute.isPresent()) {
+    	    log.info("일별 분봉 차트 데이터 캐시 재사용: {}", stockCode);
+    	    return cachedMinute.get();
+    	}
+    	
+    	log.info("한국투자증권 일별 분봉 시세 api 호출: {}", stockCode);
+    	
     	StreamMinutePriceResponse response = streamMinutePricesAPI(request);
-    	return response.getOutput2();
-    	// Redis에 있는지 확인하고 반환, 만약 Redis에 데이터가 하나도 없으면 그때만 한투 api 직접호출
+    	
+    	// response가 null이 아니고 리스트가 비어있지 않을 때만 저장
+    	if (response != null && response.getOutput2() != null) {
+    	    kisChartRedisRepository.saveStreamMinute(stockCode, today, response.getOutput2());
+    	    return response.getOutput2();
+    	}
+
+    	return Collections.emptyList(); // 빈 리스트 반환
     }
     
     /**
