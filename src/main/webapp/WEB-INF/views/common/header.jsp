@@ -15,7 +15,7 @@
     <!-- ⭐ 매매 편향 경고 뱃지 -->
     <div class="bias-alert-badge" id="biasAlertBadge" style="display:none;">
         <span class="bias-alert-icon">⚠️</span>
-        <span class="bias-alert-text">안전선호 오류 경고</span>
+        <span class="bias-alert-text">위험회피 경고</span>
     </div>
 
     <div class="header-user-info">

@@ -2,7 +2,7 @@
 // BiasType 매핑
 // ===========================
 const biasTypeMap = {
-    SAFE_HAVEN: { title: "안전선호 편향 경고", icon: "⚠️" },
+    RISK_AVERSION: { title: "위험회피 경고", icon: "⚠️" },
     LOSS_AVERSION: { title: "손실회피 편향 경고", icon: "⚠️" },
     CONFIRMATION: { title: "확증 편향 경고", icon: "⚠️" },
     SUNK_COST: { title: "매몰비용 오류 경고", icon: "⚠️" },

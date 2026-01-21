@@ -8,9 +8,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface HistoryMapper {
 
-    List<HistoryDTO> selectHistoryList(
-        @Param("userId") Long userId
-    );
+	List<HistoryDTO> selectHistoryList(Long userId);
 
     List<HistoryDTO> selectHistoryListByDate(
         @Param("userId") Long userId,
@@ -19,4 +17,14 @@ public interface HistoryMapper {
     );
 
     int insertHistory(HistoryDTO history);
+    int countUnreadAlerts(@Param("userId") Long userId);    
+    int markAsRead(@Param("historyId") Long historyId);    
+    int markAllAsRead(@Param("userId") Long userId);
+    
+    HistoryDTO getLastAlert(
+        @Param("userId") Long userId,
+        @Param("stockCode") String stockCode,
+        @Param("biasType") String biasType
+    );
 }
+    

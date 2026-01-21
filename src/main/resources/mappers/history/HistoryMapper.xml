@@ -79,5 +79,47 @@
 		#{isRead}
 		)
 	</insert>
+	
+	<!--읽지 않은 경고 개수 조회 -->
+    <select id="countUnreadAlerts" resultType="int">
+        SELECT COUNT(*)
+        FROM history
+        WHERE user_id = #{userId}
+          AND is_read = 0
+    </select>
+
+    <!--특정 경고 읽음 처리 -->
+    <update id="markAsRead">
+        UPDATE history
+        SET is_read = 1
+        WHERE history_id = #{historyId}
+    </update>
+
+    <!--모든 경고 읽음 처리 -->
+    <update id="markAllAsRead">
+        UPDATE history
+        SET is_read = 1
+        WHERE user_id = #{userId}
+          AND is_read = 0
+    </update>
+
+    <!--  마지막 경고 조회 (5분 중복) -->
+    <select id="getLastAlert" resultType="com.antmillion.history.dto.HistoryDTO">
+        SELECT
+            history_id AS historyId,
+            user_id AS userId,
+            order_id AS orderId,
+            stock_code AS stockCode,
+            bias_type AS biasType,
+            message_detail AS messageDetail,
+            time,
+            is_read AS isRead
+        FROM history
+        WHERE user_id = #{userId}
+          AND stock_code = #{stockCode}
+          AND bias_type = #{biasType}
+        ORDER BY time DESC
+        LIMIT 1
+    </select>
 
 </mapper>

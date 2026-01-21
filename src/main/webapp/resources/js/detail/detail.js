@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 buyBar.style.width = '22%';
                 sellBar.style.width = '78%';
                 
-                // 매도 탭 클릭 시 API로 안전선호 체크
+                // 매도 탭 클릭 시 API로 위험회피 체크
                 const urlParams = new URLSearchParams(window.location.search);
                 const stockCode = urlParams.get('code');
                 console.log('[종목 코드]', stockCode);
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const biasData = await checkBiasAlert(stockCode);
                     
                     if (biasData && biasData.hasAlert) {
-                        console.log('안전선호 경고: ' + biasData.stockName + ' +' + biasData.profitRate + '% 수익 중 (' + biasData.holdingDays + '일 보유)');
+                        console.log('위험회피 경고: ' + biasData.stockName + ' +' + biasData.profitRate + '% 수익 중 (' + biasData.holdingDays + '일 보유)');
                         
                         // 헤더에 경고 표시
                         if (typeof showBiasAlert === 'function') {

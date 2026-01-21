@@ -8,7 +8,7 @@ public enum BiasType {
      * - 조건: 수익률 >= 3% AND 보유 기간 <= 3일
      * - 증상: 작은 수익에 만족하고 빨리 매도
      */
-    SAFE_HAVEN("SAFE_HAVEN", "안전선호 오류", "작은 수익에 만족하여 성급하게 매도하려고 합니다"),
+	RISK_AVERSION("RISK_AVERSION", "위험회피 편향", "작은 수익에 만족하여 성급하게 매도하려고 합니다"),
     
     /**
      * 손실회피 편향
@@ -60,9 +60,7 @@ public enum BiasType {
         return message;
     }
     
-    /**
-     * code로 BiasType 찾기
-     */
+
     public static BiasType fromCode(String code) {
         for (BiasType type : values()) {
             if (type.code.equals(code)) {
@@ -71,10 +69,7 @@ public enum BiasType {
         }
         throw new IllegalArgumentException("Unknown bias type code: " + code);
     }
-    
-    /**
-     * code로 BiasType 찾기 (null 안전)
-     */
+
     public static BiasType fromCodeOrNull(String code) {
         if (code == null) return null;
         for (BiasType type : values()) {

@@ -2,6 +2,9 @@ package com.antmillion.history.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
@@ -22,16 +25,16 @@ public class BiasAlertService {
 	    private final BiasAlertMapper biasAlertMapper;
 	    private final HistoryMapper historyMapper;
 
-    // 안전선호 편향 기준
-    private static final BigDecimal SAFE_HAVEN_PROFIT_THRESHOLD = new BigDecimal("3.0");
-    private static final int SAFE_HAVEN_HOLDING_DAYS = 3;
+    // 위험회피 편향 기준
+    private static final BigDecimal RISK_AVERSION_PROFIT_THRESHOLD = new BigDecimal("3.0");
+    private static final int RISK_AVERSION_HOLDING_DAYS = 3;
 
     /**
-     * 안전선호 편향 체크
-     * ✅ 경고가 감지되는 순간 자동으로 history에 저장되게 변경
+     * 위험회피 편향 체크
+     * 경고가 감지되는 순간 자동으로 history에 저장되게 변경
      */
-    public BiasAlertDTO checkSafeHavenBias(Long accountId, String stockCode, Long userId) {
-        log.info("안전선호 체크 시작 - accountId={}, stockCode={}, userId={}", accountId, stockCode, userId);
+    public BiasAlertDTO checkRiskAversionBias(Long accountId, String stockCode, Long userId) {
+        log.info("위험회피 편향 체크 시작 - accountId={}, stockCode={}, userId={}", accountId, stockCode, userId);
 
         // 1. 보유 자산 조회
         BiasAlertDTO asset = biasAlertMapper.selectAssetForBiasCheck(accountId, stockCode);
@@ -48,10 +51,10 @@ public class BiasAlertService {
         BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
 
         // 4. 편향 조건 체크
-        boolean hasAlert = profitRate.compareTo(SAFE_HAVEN_PROFIT_THRESHOLD) >= 0
-                && asset.getHoldingDays() <= SAFE_HAVEN_HOLDING_DAYS;
+        boolean hasAlert = profitRate.compareTo(RISK_AVERSION_PROFIT_THRESHOLD) >= 0
+                && asset.getHoldingDays() <= RISK_AVERSION_HOLDING_DAYS;
 
-        log.info("안전선호 체크 결과 - 수익률: {}%, 보유일수: {}일, 경고: {}",
+        log.info("위험회피 편향 체크 결과 - 수익률: {}%, 보유일수: {}일, 경고: {}",
                 profitRate, asset.getHoldingDays(), hasAlert);
 
         // 5. 결과 DTO 만들기 (★ userId 반드시 세팅)
@@ -65,11 +68,11 @@ public class BiasAlertService {
                 .profitRate(profitRate)
                 .purchaseDate(asset.getPurchaseDate())
                 .holdingDays(asset.getHoldingDays())
-                .biasType(BiasType.SAFE_HAVEN)
+                .biasType(BiasType.RISK_AVERSION)
                 .hasAlert(hasAlert)
                 .build();
 
-        // ✅✅✅ 핵심: 경고가 뜨는 순간 자동 저장
+        // 핵심: 경고가 뜨는 순간 자동 저장 (5분 체크 포함)
         if (hasAlert) {
             saveBiasAlert(result);
         }
@@ -78,7 +81,7 @@ public class BiasAlertService {
     }
 
     /**
-     * 심리 경고 저장
+     * 심리 경고 저장 (5분 중복 체크)
      */
     public void saveBiasAlert(BiasAlertDTO biasAlert) {
         log.info("심리 경고 저장 시작 - {}", biasAlert);
@@ -88,33 +91,59 @@ public class BiasAlertService {
             throw new IllegalArgumentException("userId가 null입니다. checkSafeHavenBias에서 userId를 전달/세팅해야 합니다.");
         }
 
+        // 마지막 기록 조회
+        HistoryDTO lastAlert = historyMapper.getLastAlert(
+            biasAlert.getUserId(),
+            biasAlert.getStockCode(),
+            getBiasTypeString(biasAlert.getBiasType())
+        );
+        
+        // 기록 없으면 바로 저장
+        if (lastAlert == null) {
+            insertHistory(biasAlert);
+            log.info("첫 경고 - 저장 완료");
+            return;
+        }
+        
+        // 시간 차이 계산 (Date → LocalDateTime 변환)
+        Date lastTimeDate = lastAlert.getTime();
+        LocalDateTime lastTime = new java.sql.Timestamp(lastTimeDate.getTime()).toLocalDateTime();
+        LocalDateTime now = LocalDateTime.now();
+        long diffSeconds = ChronoUnit.SECONDS.between(lastTime, now);
+        
+        log.info("마지막 기록: {}, 현재: {}, 차이: {}초", lastTime, now, diffSeconds);
+        
+        // 5분(300초) 체크
+        if (diffSeconds > 300) {
+            insertHistory(biasAlert);
+            log.info("5분 초과 - 새 경고 저장 ({}초 경과)", diffSeconds);
+        } else {
+            log.info("5분 이내 - 저장 생략 ({}초 경과, 팝업은 표시됨)", diffSeconds);
+        }
+    }
+    
+    /**
+     * History 테이블에 INSERT
+     */
+    private void insertHistory(BiasAlertDTO biasAlert) {
         HistoryDTO history = HistoryDTO.builder()
                 .userId(biasAlert.getUserId())
                 .orderId(null)
                 .stockCode(biasAlert.getStockCode())
-                // ✅ enum의 code 그대로 저장
                 .biasType(getBiasTypeString(biasAlert.getBiasType()))
                 .messageDetail(generateAlertMessage(biasAlert))
                 .isRead(false)
                 .build();
 
         historyMapper.insertHistory(history);
-        log.info("심리 경고 저장 완료");
     }
 
-    /**
-     * BiasType enum을 String으로 변환
-     *너 enum에 있는 code 그대로 저장하도록 개선
-     */
     private String getBiasTypeString(BiasType biasType) {
         if (biasType == null) return "UNKNOWN";
-        return biasType.getCode(); // SAFE_HAVEN / LOSS_AVERSION ...
+        return biasType.getCode(); 
     }
 
-    /**
-     * 경고 메시지 생성
-     * 너 enum에 message가 이미 있으니 그걸 우선 사용
-     */
+
     private String generateAlertMessage(BiasAlertDTO biasAlert) {
         if (biasAlert.getBiasType() != null) {
             return biasAlert.getBiasType().getMessage();
