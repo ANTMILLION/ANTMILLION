@@ -22,6 +22,7 @@ import com.antmillion.auth.jwt.JwtProvider;
 import com.antmillion.auth.service.SignService;
 import com.antmillion.auth.service.SignService.SignUpResult;
 import com.antmillion.auth.service.SignService.TokenPair;
+import com.antmillion.auth.terms.TermsProvider;
 import com.antmillion.auth.token.RefreshTokenStore;
 
 @Controller
@@ -30,16 +31,14 @@ public class SignController {
 
 	private static final String SIGNUP_SESSION_KEY = "signupForm";
 
+	private final TermsProvider termsProvider;
 	private final SignService signService;
-	private final JwtProvider jwtProvider;
-	private final RefreshTokenStore refreshTokenStore;
 	private static final Pattern PW_RULE =
 		    Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
 
-	public SignController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore) {
+	public SignController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore, TermsProvider termsProvider) {
+		this.termsProvider = termsProvider;
 		this.signService = signService;
-		this.jwtProvider = jwtProvider;
-		this.refreshTokenStore = refreshTokenStore;
 	}
 
 	// 로그인 화면
@@ -148,6 +147,9 @@ public class SignController {
 			ra.addFlashAttribute("error", "이메일 입력부터 다시 진행하세요.");
 			return "redirect:/signup";
 		}
+		
+		model.addAttribute("termsText", termsProvider.getServiceTerms());
+        model.addAttribute("privacyText", termsProvider.getPrivacyTerms());
 		return "login/signup_step2";
 	}
 

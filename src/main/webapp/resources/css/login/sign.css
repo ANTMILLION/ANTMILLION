@@ -189,6 +189,119 @@ input[type="text"], input[type="password"]{
   }
 }
 
+/* 약관 체크라인 안의 보기 버튼에만 적용 */
+.form .checkline .btn-link{
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+.form .checkline .btn-link:hover{ text-decoration: underline; }
+
+.sidebar .sidebar-menu-item.btn-link{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  margin-left:0 !important;
+  text-align:left;
+}
+
+/* 보기 버튼(약관/개인정보) - 사이드바와 클래스 충돌 방지용 */
+.terms-view-btn{
+  margin-left:auto;
+  background:none;
+  border:0;
+  color:#3b82f6;
+  font-weight:700;
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:8px;
+  line-height:1;
+}
+.terms-view-btn:hover{
+  background: rgba(59,130,246,.08);
+}
+
+/* 모달 열렸을 때 배경 스크롤 방지 (JS에서 body style overflow를 쓰면 없어도 되지만,
+   같이 써도 문제 없음) */
+body.modal-open{
+  overflow:hidden;
+}
+
+/* 백드롭(오버레이) */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;              /* 기본 닫힘 */
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:24px;
+}
+.modal-backdrop.open{
+  display:flex;              /* open 클래스 붙으면 열림 */
+}
+
+/* 모달 패널 */
+.modal{
+  width:min(760px, 100%);
+  max-height:min(80vh, 720px);
+  background:#fff;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+  display:flex;
+  flex-direction:column;
+}
+
+/* 상단 헤더 */
+.modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+}
+
+.modal-title{
+  font-size:16px;
+  font-weight:800;
+  margin:0;
+}
+
+.modal-close{
+  border:0;
+  background:rgba(0,0,0,.06);
+  cursor:pointer;
+  padding:8px 10px;
+  border-radius:10px;
+  font-weight:800;
+}
+.modal-close:hover{
+  background:rgba(0,0,0,.10);
+}
+
+/* 본문 */
+.modal-body{
+  padding:16px;
+  overflow:auto;
+  line-height:1.6;
+  font-size:14px;
+  color:var(--text);
+  white-space:pre-wrap;
+}
+.modal-body pre{
+  margin:0;
+  font-family:inherit;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
 @media (max-width: 520px){
   :root{ --sidebar-w: 72px; }
   .sidebar-sidebar{ padding: 20px 10px; }
