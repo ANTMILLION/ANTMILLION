@@ -100,6 +100,26 @@
     margin-right: 12px;
 }
 
+/* 사이드바 하단 로그인/로그아웃 버튼 외곽선 제거 */
+.sidebar-menu-bottom form { 
+  margin: 0; 
+}
+
+.sidebar-menu-bottom button.sidebar-menu-item {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sidebar-menu-bottom button.sidebar-menu-item:focus,
+.sidebar-menu-bottom button.sidebar-menu-item:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 @media ( max-width : 768px) {
     .sidebar-sidebar {
         width: 60px;

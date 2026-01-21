@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/views/common/common.jsp" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <aside class="sidebar-sidebar">
     <div class="sidebar-logo" style="cursor: pointer">
@@ -27,20 +28,28 @@
         </a>
     </nav>
     <div class="sidebar-menu-bottom">
-        <a href="${cpath}/logout" class="sidebar-menu-item" onclick="logout()">
-            <span><img src="${cpath}/resources/images/icon/logout.png" alt="로그아웃"></span>
-            <span>로그아웃</span>
-        </a>
+        <!-- 로그인 상태: 로그아웃 버튼 -->
+        <sec:authorize access="isAuthenticated()">
+            <form action="${cpath}/logout" method="post"
+                onsubmit="return confirm('로그아웃 하시겠습니까?');">
+                <button type="submit" class="sidebar-menu-item btn-link">
+                    <span><img src="${cpath}/resources/images/icon/logout.png" alt="로그아웃"></span>
+                    <span>로그아웃</span>
+                </button>
+            </form>
+        </sec:authorize>
+
+        <!-- 비로그인 상태: 로그인 버튼 -->
+        <sec:authorize access="isAnonymous()">
+            <button type="button" class="sidebar-menu-item btn-link"
+                    onclick="location.href='${cpath}/login'">
+                <span><img src="${cpath}/resources/images/icon/login.png" alt="로그인"></span>
+                <span>로그인</span>
+            </button>
+        </sec:authorize>
     </div>
 </aside>
 <script>
-    function logout() {
-        if (e) e.preventDefault();
-        if (confirm('로그아웃 하시겠습니까?')) {
-            location.href = '${cpath}/logout'; //추후 수정 필요
-        }
-    }
-
     // 현재 페이지에 따라 active 클래스 추가
     document.addEventListener('DOMContentLoaded', () => {
         const cpath = '${cpath}';
