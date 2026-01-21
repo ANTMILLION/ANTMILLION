@@ -51,7 +51,7 @@ async function checkSellBiasAsync(stockCode) {
                 biasData.holdingDays + '일 보유)'
             );
 
-            // 🔥 경고 발생 트리거 (뱃지 + 알림 빨간 불)
+            // 경고 발생 트리거 (뱃지 + 알림 빨간 불)
             if (typeof onBiasWarningTriggered === 'function') {
                 onBiasWarningTriggered();
             } else {
