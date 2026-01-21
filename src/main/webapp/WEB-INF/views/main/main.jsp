@@ -26,17 +26,30 @@
             <!-- 나의 랭크 카드 -->
             <div class="main-rank-card main-grid-rank">
                 <div class="main-rank-header">
-                    <h2 class="main-card-title">나의 랭크</h2>
+                    <h2 class="main-card-title">${userRank.nickName}님의 랭크</h2>
                     <div class="main-rank-image-container">
-                        <img src="${cpath}/resources/images/profile/gold-ant.png" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+                        <img src="${cpath}/${userRank.rankImage}" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
                     </div>
                 </div>
-                <div class="main-exp-bar-container">
-                    <div class="main-exp-bar" style="width: 68%;"></div>
+                <div class="main-exp-bar-container"
+                     id="mainExpContainer"
+                     data-current="${userRank.currentPoint}"
+                     data-max="${userRank.nextRankPoint}"
+                     data-start="${userRank.currentRankStartPoint}">
+
+                    <div class="main-exp-bar" id="mainExpBar" style="width: 0%;"></div>
+
                     <div class="main-exp-text">
-                        <span class="main-exp-current">680</span>
+                        <span class="main-exp-current">${userRank.currentPoint}</span>
                         <span class="main-exp-divider">/</span>
-                        <span class="main-exp-max">1000</span>
+                        <c:choose>
+                            <c:when test="${userRank.nextRankPoint == 0 || userRank.nextRankPoint >= 10000}">
+                                <span class="main-exp-max">MAX</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="main-exp-max">${userRank.nextRankPoint}</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </div>
@@ -119,6 +132,42 @@
     </main>
 </div>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // HTML 태그에서 데이터 가져오기
+        const container = document.getElementById('mainExpContainer');
+        const progressBar = document.getElementById('mainExpBar');
+
+        if (container && progressBar) {
+            // data- 속성은 문자열이므로 숫자로 변환
+            const currentPoint = parseInt(container.getAttribute('data-current')) || 0;
+            const nextRankPoint = parseInt(container.getAttribute('data-max')) || 0;
+            const startPoint = parseInt(container.getAttribute('data-start')) || 0;
+
+            // 미션 페이지와 동일한 계산 로직 적용
+            let percent = 0;
+
+            // 최고 레벨(nextRankPoint가 0이거나 10000 이상)인지 확인
+            if (nextRankPoint > 0 && nextRankPoint < 10000) {
+                const rangeTotal = nextRankPoint - startPoint;   // 이번 랭크의 전체 구간
+                const rangeCurrent = currentPoint - startPoint;  // 내가 달성한 구간
+
+                if (rangeTotal > 0) {
+                    percent = (rangeCurrent / rangeTotal) * 100;
+                }
+            } else {
+                percent = 100;
+            }
+
+            // 0 ~ 100% 사이로 제한
+            percent = Math.max(0, Math.min(100, percent));
+
+            setTimeout(() => {
+                progressBar.style.width = percent + "%";
+            }, 100);
+        }
+    });
+
+
     // 페이지 로드 시 스크롤을 맨 위로 이동
     window.onload = function() {
         window.scrollTo(0, 0);
