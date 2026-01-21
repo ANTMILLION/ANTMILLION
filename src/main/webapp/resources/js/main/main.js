@@ -13,12 +13,9 @@ function formatDate(yyyymmdd) {
 
 // 종목 아이템 HTML 생성 함수
 function createMainStockItemHTML(stock, index) {
-    //const changeClass = stock.isPositive ? 'positive' : 'negative';
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
-    //todo: 등락률 자리에 거래량을 임시로 넣어둠
-    //todo: 즐겨찾기 일단 남겨둠
-    //todo: 거래비율 자리에 50, 50 임시로 넣어둠
+
     return `
         <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
             <div class="main-stocklist-favorite">
@@ -55,29 +52,37 @@ function renderMainStocks() {
     fetch(contextPath + '/api/kis/volumeRank')
         .then(res => res.json())
         .then(data => {
-            const html = data
-                .slice(0, 5) //상위 5개만
-                .map((stock, index) => createMainStockItemHTML(stock, index)).join('');
-            container.innerHTML = html;
-            // 이벤트 리스너 재등록
-            attachMainFavoriteListeners();
-            attachMainStockItemListeners();
+            // 관심종목 목록 가져오기
+            return fetch(contextPath + '/api/interest/list')
+                .then(res => res.json())
+                .then(interestCodes => {
+                    const html = data
+                        .slice(0, 5)
+                        .map((stock, index) => {
+                            // 관심종목 여부 확인
+                            stock.isFavorite = interestCodes.includes(stock.mksc_shrn_iscd);
+                            return createMainStockItemHTML(stock, index);
+                        }).join('');
+                    container.innerHTML = html;
 
-            if (data.length > 0) {
-                const firstStock = data[0];
-                const chartStockName = document.querySelector('.main-chart-stock-name');
-                const chartStockCode = document.querySelector('.main-chart-stock-code');
+                    // 이벤트 리스너 재등록
+                    attachMainFavoriteListeners();
+                    attachMainStockItemListeners();
 
-                if (chartStockName) {
-                    chartStockName.textContent = firstStock.hts_kor_isnm;
-                }
-                if (chartStockCode) {
-                    chartStockCode.textContent = firstStock.mksc_shrn_iscd;
-                }
-            }
+                    if (data.length > 0) {
+                        const firstStock = data[0];
+                        const chartStockName = document.querySelector('.main-chart-stock-name');
+                        const chartStockCode = document.querySelector('.main-chart-stock-code');
+
+                        if (chartStockName) {
+                            chartStockName.textContent = firstStock.hts_kor_isnm;
+                        }
+                        if (chartStockCode) {
+                            chartStockCode.textContent = firstStock.mksc_shrn_iscd;
+                        }
+                    }
+                });
         });
-
-
 }
 
 // 즐겨찾기 버튼 이벤트 리스너 등록
@@ -85,16 +90,27 @@ function attachMainFavoriteListeners() {
     document.querySelectorAll('.main-stocklist-favorite-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const stockId = parseInt(this.getAttribute('data-id'));
+            const stockCode = this.getAttribute('data-id');
 
-            // 데이터 업데이트
-            const stock = mainStocks.find(s => s.id === stockId);
-            if (stock) {
-                stock.isFavorite = !stock.isFavorite;
-
-                this.classList.toggle('active');
-                this.textContent = stock.isFavorite ? '♥' : '♡';
-            }
+            // 서버에 관심종목 토글 요청
+            fetch(contextPath + '/api/interest/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stockCode: stockCode })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // UI 업데이트
+                        this.classList.toggle('active');
+                        this.textContent = data.isInterest ? '♥' : '♡';
+                    }
+                })
+                .catch(error => {
+                    console.error('관심종목 토글 실패:', error);
+                });
         });
     });
 }

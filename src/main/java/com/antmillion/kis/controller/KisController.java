@@ -9,7 +9,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -126,6 +130,74 @@ public class KisController {
                 .inputDate1("0") //고정
                 .build();
         return kisApiService.getStockVolumeRanks(request);
+    }
+
+    //거래량 순위 - 페이징
+    @GetMapping("/volumeRank/paged")
+    public Map<String, Object> kisStockVolumeRankPaged(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        StockVolumeRankRequest request = StockVolumeRankRequest.builder()
+                .marketCode("J")
+                .screenCode("20171")
+                .inputCode("0000")
+                .divClassCode("0")
+                .blngClassCode("0")
+                .targetClassCode("111111111")
+                .targetExlsClassCode("0000001100")
+                .inputPrice1("0")
+                .inputPrice2("0")
+                .volumeCount("0")
+                .inputDate1("0")
+                .build();
+        List<StockVolumeRank> allRanks = kisApiService.getStockVolumeRanks(request);
+
+        //페이징 처리
+        int start = (page - 1) * size;
+        int end = Math.min(start + size, allRanks.size());
+
+        List<StockVolumeRank> pagedRanks = allRanks.subList(start, end);
+
+        Map<String, Object> response =  new HashMap<>();
+        response.put("data", pagedRanks);
+        response.put("currentPage", page);
+        response.put("totalItems", allRanks.size());
+        response.put("totalPages", (int) Math.ceil((double) allRanks.size() / (double) size));
+
+        return response;
+    }
+
+    //특정 종목 코드 목록으로 종목 정보 조회
+    @PostMapping("/stocksByCode")
+    public List<StockVolumeRank> getStocksByCode(@RequestBody Map<String, List<String>> request) {
+        List<String> stockCodes = request.get("stockCodes");
+
+        if (stockCodes == null || stockCodes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 전체 거래량 순위에서 해당 종목들만 필터링
+        StockVolumeRankRequest rankRequest = StockVolumeRankRequest.builder()
+                .marketCode("J")
+                .screenCode("20171")
+                .inputCode("0000")
+                .divClassCode("0")
+                .blngClassCode("0")
+                .targetClassCode("111111111")
+                .targetExlsClassCode("0000001100")
+                .inputPrice1("0")
+                .inputPrice2("0")
+                .volumeCount("0")
+                .inputDate1("0")
+                .build();
+
+        List<StockVolumeRank> allRanks = kisApiService.getStockVolumeRanks(rankRequest);
+
+        // stockCodes에 해당하는 종목만 필터링
+        return allRanks.stream()
+                .filter(stock -> stockCodes.contains(stock.getStockCode()))
+                .collect(Collectors.toList());
     }
 
 }
