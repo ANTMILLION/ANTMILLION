@@ -5,7 +5,7 @@ let isAnswering = false;
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function () {
-    fetchDailyQuiz();
+    getDailyQuiz();
 });
 
 function formatTodayKorean() {
@@ -18,14 +18,14 @@ function formatTodayKorean() {
 }
 
 // 서버 API 호출하여 데이터 가져오기
-function fetchDailyQuiz() {
+function getDailyQuiz() {
     $.ajax({
-        url: '/antmillion/mission/daily',
+        url: cpath + '/mission/daily',
         type: 'GET',
         dataType: 'json',
         success: function (data) {
             if (!data || data.length === 0) {
-                alert("오늘의 퀴즈가 없습니다!");
+                showCompletion();
                 return;
             }
 
@@ -42,9 +42,8 @@ function fetchDailyQuiz() {
                 point: q.point,
                 options: q.choices.map((c, index) => ({
                     id: c.quizChoiceId,
+                    no: c.choiceNo,
                     text: c.choiceText,
-                    // 임시로 1번 보기를 정답으로 처리, 추후에 변경
-                    isCorrect: (index === 0)
                 }))
             }));
 
@@ -75,8 +74,7 @@ function loadQuiz(index) {
         button.className = 'mission-option-btn';
         button.textContent = option.text;
         button.setAttribute('data-option-id', option.id);
-        button.setAttribute('data-is-correct', option.isCorrect);
-        button.onclick = () => selectOption(option.id, option.isCorrect, button);
+        button.onclick = () => selectOption(option.no, null, button);
         optionsContainer.appendChild(button);
     });
 
@@ -84,17 +82,15 @@ function loadQuiz(index) {
 }
 
 // 선택지 선택
-function selectOption(optionId, isCorrect, buttonElement) {
+function selectOption(optionId, ignore, buttonElement) {
     if (isAnswering) return;
     isAnswering = true;
 
-    if (isCorrect) {
-        // 정답 처리
-        handleCorrectAnswer(buttonElement, optionId);
-    } else {
-        // 오답 처리
-        handleWrongAnswer(buttonElement);
-    }
+    // 현재 퀴즈ID 가져오기
+    const currentQuizId = quizData[currentQuizIndex].id;
+
+    // 서버로 정답 제출 및 채점 요청
+    submitAnswer(currentQuizId, optionId, buttonElement);
 }
 
 // 정답 처리
@@ -107,9 +103,6 @@ function handleCorrectAnswer(buttonElement, optionId) {
 
     // 진행률 업데이트
     updateProgress();
-
-    // 서버에 정답 전송 (AJAX)
-    submitAnswer(quizData[currentQuizIndex].id, optionId, true);
 
     // 화면 클릭 시 즉시 다음 문제로
     const skipHandler = function () {
@@ -195,8 +188,31 @@ function showCompletion() {
 }
 
 // 정답 제출 (AJAX)
-function submitAnswer(quizId, optionId, isCorrect) {
-    console.log('Submit answer:', {quizId, optionId, isCorrect});
+function submitAnswer(quizId, optionId, buttonElement) {
+    const requestData = {
+        userId : 1, // 세션 ID로 변경 필요
+        quizId : quizId,
+        choiceNo : optionId
+    }
+    $.ajax({
+        url: cpath + '/mission/check',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(requestData),
+        dataType: 'json',
+        success: function (isCorrect) {
+            if (isCorrect){
+                handleCorrectAnswer(buttonElement, optionId);
+            } else {
+                handleWrongAnswer(buttonElement);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('채점 요청 실패:', error);
+            alert("채점 중 오류가 발생했습니다.");
+            isAnswering = false; // 에러 시 다시 클릭 가능
+        }
+    })
 }
 
 // 퀴즈 완료 제출
