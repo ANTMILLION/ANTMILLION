@@ -19,4 +19,7 @@ public interface MemberMapper {
 
     // 사용자 포인트 조회
     int selectUserPoint(@Param("userId") Long userId);
+
+    // 사용자 닉네임 조회
+    String selectUserNickName(@Param("userId") Long userId);
 }

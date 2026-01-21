@@ -46,4 +46,10 @@
     FROM member
     WHERE user_id = #{userId}
   </select>
+
+  <select id="selectUserNickName" resultType="String">
+    SELECT nickname
+    FROM member
+    where user_id = #{userId}
+  </select>
 </mapper>
