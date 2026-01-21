@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.antmillion.auth.mapper.AccountMapper">
+
+  <resultMap id="AccountMap" type="com.antmillion.user.dto.AccountDTO">
+    <id     property="accountId" column="account_id"/>
+    <result property="userId" column="user_id"/>
+    <result property="accountNumber" column="account_number"/>
+    <result property="balance" column="balance"/>
+  </resultMap>
+
+  <!-- (A) account_id가 AUTO_INCREMENT라면: useGeneratedKeys 사용 가능 -->
+  <insert id="insertAccount" parameterType="com.antmillion.user.dto.AccountDTO"
+          useGeneratedKeys="true" keyProperty="accountId">
+    INSERT INTO account (user_id, account_number, balance)
+    VALUES (#{userId}, #{accountNumber}, #{balance})
+  </insert>
+
+  <select id="selectByUserId" resultMap="AccountMap">
+    SELECT account_id, user_id, account_number, balance
+    FROM account
+    WHERE user_id = #{userId}
+  </select>
+
+  <select id="selectByAccountId" resultMap="AccountMap">
+    SELECT account_id, user_id, account_number, balance
+    FROM account
+    WHERE account_id = #{accountId}
+  </select>
+
+  <update id="updateBalance">
+    UPDATE account
+    SET balance = #{balance}
+    WHERE account_id = #{accountId}
+  </update>
+
+</mapper>

@@ -16,4 +16,4 @@
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- 커뮤니티 JS -->
-<script src="${cpath}/resources/js/detail/community.js"></script>
+<script src="${cpath}/resources/js/stock/community.js"></script>

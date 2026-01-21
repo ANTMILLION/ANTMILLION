@@ -5,7 +5,8 @@ import com.antmillion.kis.constant.KisApiConstant;
 import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
 import com.antmillion.kis.repository.KisChartRedisRepository;
-import com.antmillion.kis.repository.KisMarketIndexChartRepository;
+import com.antmillion.kis.repository.KisMarketIndexChartRedisRepository;
+import com.antmillion.kis.repository.KisStockVolumeRankRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -17,8 +18,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,7 +35,8 @@ public class KisApiService {
     private final RestTemplate restTemplate;
     private final KisAccessTokenRedisRepository kisAccessTokenRedisRepository;
     private final KisChartRedisRepository kisChartRedisRepository;
-    private final KisMarketIndexChartRepository kisMarketIndexChartRepository;
+    private final KisMarketIndexChartRedisRepository kisMarketIndexChartRepository;
+    private final KisStockVolumeRankRedisRepository kisStockVolumeRankRedisRepository;
 
     /**
      * KIS 액세스 토큰 조회/발급
@@ -143,7 +150,7 @@ public class KisApiService {
      * 한국투자증권 API 호출을 위한 헤더 생성
      * @param token 접근 토큰
      * @param trId 거래 id
-     * @return 캔들 차트 데이터 리스트
+     * @return 한국투자증권 api 요청 헤더
      */
     private HttpHeaders createApiHeader(String token, String trId) {
         HttpHeaders headers = new HttpHeaders();
@@ -158,7 +165,7 @@ public class KisApiService {
     }
 
     /**
-     * 한국투자증권 API 호출을 위한 헤더 생성
+     * 시장 지수 차트 데이터 조회
      * @param request 조회 조건 (종목코드, 기간, 날짜 등)
      * @return 코스피, 코스닥 캔들 차트 데이터 리스트
      */
@@ -178,7 +185,7 @@ public class KisApiService {
     /**
      * 한국투자증권 국내업종 일자별지수 API 호출
      * @param request 조회 조건 (종목코드, 기간, 날짜 등)
-     * @return 코스피, 코스닥 캔들 차트 데이터 리스트
+     * @return 한국투자증권 api 반환값
      */
     private KisMarketIndexPriceResponse marketIndexPricesAPI(MarketIndexPriceRequest request) {
         String token = getKisAccessToken();
@@ -208,5 +215,171 @@ public class KisApiService {
                 .queryParam("FID_INPUT_DATE_1", request.getEndDate())
                 .build().toUriString();
     }
+    	
+    /***
+     * 한국투자증권 국내업종 당일분봉조회
+     * @param request 조회 조건 (분류코드, 종목코드, 시간 등)
+     * @return 당일분봉조회 데이터 리스트
+     */
+    public List<DayMinutePrice> getDayMinutePrices(DayMinutePriceRequest request){
+    	DayMinutePriceResponse response = dayMinutePricesAPI(request);
+    	return response.getOutput2();
+    	// Redis에 있는지 확인하고 반환, 만약 Redis에 데이터가 하나도 없으면 그때만 한투 api 직접호출
+    }
+    /**
+     * 한국투자증권 국내업종 당일분봉조회 API 호출
+     * @param request 조회 조건 (분류코드, 종목코드, 시간 등)
+     * @return 당일분봉조회 데이터 리스트
+     * 
+     */
+    private DayMinutePriceResponse dayMinutePricesAPI(DayMinutePriceRequest request) {
+    	String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHKST03010200");
+        String url = buildDayMinuteApiUrl(request);
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<DayMinutePriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, DayMinutePriceResponse.class);
+        DayMinutePriceResponse responseBody = response.getBody();
+        if(responseBody != null) {
+        	return responseBody;
+        }
+        throw new RuntimeException("국내 시장 당일 분봉 데이터 조회 실패");
+    }
+    
+    /**
+     * 한국투자증권 국내업종 당일분봉조회 API URL 생성
+     * @param request 조회 조건 (분류코드, 종목코드, 시간 등)
+     * @return 한국투자증권 국내업종 당일분봉조회 API URL
+     */
+    private String buildDayMinuteApiUrl(DayMinutePriceRequest request) {
+		String now = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.DAY_MINUTE_PATH);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getCondMrktDivCode()) // 조건 시장 분류 코드(J : KRX)
+				.queryParam("FID_INPUT_ISCD", request.getInputIscd()) // 입력 종목코드
+				.queryParam("FID_INPUT_HOUR_1", now) // 입력 시간(현재 시간, 1분봉)
+				.queryParam("FID_PW_DATA_INCU_YN", request.getPwDataIncuYn()) // 과거 데이터 포함 여부(Y : 최근 30개 output2 받을 수 있음)
+				.queryParam("FID_ETC_CLS_CODE", request.getEtcClsCode()) // 기타 구분 코드("0")
+				.build().toUriString();
+    }
 
+    /**
+     * 거래량순 종목리스트 조회
+     * @param request 조회 조건 (기간, 날짜 등)
+     * @return 거래량순 종목리스트 상위 30개
+     */
+    public List<StockVolumeRank> getStockVolumeRanks(StockVolumeRankRequest request) {
+        Optional<List<StockVolumeRank>> cached =  kisStockVolumeRankRedisRepository.getStockVolumeRanks();
+        if (cached.isPresent()) {
+            log.info("거래량 순위 데이터 재사용");
+            return cached.get();
+        }
+
+        log.info("한국투자증권 거래량순위 API 호출");
+        KisStockVolumeRankResponse response = stockVolumeRankAPI(request);
+        kisStockVolumeRankRedisRepository.save(response.getOutput());
+        return  response.getOutput();
+    }
+
+    private KisStockVolumeRankResponse stockVolumeRankAPI(StockVolumeRankRequest request) {
+        String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHPST01710000");
+        String url = buildStockVolumeRankUrl(request);
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisStockVolumeRankResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisStockVolumeRankResponse.class);
+        KisStockVolumeRankResponse responseBody = response.getBody();
+        if (responseBody != null) {
+            return responseBody;
+        }
+        throw new RuntimeException("거래량 순위 데이터 조회 실패");
+    }
+
+    private String buildStockVolumeRankUrl(StockVolumeRankRequest request) {
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.STOCK_VOLUME_RANK);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                .queryParam("FID_COND_SCR_DIV_CODE", request.getScreenCode())
+                .queryParam("FID_INPUT_ISCD", request.getInputCode())
+                .queryParam("FID_DIV_CLS_CODE", request.getDivClassCode())
+                .queryParam("FID_BLNG_CLS_CODE", request.getBlngClassCode())
+                .queryParam("FID_TRGT_CLS_CODE", request.getTargetClassCode())
+                .queryParam("FID_TRGT_EXLS_CLS_CODE", request.getTargetExlsClassCode())
+                .queryParam("FID_INPUT_PRICE_1", request.getInputPrice1())
+                .queryParam("FID_INPUT_PRICE_2", request.getInputPrice2())
+                .queryParam("FID_VOL_CNT", request.getVolumeCount())
+                .queryParam("FID_INPUT_DATE_1", request.getInputDate1())
+                .build().toUriString();
+    }
+
+    /***
+     * 한국투자증권 국내업종 일별분봉조회
+     * @param request 조회 조건 (분류코드, 종목코드, 시간, 날짜 등)
+     * @return 일별분봉조회 데이터 리스트
+     */
+    
+    // Redis에 있는지 확인하고 반환, 만약 Redis에 데이터가 하나도 없으면 그때만 한투 api 직접호출
+    public List<StreamMinutePrice> getStreamMinutePrices(StreamMinutePriceRequest request){
+    	String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    	String stockCode = request.getInputIscd();
+    	Optional<List<StreamMinutePrice>> cachedMinute = kisChartRedisRepository.getStreamMinuteChartData(stockCode, today);
+    	
+    	if (cachedMinute.isPresent()) {
+    	    log.info("일별 분봉 차트 데이터 캐시 재사용: {}", stockCode);
+    	    return cachedMinute.get();
+    	}
+    	
+    	log.info("한국투자증권 일별 분봉 시세 api 호출: {}", stockCode);
+    	
+    	StreamMinutePriceResponse response = streamMinutePricesAPI(request);
+    	
+    	// response가 null이 아니고 리스트가 비어있지 않을 때만 저장
+    	if (response != null && response.getOutput2() != null) {
+    		List<StreamMinutePrice> minuteData = response.getOutput2();
+    	    Collections.reverse(minuteData); // 과거 -> 최신 순으로 정렬
+    	    
+    	    kisChartRedisRepository.saveStreamMinute(stockCode, today, minuteData);
+    	    return minuteData;
+    	}
+    	return Collections.emptyList(); // 빈 리스트 반환
+    }
+
+    /**
+     * 한국투자증권 국내업종 일별분봉조회 API 호출
+     * @param request 조회 조건 (분류코드, 종목코드, 시간, 날짜 등)
+     * @return 일별분봉조회 데이터 리스트
+     * 
+     */
+    private StreamMinutePriceResponse streamMinutePricesAPI(StreamMinutePriceRequest request) {
+    	String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHKST03010230");
+        headers.set("tr_cont", "N"); // 연속 거래 여부
+        String url = buildStreamMinuteApiUrl(request);
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<StreamMinutePriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, StreamMinutePriceResponse.class);
+        StreamMinutePriceResponse responseBody = response.getBody();
+        if(responseBody != null) {
+        	return responseBody;
+        }
+        throw new RuntimeException("국내 시장 일별 분봉 데이터 조회 실패");
+    }
+    
+    /**
+     * 한국투자증권 국내업종 일별분봉조회 API URL 생성
+     * @param request 조회 조건 (분류코드, 종목코드, 시간, 날짜 등)
+     * @return 한국투자증권 국내업종 일별분봉조회 API URL
+     */
+    private String buildStreamMinuteApiUrl(StreamMinutePriceRequest request) {
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.STREAM_MINUTE_PATH);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getCondMrktDivCode()) // 조건 시장 분류 코드(J : KRX)
+				.queryParam("FID_INPUT_ISCD", request.getInputIscd()) // 입력 종목코드
+				.queryParam("FID_INPUT_HOUR_1", request.getInputHour1()) // 입력 시간1 (15:30 고정)
+				.queryParam("FID_INPUT_DATE_1", request.getInputDate1()) // 입력 날짜
+				.queryParam("FID_PW_DATA_INCU_YN", request.getPwDataIncuYn()) // 과거 데이터 포함 여부 (당일 실시간 N 고정)
+				.queryParam("FID_FAKE_TICK_INCU_YN", request.getFakeTickIncuYn()) // 허봉 포함 여부 (공백 필수 입력)
+				.build().toUriString();
+
+    }
 }

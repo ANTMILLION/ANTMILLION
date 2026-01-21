@@ -326,20 +326,58 @@ body {
 	gap: 12px;
 }
 
-.mission-ant-ranks img {
+.mission-rank-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	position: relative;
+	width: 120px;
+	min-width: 120px;
+	flex-shrink: 0;
+}
+
+.mission-rank-item img {
 	width: 100px;
 	height: 100px;
 	object-fit: contain;
-	transition: all 0.3s ease;
-}
-
-.mission-ant-ranks img:nth-child(3) {
-	transform: scale(1.2);
-}
-
-.mission-ant-ranks img:not(:nth-child(3)) {
+	transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 	opacity: 0.3;
 	filter: grayscale(100%);
+	transform: scale(1.2);
+	margin-bottom: 10px;
+}
+
+.mission-rank-item img.active {
+	opacity: 1;
+	filter: grayscale(0%);
+	transform: scale(1.4);
+}
+
+.mission-rank-label {
+	margin-top: 8px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--text-tertiary);
+	opacity: 0.5;
+	transition: all 0.5s ease;
+	white-space: nowrap;
+	text-align: center;
+}
+
+.mission-rank-label.active {
+	display: inline-block;
+	padding: 4px 12px;
+	margin-top: 10px;
+	background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+	border-radius: 12px;
+	font-size: 14px;
+	font-weight: 700;
+	color: #8b6914;
+	margin-bottom: 8px;
+	letter-spacing: 0.3px;
+	opacity: 1;
+	white-space: nowrap;
 }
 
 .mission-reward-info {
@@ -383,15 +421,24 @@ body {
 	border-radius: 12px;
 	background: linear-gradient(90deg, #ffd54f 0%, #ffc107 50%, #ff8f00 100%);
 	box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
-	transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+	transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 0.8);
 	position: relative;
 	overflow: hidden;
 }
 
 .mission-points-label:nth-of-type(1) {
 	position: absolute;
+	left: 0;
+	top: 26px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--text-tertiary);
+}
+
+.mission-points-label:nth-of-type(2) {
+	position: absolute;
 	top: -34px;
-	left: 68%;
+	left: 0;
 	transform: translateX(-50%);
 	background-color: var(--text-primary);
 	color: #fff;
@@ -402,9 +449,10 @@ body {
 	box-shadow: var(--shadow-sm);
 	white-space: nowrap;
 	z-index: 10;
+	transition: left 1s cubic-bezier(0.34, 1.56, 0.64, 0.8);
 }
 
-.mission-points-label:nth-of-type(1)::after {
+.mission-points-label:nth-of-type(2)::after {
 	content: '';
 	position: absolute;
 	bottom: -4px;
@@ -415,10 +463,10 @@ body {
 	border-color: var(--text-primary) transparent transparent transparent;
 }
 
-.mission-points-label:nth-of-type(2) {
+.mission-points-label:nth-of-type(3) {
 	position: absolute;
 	right: 0;
-	top: -24px;
+	top: 26px;
 	font-size: 12px;
 	font-weight: 500;
 	color: var(--text-tertiary);

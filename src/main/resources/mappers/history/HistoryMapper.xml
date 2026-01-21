@@ -5,33 +5,33 @@
 
 <mapper namespace="com.antmillion.history.mapper.HistoryMapper">
 
-	<!-- 전체 심리경고 조회 -->
-	<select id="selectHistoryList"
-		resultType="com.antmillion.history.dto.HistoryDTO">
-		SELECT
-		h.history_id AS historyId,
-		h.user_id AS userId,
-		h.order_id AS orderId,
-		h.stock_code AS stockCode,
-		h.bias_type AS biasType,
-		h.message_detail AS messageDetail,
-		h.time,
-		h.is_read AS isRead,
-		s.stock_name AS stockName,
-		o.transaction_type AS transactionType,
-		o.quantity AS quantity,
-		o.order_price AS orderPrice,
-		(o.quantity * o.order_price) AS totalAmount
-		FROM history h
-		LEFT JOIN stock_order o ON h.order_id = o.order_id
-		LEFT JOIN stock s ON h.stock_code = s.stock_code
-		WHERE h.user_id = #{userId}
-		ORDER BY h.time DESC
-	</select>
+    <!-- 전체 심리경고 조회 -->
+    <select id="selectHistoryList"
+        resultType="com.antmillion.history.dto.HistoryDTO">
+        SELECT
+        h.history_id AS historyId,
+        h.user_id AS userId,
+        h.order_id AS orderId,
+        h.stock_code AS stockCode,
+        h.bias_type AS biasType,
+        h.message_detail AS messageDetail,
+        h.time,
+        h.is_read AS isRead,
+        s.stock_name AS stockName,
+        o.transaction_type AS transactionType,
+        o.quantity AS quantity,
+        o.order_price AS orderPrice,
+        (o.quantity * o.order_price) AS totalAmount
+        FROM history h
+        LEFT JOIN stock_order o ON h.order_id = o.order_id
+        LEFT JOIN stock s ON h.stock_code = s.stock_code
+        WHERE h.user_id = #{userId}
+        ORDER BY h.time DESC
+    </select>
 
-	<!-- 날짜 기준 심리경고 조회 -->
-	<select id="selectHistoryListByDate"
-		resultType="com.antmillion.history.dto.HistoryDTO">
+    <!-- 날짜 기준 심리경고 조회 -->
+    <select id="selectHistoryListByDate"
+        resultType="com.antmillion.history.dto.HistoryDTO">
     <![CDATA[
     SELECT
         h.history_id AS historyId,
@@ -55,7 +55,8 @@
       AND h.time <= CONCAT(#{endDate}, ' 23:59:59')
     ORDER BY h.time DESC
     ]]>
-	</select>
+    </select>
+
 
 
 	<!-- 심리경고 저장 -->
@@ -121,5 +122,6 @@
         ORDER BY time DESC
         LIMIT 1
     </select>
+
 
 </mapper>

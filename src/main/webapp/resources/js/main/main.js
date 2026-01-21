@@ -2,27 +2,6 @@
    메인 페이지 JavaScript (com.antmillion.main.js)
    =========================== */
 
-// Mock 데이터 (상위 6개만)
-const mainStocks = [
-    { id: 1, name: '삼성전자', logo: 'samsung', price: '140,900원', change: '+1.43%', isPositive: true, buyRatio: 50, sellRatio: 50, isFavorite: false },
-    { id: 2, name: 'SK하이닉스', logo: 'sk', price: '742,500원', change: '+2.27%', isPositive: true, buyRatio: 43, sellRatio: 57, isFavorite: true },
-    { id: 3, name: '현대차', logo: 'hyundai', price: '326,500원', change: '+6.00%', isPositive: true, buyRatio: 75, sellRatio: 25, isFavorite: false },
-    { id: 4, name: '한미반도체', logo: 'hanmi', price: '186,300원', change: '+1.41%', isPositive: true, buyRatio: 41, sellRatio: 59, isFavorite: false },
-    { id: 5, name: 'KODEX 레버리지', logo: 'kodex', price: '57,300원', change: '+1.64%', isPositive: true, buyRatio: 44, sellRatio: 56, isFavorite: false }
-];
-
-// 로고 이미지 URL 매핑
-const logoMap = {
-    'samsung': 'https://via.placeholder.com/40?text=LOGO',
-    'sk': 'https://via.placeholder.com/40?text=LOGO',
-    'hyundai': 'https://via.placeholder.com/40?text=LOGO',
-    'hanmi': 'https://via.placeholder.com/40?text=LOGO',
-    'kodex': 'https://via.placeholder.com/40?text=LOGO',
-    'doosan': 'https://via.placeholder.com/40?text=LOGO',
-    'hanwha': 'https://via.placeholder.com/40?text=LOGO',
-    'hyundai-motor': 'https://via.placeholder.com/40?text=LOGO'
-};
-
 // 날짜 포멧 변경
 function formatDate(yyyymmdd) {
     return {
@@ -34,33 +13,31 @@ function formatDate(yyyymmdd) {
 
 // 종목 아이템 HTML 생성 함수
 function createMainStockItemHTML(stock, index) {
-    const changeClass = stock.isPositive ? 'positive' : 'negative';
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
-    const logoUrl = logoMap[stock.logo] || 'https://via.placeholder.com/40?text=LOGO';
 
     return `
-        <div class="main-stocklist-item" data-id="${stock.id}">
+        <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
             <div class="main-stocklist-favorite">
                 <span class="main-stocklist-rank">${index + 1}</span>
-                <button class="main-stocklist-favorite-btn ${favoriteClass}" data-id="${stock.id}">${favoriteIcon}</button>
+                <button class="main-stocklist-favorite-btn ${favoriteClass}" data-id="${stock.mksc_shrn_iscd}">${favoriteIcon}</button>
             </div>
             <div class="main-stocklist-info">
                 <div class="main-stocklist-logo">
-                    <img src="${logoUrl}" alt="${stock.name}">
+                    <img src="" alt="${stock.hts_kor_isnm}">
                 </div>
-                <span class="main-stocklist-name">${stock.name}</span>
+                <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
-            <div class="main-stocklist-price">${stock.price}</div>
-            <div class="main-stocklist-change ${changeClass}">${stock.change}</div>
+            <div class="main-stocklist-price">${stock.stck_prpr}</div>
+            <div class="main-stocklist-change">${stock.acml_vol}</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
-                    <div class="main-stocklist-sentiment-buy" style="width: ${stock.buyRatio}%;"></div>
-                    <div class="main-stocklist-sentiment-sell" style="width: ${stock.sellRatio}%;"></div>
+                    <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
+                    <div class="main-stocklist-sentiment-sell" style="width: 50%;"></div>
                 </div>
                 <div class="main-stocklist-sentiment-labels">
-                    <span class="main-stocklist-sentiment-buy-label">${stock.buyRatio}</span>
-                    <span class="main-stocklist-sentiment-sell-label">${stock.sellRatio}</span>
+                    <span class="main-stocklist-sentiment-buy-label">50</span>
+                    <span class="main-stocklist-sentiment-sell-label">50</span>
                 </div>
             </div>
         </div>
@@ -72,13 +49,40 @@ function renderMainStocks() {
     const container = document.getElementById('main-stocklist-Container');
     if (!container) return;
 
-    // HTML 생성
-    const html = mainStocks.map((stock, index) => createMainStockItemHTML(stock, index)).join('');
-    container.innerHTML = html;
+    fetch(contextPath + '/api/kis/volumeRank')
+        .then(res => res.json())
+        .then(data => {
+            // 관심종목 목록 가져오기
+            return fetch(contextPath + '/api/interest/list')
+                .then(res => res.json())
+                .then(interestCodes => {
+                    const html = data
+                        .slice(0, 5)
+                        .map((stock, index) => {
+                            // 관심종목 여부 확인
+                            stock.isFavorite = interestCodes.includes(stock.mksc_shrn_iscd);
+                            return createMainStockItemHTML(stock, index);
+                        }).join('');
+                    container.innerHTML = html;
 
-    // 이벤트 리스너 재등록
-    attachMainFavoriteListeners();
-    attachMainStockItemListeners();
+                    // 이벤트 리스너 재등록
+                    attachMainFavoriteListeners();
+                    attachMainStockItemListeners();
+
+                    if (data.length > 0) {
+                        const firstStock = data[0];
+                        const chartStockName = document.querySelector('.main-chart-stock-name');
+                        const chartStockCode = document.querySelector('.main-chart-stock-code');
+
+                        if (chartStockName) {
+                            chartStockName.textContent = firstStock.hts_kor_isnm;
+                        }
+                        if (chartStockCode) {
+                            chartStockCode.textContent = firstStock.mksc_shrn_iscd;
+                        }
+                    }
+                });
+        });
 }
 
 // 즐겨찾기 버튼 이벤트 리스너 등록
@@ -86,16 +90,27 @@ function attachMainFavoriteListeners() {
     document.querySelectorAll('.main-stocklist-favorite-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const stockId = parseInt(this.getAttribute('data-id'));
+            const stockCode = this.getAttribute('data-id');
 
-            // 데이터 업데이트
-            const stock = mainStocks.find(s => s.id === stockId);
-            if (stock) {
-                stock.isFavorite = !stock.isFavorite;
-
-                this.classList.toggle('active');
-                this.textContent = stock.isFavorite ? '♥' : '♡';
-            }
+            // 서버에 관심종목 토글 요청
+            fetch(contextPath + '/api/interest/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stockCode: stockCode })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // UI 업데이트
+                        this.classList.toggle('active');
+                        this.textContent = data.isInterest ? '♥' : '♡';
+                    }
+                })
+                .catch(error => {
+                    console.error('관심종목 토글 실패:', error);
+                });
         });
     });
 }
@@ -126,9 +141,14 @@ function attachMainStockItemListeners() {
             const stockName = this.querySelector('.main-stocklist-name').textContent;
             
             // 차트 헤더 업데이트
+            const stockCode = this.getAttribute('data-id');
+            const chartStockCode = document.querySelector('.main-chart-stock-code');
             const chartStockName = document.querySelector('.main-chart-stock-name');
             if (chartStockName) {
                 chartStockName.textContent = stockName;
+            }
+            if (chartStockCode) {
+                chartStockCode.textContent = stockCode;
             }
             
             // 차트 업데이트
@@ -142,15 +162,12 @@ function attachMainStockItemListeners() {
                 return;
             }
 
+            const stockId = this.getAttribute('data-id');
             // contextPath는 JSP에서 전역 변수로 설정되어 있음
-            window.location.href = contextPath + '/stock/detail';
+            window.location.href = contextPath + '/stock/detail?code=' + stockId;
         });
     });
 }
-
-// 차트 인스턴스 저장
-let kospiChart = null;
-let kosdaqChart = null;
 
 // DOM이 로드되면 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -268,3 +285,147 @@ function initializeMissionButton() {
         });
     }
 }
+
+// 일별 분봉 조회 - 차트
+let stockChart = null;
+let candleSeries = null;
+
+// 시간 포맷 변환 함수
+function formatToTimestamp(dateStr, timeStr) {
+    const year = parseInt(dateStr.substring(0, 4));
+    const month = parseInt(dateStr.substring(4, 6)) - 1;
+    const day = parseInt(dateStr.substring(6, 8));
+    const hour = parseInt(timeStr.substring(0, 2));
+    const minute = parseInt(timeStr.substring(2, 4));
+    const second = parseInt(timeStr.substring(4, 6)) || 0;
+
+    const date = new Date(year, month, day, hour, minute, second); // KST 시간대 기준
+    const offsetInSeconds = date.getTimezoneOffset() * 60;
+    return Math.floor(date.getTime() / 1000) - offsetInSeconds;
+}
+
+// 차트 그리기 함수
+function drawStockMinuteChart(stockCode) {
+    const chartContainer = document.getElementById('main-stockChart');
+    if (!chartContainer) return;
+    chartContainer.innerHTML = ''; // 기존 차트가 있다면 삭제
+
+    stockChart = LightweightCharts.createChart(chartContainer, {
+        width: chartContainer.clientWidth,
+        height: chartContainer.clientHeight,
+        localization: {
+            locale: 'ko-KR',
+            timeFormatter: (time) => {
+                const date = new Date((time - 9 * 60 * 60) * 1000);
+                const y = date.getFullYear();
+                const m = date.getMonth() + 1;
+                const d = date.getDate();
+                const h = String(date.getHours()).padStart(2, '0');
+                const min = String(date.getMinutes()).padStart(2, '0');
+                return `${y}년 ${m}월 ${d}일 ${h}:${min}`;
+            },
+        },
+        timeScale: {
+            timeVisible: true, // 시간 표시
+            secondsVisible: false,
+            barSpacing: 10,
+        },
+        layout: {
+            background: {type: 'solid', color: 'white'},
+            textColor: 'black'
+        },
+
+    });
+
+    candleSeries = stockChart.addSeries(LightweightCharts.CandlestickSeries, {
+        upColor: '#e74c3c',
+        downColor: '#3498db',
+        borderUpColor: '#e74c3c',
+        borderDownColor: '#3498db',
+        wickUpColor: '#e74c3c',
+        wickDownColor: '#3498db'
+    });
+
+    // API 호출
+	fetch(contextPath + `/api/kis/stream/${stockCode}`)
+    .then(res => res.json())
+    .then(data => {
+        if (!data || data.length === 0) {
+            console.error("데이터가 비어있음");
+            return;
+        }
+
+        // 데이터 정렬
+        data.sort((a, b) => (a.stck_bsop_date + a.stck_cntg_hour).localeCompare(b.stck_bsop_date + b.stck_cntg_hour));
+
+        const chartData = [];
+        const seenTimes = new Set();
+
+        data.forEach(row => {
+            const timestamp = formatToTimestamp(row.stck_bsop_date, row.stck_cntg_hour);
+            
+            // 중복 시간 데이터 제거
+            if (!seenTimes.has(timestamp)) {
+                chartData.push({
+                    time: timestamp,
+                    open: Number(row.stck_oprc),
+                    high: Number(row.stck_hgpr),
+                    low: Number(row.stck_lwpr),
+                    close: Number(row.stck_prpr)
+                });
+                seenTimes.add(timestamp);
+            }
+        });
+
+        console.log("변환된 차트 데이터:", chartData);
+        
+        if (chartData.length > 0) {
+            candleSeries.setData(chartData);
+            stockChart.timeScale().fitContent();
+        }
+    })
+    .catch(err => console.error("API 호출 에러:", err));
+}
+
+// 마우스 오버 이벤트
+document.addEventListener('mouseover', (e) => {
+    const item = e.target.closest('.main-stocklist-item');
+    if (item) {
+        const stockCode = item.dataset.id; 
+        const stockName = item.querySelector('.main-stock-name')?.textContent || "종목명";
+
+        if (stockCode) {
+            const nameEl = document.getElementById('displayStockName');
+            const codeEl = document.getElementById('displayStockCode');
+            
+            // 현재 그려진 차트와 코드가 다를 때만 새로 그리기
+            if (codeEl.textContent !== stockCode) {
+                nameEl.textContent = stockName;
+                codeEl.textContent = stockCode;
+                drawStockMinuteChart(stockCode);
+            }
+        }
+    }
+});
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', () => {
+    // HTML 헤더에 이미 적혀있는 종목 코드를 읽어옴
+    const defaultCodeEl = document.getElementById('displayStockCode');
+    
+    if (defaultCodeEl) {
+        const defaultStockCode = defaultCodeEl.textContent.trim();
+        console.log("초기 종목 코드 로드:", defaultStockCode);
+        
+        // 읽어온 코드로 차트 그리기 실행
+        drawStockMinuteChart(defaultStockCode);
+    }
+});
+
+// 차트 반응형
+window.addEventListener('resize', () => {
+    if (stockChart) {
+        const container = document.getElementById('main-stockChart');
+        stockChart.resize(container.clientWidth, container.clientHeight);
+    }
+});
