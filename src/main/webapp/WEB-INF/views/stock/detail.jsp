@@ -6,10 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>종목 상세 페이지</title>
 <%@ include file="/WEB-INF/views/common/common.jsp"%>
-<link rel="stylesheet" href="${cpath}/resources/css/detail/detail.css">
+<link rel="stylesheet" href="${cpath}/resources/css/stock/detail.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/header.css">
-<link rel="stylesheet" href="${cpath}/resources/css/detail/community.css">
+<link rel="stylesheet" href="${cpath}/resources/css/stock/community.css">
 </head>
 <body class="detail-body">
     <div class="detail-container">
@@ -35,7 +35,9 @@
                         </button>
                     </section>
 
-                    <section class="detail-chart-area"></section>
+                    <section class="detail-chart-area">
+					    <div id="detail-stockChart" style="width: 100%; height: 100%;"></div>
+					</section>
                     <section class="detail-bottom-split">
                         <section class="detail-hoga-box">
                             <div class="detail-strong">
@@ -108,6 +110,8 @@
             </div>
         </main>
     </div>
-<script src="${cpath}/resources/js/detail/detail.js"></script>
+<!-- Adding the standalone version of Lightweight charts -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<script src="${cpath}/resources/js/stock/detail.js"></script>
 </body>
 </html>

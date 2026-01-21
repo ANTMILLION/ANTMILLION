@@ -643,7 +643,7 @@ body {
     position: relative;
 }
 
-.main-stock-chart-container canvas {
+.main-stock-chart-container div {
     width: 100% !important;
     height: 100% !important;
 }

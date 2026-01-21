@@ -63,7 +63,6 @@ body {
 
 /* 공통 카드 스타일 (Mission.css 스타일 적용) */
 .detail-stock-header,
-.detail-chart-area,
 .detail-hoga-box,
 .detail-community-box {
 	background: var(--secondary-bg);
@@ -148,6 +147,28 @@ body {
 .detail-chart-area {
 	height: 400px;
 	width: 100%;
+	position: relative;
+	background-color: #ffffff;
+	background: var(--secondary-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 20px;
+	padding: 17px;
+	box-shadow: var(--shadow-sm);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	display: block;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+/* 차트 내부 영역 */
+#detail-stockChart {
+    width: 100%;
+    height: 100%;
+}
+
+/* Lightweight charts 로고 삭제 */
+#tv-attr-logo {
+    display: none !important;
 }
 
 /* 하단 분할 영역 (호가/커뮤니티) */

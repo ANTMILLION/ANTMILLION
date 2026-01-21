@@ -285,3 +285,147 @@ function initializeMissionButton() {
         });
     }
 }
+
+// 일별 분봉 조회 - 차트
+let stockChart = null;
+let candleSeries = null;
+
+// 시간 포맷 변환 함수
+function formatToTimestamp(dateStr, timeStr) {
+    const year = parseInt(dateStr.substring(0, 4));
+    const month = parseInt(dateStr.substring(4, 6)) - 1;
+    const day = parseInt(dateStr.substring(6, 8));
+    const hour = parseInt(timeStr.substring(0, 2));
+    const minute = parseInt(timeStr.substring(2, 4));
+    const second = parseInt(timeStr.substring(4, 6)) || 0;
+
+    const date = new Date(year, month, day, hour, minute, second); // KST 시간대 기준
+    const offsetInSeconds = date.getTimezoneOffset() * 60;
+    return Math.floor(date.getTime() / 1000) - offsetInSeconds;
+}
+
+// 차트 그리기 함수
+function drawStockMinuteChart(stockCode) {
+    const chartContainer = document.getElementById('main-stockChart');
+    if (!chartContainer) return;
+    chartContainer.innerHTML = ''; // 기존 차트가 있다면 삭제
+
+    stockChart = LightweightCharts.createChart(chartContainer, {
+        width: chartContainer.clientWidth,
+        height: chartContainer.clientHeight,
+        localization: {
+            locale: 'ko-KR',
+            timeFormatter: (time) => {
+                const date = new Date((time - 9 * 60 * 60) * 1000);
+                const y = date.getFullYear();
+                const m = date.getMonth() + 1;
+                const d = date.getDate();
+                const h = String(date.getHours()).padStart(2, '0');
+                const min = String(date.getMinutes()).padStart(2, '0');
+                return `${y}년 ${m}월 ${d}일 ${h}:${min}`;
+            },
+        },
+        timeScale: {
+            timeVisible: true, // 시간 표시
+            secondsVisible: false,
+            barSpacing: 10,
+        },
+        layout: {
+            background: {type: 'solid', color: 'white'},
+            textColor: 'black'
+        },
+
+    });
+
+    candleSeries = stockChart.addSeries(LightweightCharts.CandlestickSeries, {
+        upColor: '#e74c3c',
+        downColor: '#3498db',
+        borderUpColor: '#e74c3c',
+        borderDownColor: '#3498db',
+        wickUpColor: '#e74c3c',
+        wickDownColor: '#3498db'
+    });
+
+    // API 호출
+	fetch(contextPath + `/api/kis/stream/${stockCode}`)
+    .then(res => res.json())
+    .then(data => {
+        if (!data || data.length === 0) {
+            console.error("데이터가 비어있음");
+            return;
+        }
+
+        // 데이터 정렬
+        data.sort((a, b) => (a.stck_bsop_date + a.stck_cntg_hour).localeCompare(b.stck_bsop_date + b.stck_cntg_hour));
+
+        const chartData = [];
+        const seenTimes = new Set();
+
+        data.forEach(row => {
+            const timestamp = formatToTimestamp(row.stck_bsop_date, row.stck_cntg_hour);
+            
+            // 중복 시간 데이터 제거
+            if (!seenTimes.has(timestamp)) {
+                chartData.push({
+                    time: timestamp,
+                    open: Number(row.stck_oprc),
+                    high: Number(row.stck_hgpr),
+                    low: Number(row.stck_lwpr),
+                    close: Number(row.stck_prpr)
+                });
+                seenTimes.add(timestamp);
+            }
+        });
+
+        console.log("변환된 차트 데이터:", chartData);
+        
+        if (chartData.length > 0) {
+            candleSeries.setData(chartData);
+            stockChart.timeScale().fitContent();
+        }
+    })
+    .catch(err => console.error("API 호출 에러:", err));
+}
+
+// 마우스 오버 이벤트
+document.addEventListener('mouseover', (e) => {
+    const item = e.target.closest('.main-stocklist-item');
+    if (item) {
+        const stockCode = item.dataset.id; 
+        const stockName = item.querySelector('.main-stock-name')?.textContent || "종목명";
+
+        if (stockCode) {
+            const nameEl = document.getElementById('displayStockName');
+            const codeEl = document.getElementById('displayStockCode');
+            
+            // 현재 그려진 차트와 코드가 다를 때만 새로 그리기
+            if (codeEl.textContent !== stockCode) {
+                nameEl.textContent = stockName;
+                codeEl.textContent = stockCode;
+                drawStockMinuteChart(stockCode);
+            }
+        }
+    }
+});
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', () => {
+    // HTML 헤더에 이미 적혀있는 종목 코드를 읽어옴
+    const defaultCodeEl = document.getElementById('displayStockCode');
+    
+    if (defaultCodeEl) {
+        const defaultStockCode = defaultCodeEl.textContent.trim();
+        console.log("초기 종목 코드 로드:", defaultStockCode);
+        
+        // 읽어온 코드로 차트 그리기 실행
+        drawStockMinuteChart(defaultStockCode);
+    }
+});
+
+// 차트 반응형
+window.addEventListener('resize', () => {
+    if (stockChart) {
+        const container = document.getElementById('main-stockChart');
+        stockChart.resize(container.clientWidth, container.clientHeight);
+    }
+});
