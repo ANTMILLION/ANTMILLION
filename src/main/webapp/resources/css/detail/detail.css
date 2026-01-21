@@ -125,15 +125,23 @@ body {
 	color: var(--text-primary);
 }
 
-.detail-star-icon {
+/* 관심종목 버튼 */
+.detail-favorite-btn {
+	background: none;
+	border: none;
+	font-size: 24px;
 	cursor: pointer;
-	padding: 8px;
-	border-radius: 50%;
-	transition: background-color 0.2s;
+	color: #ddd;
+	transition: all 0.3s;
+	padding: 0;
 }
 
-.detail-star-icon:hover {
-	background-color: #f3f4f6;
+.detail-favorite-btn:hover {
+	transform: scale(1.1);
+}
+
+.detail-favorite-btn.active {
+	color: #fbbf24;
 }
 
 /* 차트 영역 */

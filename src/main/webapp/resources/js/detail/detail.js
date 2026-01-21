@@ -1,7 +1,7 @@
 // ===== 전역 변수 (community.js와 공유) =====
 // const 대신 var 사용으로 전역 스코프에 등록
 if (typeof contextPath === 'undefined') {
-    var contextPath = window.location.pathname.split('/')[1] || 'antmillion';
+    var contextPath = '/antmillion';
     console.log('[contextPath 설정]', contextPath);
 }
 
@@ -37,6 +37,7 @@ async function checkBiasAlert(stockCode) {
 
 // ===== DOM 로드 후 실행 =====
 document.addEventListener('DOMContentLoaded', function() {
+    checkFavoriteStatus();
     console.log('=== 매매 편향 체크 시스템 로드 완료 (API 연동) ===');
     
     // 탭 요소 확인
@@ -148,3 +149,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// 페이지 로드 시 관심종목 상태 확인
+function checkFavoriteStatus() {
+    const stockCode = document.querySelector('.detail-favorite-btn').getAttribute('data-code');
+
+    fetch(contextPath + '/api/interest/list')
+        .then(res => res.json())
+        .then(interestCodes => {
+            const btn = document.querySelector('.detail-favorite-btn');
+            const isFavorite = interestCodes.includes(stockCode);
+
+            btn.textContent = isFavorite ? '♥' : '♡';
+            if (isFavorite) {
+                btn.classList.add('active');
+            }
+        });
+}
+
+// 관심종목 토글 버튼 이벤트
+document.querySelector('.detail-favorite-btn').addEventListener('click', function() {
+    const stockCode = this.getAttribute('data-code');
+
+    fetch(contextPath + '/api/interest/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ stockCode: stockCode })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                this.classList.toggle('active');
+                this.textContent = data.isInterest ? '♥' : '♡';
+            }
+        })
+        .catch(error => {
+            console.error('관심종목 토글 실패:', error);
+        });
+});
+
+
