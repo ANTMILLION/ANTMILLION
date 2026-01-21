@@ -26,8 +26,8 @@
            </div>
             <div id="emailCheckMsg"></div>
 
-        <input type="password" name="password" placeholder="비밀번호" />
-        <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" />
+        <input type="password" name="password" placeholder="비밀번호" title="비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다." pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required/>
+        <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" title="비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다." pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required/>
 
         <!-- 에러 메시지(있을 때만 표시) -->
         <c:if test="${not empty error}">

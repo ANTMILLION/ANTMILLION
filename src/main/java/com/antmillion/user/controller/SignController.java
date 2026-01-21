@@ -1,8 +1,8 @@
 package com.antmillion.user.controller;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -24,8 +24,6 @@ import com.antmillion.auth.service.SignService.SignUpResult;
 import com.antmillion.auth.service.SignService.TokenPair;
 import com.antmillion.auth.token.RefreshTokenStore;
 
-import io.jsonwebtoken.Claims;
-
 @Controller
 @RequestMapping
 public class SignController {
@@ -35,6 +33,8 @@ public class SignController {
 	private final SignService signService;
 	private final JwtProvider jwtProvider;
 	private final RefreshTokenStore refreshTokenStore;
+	private static final Pattern PW_RULE =
+		    Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
 
 	public SignController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore) {
 		this.signService = signService;
@@ -51,6 +51,11 @@ public class SignController {
 	@PostMapping("/login")
 	public String loginSubmit(@RequestParam("email") String email, @RequestParam("password") String password,
 			HttpServletResponse response, RedirectAttributes ra) {
+		if (password == null || !PW_RULE.matcher(password).matches()) {
+		    ra.addFlashAttribute("loginError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
+		    ra.addFlashAttribute("email", email);
+		    return "redirect:/login";
+		}
 		try {
 			TokenPair tokens = signService.login(email, password);
 
@@ -77,9 +82,24 @@ public class SignController {
 	@PostMapping("/signup")
 	public String signupStep1Submit(@ModelAttribute("form") SignUpRequest form,
 			@RequestParam("passwordConfirm") String passwordConfirm, HttpSession session, Model model) {
+		String email = (form.getEmail() == null) ? "" : form.getEmail().trim();
+		String password = (form.getPassword() == null) ? "" : form.getPassword().trim();
+		if (password == null || password.isEmpty()) {
+	        model.addAttribute("signupError", "비밀번호를 입력해 주세요.");
+	        return "signup/signup";
+	    }
+
+	    if (!PW_RULE.matcher(password).matches()) {
+	        model.addAttribute("signupError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
+	        return "signup/signup";
+	    }
+
+	    if (!password.equals(passwordConfirm)) {
+	        model.addAttribute("signupError", "비밀번호가 일치하지 않습니다.");
+	        return "signup/signup";
+	    }
 		try {
-			String email = (form.getEmail() == null) ? "" : form.getEmail().trim();
-			String password = (form.getPassword() == null) ? "" : form.getPassword().trim();
+			
 
 			if (email.isEmpty()) {
 				throw new IllegalStateException("이메일을 입력하세요.");
