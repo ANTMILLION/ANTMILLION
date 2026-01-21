@@ -1,49 +1,66 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<%@ include file="/WEB-INF/views/common/common.jsp"%>
-<meta charset="UTF-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ANTMILLION</title>
-<link rel="stylesheet" href="${cpath}/resources/css/login/sign.css" />
-<link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css" />
+  <%@ include file="/WEB-INF/views/common/common.jsp"%>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANTMILLION</title>
+  <link rel="stylesheet" href="${cpath}/resources/css/login/sign.css" />
+  <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css" />
 </head>
 <body>
-	<div class="shell">
-		<%@ include file="../common/sidebar.jsp"%>
-		<div class="content">
+<div class="shell">
+  <%@ include file="../common/sidebar.jsp"%>
+  <div class="content">
+    <div class="card">
+      <h1 class="title-top">ANTMILLION</h1>
+      <div class="hr"></div>
+      <h2 class="h2">회원가입</h2>
 
-			<div class="card">
-				<h1 class="title-top">ANTMILLION</h1>
-				<div class="hr"></div>
-				<h2 class="h2">회원가입</h2>
+      <form class="form" method="post" action="${cpath}/signup">
+        <div class="row">
+            <input id="emailInput" type="text" name="email" placeholder="이메일을 입력하세요" value="${form.email}" />
+               <button id="emailCheckBtn" class="btn small primary" type="button">중복 확인</button>
+           </div>
+            <div id="emailCheckMsg"></div>
 
-				<form class="form" method="post" action="${cpath}/signup">
-					<div class="row">
-						<input type="text" name="email" placeholder="이메일을 입력하세요" />
-						<button class="btn small primary" type="button">중복 확인</button>
-					</div>
-					<input type="password" name="password" placeholder="비밀번호" /> <input
-						type="password" name="passwordConfirm" placeholder="비밀번호 확인" />
-					<div class="msg-danger">이메일이 이미 존재합니다.</div>
-					<button class="btn primary" type="submit">다음</button>
-				</form>
+        <input type="password" name="password" placeholder="비밀번호" title="비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다." pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required/>
+        <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" title="비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다." pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required/>
 
-				<form style="margin-top: 10px;" method="post"
-					action="${cpath}/signup">
-					<button class="btn kakao" type="submit" style="width: 100%;">카카오로
-						회원가입</button>
-				</form>
+        <!-- 에러 메시지(있을 때만 표시) -->
+        <c:if test="${not empty error}">
+          <div class="msg-danger">${error}</div>
+        </c:if>
 
-				<div class="center-links">
-					이미 계정이 있나요? <a href="${cpath}/login">로그인</a>
-				</div>
-			</div>
+        <button class="btn primary" type="submit">다음</button>
+      </form>
 
-		</div>
-	</div>
+      <form style="margin-top: 10px;" method="post" action="${cpath}/signup/kakao">
+        <button class="btn kakao" type="submit" style="width: 100%;">카카오로 회원가입</button>
+      </form>
+
+      <div class="center-links">
+        이미 계정이 있나요? <a href="${cpath}/login">로그인</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const cpath = '${cpath}';
+  const emailBtn = document.getElementById('emailCheckBtn');
+  const emailInput = document.getElementById('emailInput');
+  const emailMsg = document.getElementById('emailCheckMsg');
+
+  emailBtn.addEventListener('click', async () => {
+    const email = (emailInput.value || '').trim();
+    const res = await fetch(`${cpath}/signup/check-email?email=` + encodeURIComponent(email));
+    const data = await res.json();
+
+    emailMsg.className = data.available ? 'msg-ok' : 'msg-danger';
+    emailMsg.textContent = data.message;
+  });
+</script>
 </body>
 </html>
