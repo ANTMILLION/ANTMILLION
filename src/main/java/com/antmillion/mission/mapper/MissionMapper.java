@@ -28,9 +28,12 @@ public interface MissionMapper {
     // 어떤 문제를 풀었는지 확인
     List<Long> selectTodaySolvedQuizIds(@Param("userId") Long userId);
 
-    // 사용자 포인트 조회
+    // 퀴즈 포인트 조회
     int selectQuizPointByQuizId(@Param("quizId") Long quizId);
 
     // 포인트 지급
     void updateUserPoint(@Param("userId") Long userId, @Param("point") Integer point);
+
+    // 사용자 포인트 조회
+    int selectUserPoint(@Param("userId") Long userId);
 }
