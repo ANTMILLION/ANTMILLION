@@ -25,7 +25,7 @@
     <!-- ⭐ 매매 편향 경고 뱃지 -->
     <div class="bias-alert-badge" id="biasAlertBadge" style="display:none;">
         <span class="bias-alert-icon">⚠️</span>
-        <span class="bias-alert-text">안전선호 오류 경고</span>
+        <span class="bias-alert-text">위험회피 주의 경고</span>
     </div>
 
     <div class="header-user-info">
@@ -223,8 +223,8 @@ function showBiasAlert() {
     const badge = document.getElementById('biasAlertBadge');
     if (badge) {
         badge.style.display = 'flex';
-        sessionStorage.setItem('safeBias', 'true'); 
-        console.log('안전선호 경고 표시');
+        sessionStorage.setItem('riskAversionBias', 'true'); 
+        console.log('위험회피 경고 표시');
     }
 }
 
@@ -232,16 +232,16 @@ function hideBiasAlert() {
     const badge = document.getElementById('biasAlertBadge');
     if (badge) {
         badge.style.display = 'none';
-        sessionStorage.removeItem('safeBias'); 
-        console.log('안전선호 경고 제거');
+        sessionStorage.removeItem('riskAversionBias'); 
+        console.log('위험회피 경고 제거');
     }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const hasBias = sessionStorage.getItem('safeBias');
+    const hasBias = sessionStorage.getItem('riskAversionBias');
     if (hasBias === 'true') {
         showBiasAlert();
-        console.log('[초기 로드] 세션 기반 안전선호 경고 복원');
+        console.log('[초기 로드] 세션 기반 위험회피 경고 복원');
     }
 
     const userProfile = document.getElementById('userProfile');
@@ -275,10 +275,10 @@ window.addEventListener('pageshow', function(event) {
     console.log('[pageshow] 이벤트 발생, bfcache:', event.persisted);
     const hasBias = sessionStorage.getItem('safeBias');
     if (hasBias === 'true') {
-        const badge = document.getElementById('biasAlertBadge');
+        const badge = document.getElementById('riskAversionBias');
         if (badge && badge.style.display !== 'flex') {
             showBiasAlert();
-            console.log('[뒤로가기] 세션 기반 안전선호 경고 복원');
+            console.log('[뒤로가기] 세션 기반 위험회피 경고 복원');
         }
     }
 });

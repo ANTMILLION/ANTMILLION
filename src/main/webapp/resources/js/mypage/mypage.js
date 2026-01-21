@@ -2,11 +2,10 @@
 // BiasType 매핑
 // ===========================
 const biasTypeMap = {
-    SAFE_HAVEN: { title: "안전선호 편향 경고", icon: "⚠️" },
-    LOSS_AVERSION: { title: "손실회피 편향 경고", icon: "⚠️" },
-    CONFIRMATION: { title: "확증 편향 경고", icon: "⚠️" },
-    SUNK_COST: { title: "매몰비용 오류 경고", icon: "⚠️" },
-    ANCHORING: { title: "앵커링 편향 경고", icon: "⚠️" }
+    RISK_AVERSION: { title: "위험회피 주의", icon: "⚠️" },
+    LOSS_AVERSION: { title: "손실회피 주의", icon: "⚠️" },
+    SUNK_COST: { title: "매몰비용오류 경고", icon: "⚠️" },
+    FOMO: { title: "FOMO 주의", icon: "⚠️" }
 };
 
 // ===========================
@@ -604,7 +603,7 @@ function loadHistoryData() {
 
     console.log("심리경고 조회 - startDate:", startDate, "endDate:", endDate);
 
-    let url = "/antmillion/history/api/list";
+    let url = "/antmillion/api/history/list";
 
     if (startDate && endDate) {
         url += `?startDate=${startDate}&endDate=${endDate}`;
@@ -647,7 +646,7 @@ function loadHistoryData() {
                 const transactionClass = history.transactionType === '매수' ? 'buy' : 'sell';
                 const transactionText = history.transactionType || '-';
 
-                // ✅ 수정된 HTML 구조
+                //  수정된 HTML 구조
                 const html = `
                     <div class="mypage-warning-container">
                         <div class="mypage-warning-header">
