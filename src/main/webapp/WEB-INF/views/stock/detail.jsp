@@ -19,20 +19,20 @@
             <div class="detail-stock-container">
                 <div class="detail-left-panel">
                     <section class="detail-stock-header">
-                        <img src="${cpath}/resources/images/icon/samsung.png" alt="삼성전자">
+                        <img src="" alt="삼성전자">
                         <div class="detail-text-col">
                             <div>
                                 <h2 class="detail-stock-name">
-                                    삼성전자 <span class="stock-code">005930</span>
+                                    ${stock.stockName} <span class="stock-code">${stock.stockCode}</span>
                                 </h2>
                             </div>
                             <div class="detail-current-price">
                                 <h3>129,300원</h3>
                             </div>
                         </div>
-                        <div class="detail-star-icon">
-                            <img src="${cpath}/resources/images/icon/star.png" alt="즐겨찾기">
-                        </div>
+                        <button class="detail-favorite-btn" data-code="${stock.stockCode}">
+                            ♡
+                        </button>
                     </section>
 
                     <section class="detail-chart-area">
