@@ -1,10 +1,12 @@
 package com.antmillion.user.service;
 
+import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.user.dto.AntRankDTO;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.mapper.AntRankMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,14 +15,17 @@ import java.util.List;
 public class AntRankServiceImpl implements AntRankService {
 
     private final AntRankMapper antRankMapper;
+    private final MemberMapper memberMapper;
 
     @Override
-    public UserRankResponseDTO calculateRankStatus(int currentPoint) {
+    @Transactional
+    public UserRankResponseDTO calculateRankStatus(Long userId, int currentPoint) {
         List<AntRankDTO> ranks = antRankMapper.selectAllRanks();
 
         // 초기값 설정
         String rankName = ranks.get(0).getRankType();
         String rankImage = ranks.get(0).getRankImage();
+        int currentRankId = ranks.get(0).getRankId();
         int nextRankPoint = 0;
         int currentRankStartPoint = 0;
         boolean isMaxRank = false;
@@ -33,6 +38,7 @@ public class AntRankServiceImpl implements AntRankService {
             if (currentPoint >= rank.getRequiredPoint()) {
                 rankName = rank.getRankType();
                 rankImage = rank.getRankImage();
+                currentRankId = rank.getRankId();
                 currentRankStartPoint = rank.getRequiredPoint();
 
                 // 다음 단계 목표 설정
@@ -45,6 +51,10 @@ public class AntRankServiceImpl implements AntRankService {
             } else {
                 break; // 사용자 점수보다 높은 기준이 나오면 종료
             }
+        }
+
+        if (userId != null) {
+            memberMapper.updateUserRank(userId, currentRankId);
         }
 
         // 남은 점수 계산

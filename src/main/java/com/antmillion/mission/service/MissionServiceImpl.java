@@ -118,6 +118,6 @@ public class MissionServiceImpl implements MissionService {
         // 사용자 포인트 확인
         int point = memberMapper.selectUserPoint(userId);
         // 랭크 계산
-        return antRankService.calculateRankStatus(point);
+        return antRankService.calculateRankStatus(userId, point);
     }
 }

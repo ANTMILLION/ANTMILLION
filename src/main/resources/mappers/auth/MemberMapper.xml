@@ -41,6 +41,12 @@
     WHERE user_id = #{userId}
   </update>
 
+  <update id="updateUserRank">
+    UPDATE member
+    SET rank_id = #{rankId}
+    WHERE user_id = #{userId}
+  </update>
+
   <select id="selectUserPoint" resultType="int">
     SELECT point
     FROM member
