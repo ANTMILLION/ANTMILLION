@@ -96,8 +96,7 @@ function showBiasAlert() {
     const badge = document.getElementById('biasAlertBadge');
     if (badge) {
         badge.style.display = 'flex';
-        sessionStorage.setItem('safeBias', 'true'); 
-        console.log('안전선호 경고 표시');
+        sessionStorage.setItem('biasAlert', 'true');
     }
 }
 
@@ -105,33 +104,53 @@ function hideBiasAlert() {
     const badge = document.getElementById('biasAlertBadge');
     if (badge) {
         badge.style.display = 'none';
-        sessionStorage.removeItem('safeBias'); 
-        console.log('안전선호 경고 제거');
+        sessionStorage.removeItem('biasAlert');
     }
 }
 
+function markNotificationUnread() {
+    document
+        .querySelector('.header-notification-btn')
+        .classList.add('has-unread');
+    sessionStorage.setItem('biasUnread', 'true');
+}
+
+function clearNotificationUnread() {
+    document
+        .querySelector('.header-notification-btn')
+        .classList.remove('has-unread');
+    sessionStorage.removeItem('biasUnread');
+}
+
+function onBiasWarningTriggered() {
+    showBiasAlert();
+    markNotificationUnread();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
-    const hasBias = sessionStorage.getItem('safeBias');
-    if (hasBias === 'true') {
+    if (sessionStorage.getItem('biasAlert') === 'true') {
         showBiasAlert();
-        console.log('[초기 로드] 세션 기반 안전선호 경고 복원');
+    }
+
+    if (sessionStorage.getItem('biasUnread') === 'true') {
+        markNotificationUnread();
     }
 
     const userProfile = document.getElementById('userProfile');
     const profileModal = document.getElementById('profileModal');
+    const notifBox = document.getElementById('notifBox');
 
     if (userProfile) {
         userProfile.addEventListener('click', function(e) {
             e.stopPropagation();
             profileModal.classList.toggle('show');
-            document.getElementById('notifBox').style.display = 'none';
+            notifBox.style.display = 'none';
         });
     }
 
     document.addEventListener('click', function(e) {
         const wrapper = document.querySelector('.header-user-profile-wrapper');
         const notifBtn = document.querySelector('.header-notification-btn');
-        const notifBox = document.getElementById('notifBox');
 
         if (wrapper && !wrapper.contains(e.target)) {
             profileModal.classList.remove('show');
@@ -143,20 +162,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// ⭐ 뒤로가기/앞으로가기 대응
-window.addEventListener('pageshow', function(event) {
-    console.log('[pageshow] 이벤트 발생, bfcache:', event.persisted);
-    const hasBias = sessionStorage.getItem('safeBias');
-    if (hasBias === 'true') {
-        const badge = document.getElementById('biasAlertBadge');
-        if (badge && badge.style.display !== 'flex') {
-            showBiasAlert();
-            console.log('[뒤로가기] 세션 기반 안전선호 경고 복원');
-        }
-    }
-});
-
-
 function toggleNotifications(e) {
     if (e) e.stopPropagation();
 
@@ -166,9 +171,9 @@ function toggleNotifications(e) {
     document.getElementById('profileModal').classList.remove('show');
     notifBox.style.display = isVisible ? 'none' : 'block';
 
-   
     if (!isVisible) {
         hideBiasAlert();
+        clearNotificationUnread();
     }
 }
 

@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/history/api")
+@RequestMapping("/api/history")
 public class HistoryController {
 	
 	 private final HistoryService historyService;
@@ -34,4 +34,19 @@ public class HistoryController {
         // 날짜 없으면 기존 전체 조회
         return historyService.getHistoryList(userId);
     }
+    
+    @GetMapping("/unread-count")
+    public int getUnreadCount() {
+        Long userId = 1L;  // 실제는 세션에서 가져오기
+        return historyService.getUnreadCount(userId);
+    }
+    
+    @GetMapping("/read-all")
+    public String markAllAsRead() {
+        Long userId = 1L;  // 실제는 세션에서 가져오기
+        historyService.markAllAsRead(userId);
+        return "success";
+    }
 }
+    
+

@@ -269,10 +269,13 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     renderInitialData();
     
-    // ✅ 심리경고 전용 초기화
+    // 심리경고 전용 초기화
     initializeHistoryDates();
     loadHistoryData();
     setupHistoryEventListeners();
+    
+    // 마이페이지 진입 시 알림 읽음 처리
+    markAllAlertsAsRead();
 });
 
 function initializeElements() {
@@ -604,7 +607,7 @@ function loadHistoryData() {
 
     console.log("심리경고 조회 - startDate:", startDate, "endDate:", endDate);
 
-    let url = "/antmillion/history/api/list";
+    let url = "/antmillion/api/history/list";
 
     if (startDate && endDate) {
         url += `?startDate=${startDate}&endDate=${endDate}`;
@@ -647,7 +650,7 @@ function loadHistoryData() {
                 const transactionClass = history.transactionType === '매수' ? 'buy' : 'sell';
                 const transactionText = history.transactionType || '-';
 
-                // ✅ 수정된 HTML 구조
+                // 수정된 HTML 구조
                 const html = `
                     <div class="mypage-warning-container">
                         <div class="mypage-warning-header">
@@ -713,6 +716,26 @@ function setupHistoryEventListeners() {
             loadHistoryData();
         });
     }
+}
+
+// ===========================
+// 알림 배지 읽음 처리
+// ===========================
+function markAllAlertsAsRead() {
+    fetch('/antmillion/api/history/read-all')
+        .then(response => response.text())
+        .then(result => {
+            console.log('[마이페이지] 모든 경고 읽음 처리:', result);
+            
+            // 헤더의 배지 업데이트 함수 호출
+            if (typeof updateNotifBadge === 'function') {
+                setTimeout(() => {
+                    updateNotifBadge();
+                    console.log('[마이페이지] 배지 업데이트 호출');
+                }, 200);
+            }
+        })
+        .catch(error => console.error('[읽음 처리 에러]', error));
 }
 
 // ===========================

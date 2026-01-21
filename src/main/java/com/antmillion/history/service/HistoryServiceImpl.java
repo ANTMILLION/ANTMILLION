@@ -30,14 +30,35 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public List<HistoryDTO> getHistoryListByDate(
-            Long userId,
-            String startDate,
-            String endDate
-    ) {
-        System.out.println("HistoryService: 날짜 조건 조회");
-        System.out.println("userId=" + userId + ", startDate=" + startDate + ", endDate=" + endDate);
-
-        return historyMapper.selectHistoryListByDate(userId, startDate, endDate);
+    public List<HistoryDTO> getHistoryListByDate(Long userId, String startDate, String endDate) {
+        System.out.println("HistoryService: 날짜 기준 조회 - userId=" + userId + ", startDate=" + startDate + ", endDate=" + endDate);
+        
+        List<HistoryDTO> list = historyMapper.selectHistoryListByDate(userId, startDate, endDate);
+        
+        if (list != null) {
+            System.out.println("조회된 경고 건수: " + list.size());
+        }
+        
+        return list;
+    }
+    
+    @Override
+    public int getUnreadCount(Long userId) {
+        System.out.println("HistoryService: 읽지 않은 경고 개수 조회 - userId=" + userId);
+        int count = historyMapper.countUnreadAlerts(userId);
+        System.out.println("읽지 않은 경고: " + count + "건");
+        return count;
+    }
+    
+    @Override
+    public void markAsRead(Long historyId) {
+        System.out.println("HistoryService: 경고 읽음 처리 - historyId=" + historyId);
+        historyMapper.markAsRead(historyId);
+    }
+    
+    @Override
+    public void markAllAsRead(Long userId) {
+        System.out.println("HistoryService: 모든 경고 읽음 처리 - userId=" + userId);
+        historyMapper.markAllAsRead(userId);
     }
 }
