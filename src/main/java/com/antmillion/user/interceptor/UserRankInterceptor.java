@@ -23,15 +23,8 @@ public class UserRankInterceptor implements HandlerInterceptor {
         try {
             Long userId = 1L; // 추후 변경 예정
 
-            // DB 조회
-            int currentPoint = memberMapper.selectUserPoint(userId);
-            String nickName = memberMapper.selectUserNickName(userId);
-
             // 랭크 정보 계산
-            UserRankResponseDTO userRank = antRankService.calculateRankStatus(userId, currentPoint);
-
-            // 닉네임 추가
-            userRank.assignNickName(nickName);
+            UserRankResponseDTO userRank = antRankService.getUserRankInfo(userId);
 
             // Request에 담기 (JSP에서 ${userRank}로 사용)
             request.setAttribute("userRank", userRank);

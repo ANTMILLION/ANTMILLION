@@ -70,4 +70,16 @@ public class AntRankServiceImpl implements AntRankService {
                 .currentRankStartPoint(currentRankStartPoint)
                 .build();
     }
+
+    @Override
+    @Transactional
+    public UserRankResponseDTO getUserRankInfo(Long userId) {
+        int currentPoint = memberMapper.selectUserPoint(userId);
+        String nickName = memberMapper.selectUserNickName(userId);
+
+        // 기존 랭크 계산 로직 재사용
+        UserRankResponseDTO responseDTO = calculateRankStatus(userId, currentPoint);
+        responseDTO.assignNickName(nickName);
+        return responseDTO;
+    }
 }
