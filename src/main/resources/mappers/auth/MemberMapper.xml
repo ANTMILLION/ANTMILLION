@@ -35,4 +35,15 @@
     WHERE email = #{email}
   </select>
 
+  <update id="updateUserPoint">
+    UPDATE member
+    SET point = LEAST(10000, GREATEST(0, COALESCE(point, 0) + #{point}))
+    WHERE user_id = #{userId}
+  </update>
+
+  <select id="selectUserPoint" resultType="int">
+    SELECT point
+    FROM member
+    WHERE user_id = #{userId}
+  </select>
 </mapper>

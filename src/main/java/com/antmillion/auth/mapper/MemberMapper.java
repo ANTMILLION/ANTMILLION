@@ -13,4 +13,10 @@ public interface MemberMapper {
     int countByNickname(@Param("nickname") String nickname);
 
     MemberDTO selectByEmail(@Param("email") String email);
+
+    // 포인트 지급
+    void updateUserPoint(@Param("userId") Long userId, @Param("point") Integer point);
+
+    // 사용자 포인트 조회
+    int selectUserPoint(@Param("userId") Long userId);
 }

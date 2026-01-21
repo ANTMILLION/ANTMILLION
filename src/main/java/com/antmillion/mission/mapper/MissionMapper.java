@@ -30,10 +30,4 @@ public interface MissionMapper {
 
     // 퀴즈 포인트 조회
     int selectQuizPointByQuizId(@Param("quizId") Long quizId);
-
-    // 포인트 지급
-    void updateUserPoint(@Param("userId") Long userId, @Param("point") Integer point);
-
-    // 사용자 포인트 조회
-    int selectUserPoint(@Param("userId") Long userId);
 }

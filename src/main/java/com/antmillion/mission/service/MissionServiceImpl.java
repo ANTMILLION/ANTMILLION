@@ -1,5 +1,6 @@
 package com.antmillion.mission.service;
 
+import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.mission.dto.*;
 import com.antmillion.mission.mapper.MissionMapper;
 import com.antmillion.user.dto.UserRankResponseDTO;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MissionServiceImpl implements MissionService {
     private final MissionMapper missionMapper;
+    private final MemberMapper memberMapper;
     private final AntRankService antRankService;
 
     @Override
@@ -105,7 +107,7 @@ public class MissionServiceImpl implements MissionService {
                 int quizPoint = missionMapper.selectQuizPointByQuizId(requestDTO.getQuizId());
 
                 // 포인트 지급
-                missionMapper.updateUserPoint(requestDTO.getUserId(),  quizPoint);
+                memberMapper.updateUserPoint(requestDTO.getUserId(),  quizPoint);
             }
         }
         return isCorrect;
@@ -114,7 +116,7 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public UserRankResponseDTO getUserMissionStatus(Long userId) {
         // 사용자 포인트 확인
-        int point = missionMapper.selectUserPoint(userId);
+        int point = memberMapper.selectUserPoint(userId);
         // 랭크 계산
         return antRankService.calculateRankStatus(point);
     }
