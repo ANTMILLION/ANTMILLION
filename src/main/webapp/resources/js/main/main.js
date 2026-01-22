@@ -181,10 +181,15 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeMainPage() {
     // 종목 리스트 렌더링
     renderMainStocks();
-    
-    // 차트 초기화
-    initializeCharts();
-    
+
+    // ✅ 레이아웃 완전 확정 후 차트 초기화
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            initializeCharts();
+        });
+    });
+
+
     // 미션 버튼 이벤트
     initializeMissionButton();
 }
@@ -262,6 +267,10 @@ function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
 
             candleSeries.setData(chartData);
             chart.timeScale().fitContent();
+
+            setTimeout(() => {
+                chart.resize(container.clientWidth, container.clientHeight);
+            }, 50);
         });
     chartEl._chart = chart;
 }
