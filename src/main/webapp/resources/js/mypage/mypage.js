@@ -492,13 +492,21 @@ function renderStockHoldings(holdings) { // ✅ 매개변수 추가
 
 // 실현손익 데이터를 불러오는 함수
 function loadRealizedProfit() {
-    fetch(contextPath + '/mypage/api/realized-profit')
+    // 1. JSP input에서 날짜 값 가져오기
+    const startDate = document.getElementById("realizedStartDate").value;
+    const endDate = document.getElementById("realizedEndDate").value;
+
+    console.log("조회 기간:", startDate, "~", endDate);
+
+    // 2. URL에 파라미터 추가
+    const url = `${contextPath}/mypage/api/realized-profit?startDate=${startDate}&endDate=${endDate}`;
+
+    fetch(url)
         .then(res => res.json())
         .then(data => {
-            console.log("실현손익 데이터 수신:", data);
             renderRealizedProfit(data);
         })
-        .catch(err => console.error("실현손익 로드 실패:", err));
+        .catch(err => console.error("실현손익 조회 실패:", err));
 }
 
 // ===========================
