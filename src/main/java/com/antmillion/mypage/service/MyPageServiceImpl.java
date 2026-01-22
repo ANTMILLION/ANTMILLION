@@ -13,6 +13,11 @@ public class MyPageServiceImpl implements MyPageService {
 
     @Autowired
     private MyPageMapper myPageMapper;
+    
+    @Override
+    public List<Map<String, Object>> getRealizedProfit(Long accountId) {
+        return myPageMapper.selectRealizedProfit(accountId);
+    }
 
 	/*
 	 * @Override public List<Map<String, Object>> getStockHoldings(Long accountId) {

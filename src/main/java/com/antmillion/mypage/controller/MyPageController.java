@@ -28,6 +28,18 @@ public class MyPageController {
     public String mainPage() {
         return "mypage/mypage";
     }
+    
+    
+    
+    
+    @GetMapping("/api/realized-profit")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getRealizedProfit(HttpSession session) {
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) accountId = 1L; // 테스트용
+        
+        return ResponseEntity.ok(myPageService.getRealizedProfit(accountId));
+    }
 
     /**
      * 주식 잔고 데이터를 JSON으로 반환
