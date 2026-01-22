@@ -405,7 +405,7 @@ function renderInitialData() {
     renderTradingHistory('all');
 }
 
-// ✅ DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
+// DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
 function loadStockHoldings() {
     fetch(contextPath+'/mypage/api/stock-holdings') // 앞서 만든 컨트롤러 URL
         .then(res => res.json())
@@ -421,10 +421,10 @@ function loadStockHoldings() {
 // ===========================
 // 주식잔고 렌더링 (수정)
 // ===========================
-function renderStockHoldings(holdings) { // ✅ 매개변수 추가
+function renderStockHoldings(holdings) { //  매개변수 추가
     if (!stockList) return;
     
-    // ✅ 데이터가 없을 때 처리 추가
+    // 데이터가 없을 때 처리 추가
     if (!holdings || holdings.length === 0) {
         stockList.innerHTML = "<p class='no-data'>보유 중인 주식이 없습니다.</p>";
         return;

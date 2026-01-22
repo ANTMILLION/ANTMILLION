@@ -2,6 +2,9 @@ package com.antmillion.history.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
@@ -69,7 +72,7 @@ public class BiasAlertService {
                 .hasAlert(hasAlert)
                 .build();
 
-        // 핵심: 경고가 뜨는 순간 자동 저장
+        // 경고가 뜨는 순간 자동 저장
         if (hasAlert) {
             saveBiasAlert(result);
         }
@@ -79,6 +82,7 @@ public class BiasAlertService {
 
     /**
      * 심리 경고 저장
+     * 5분 중복 방지 로직 추가
      */
     public void saveBiasAlert(BiasAlertDTO biasAlert) {
         log.info("심리 경고 저장 시작 - {}", biasAlert);
@@ -88,6 +92,27 @@ public class BiasAlertService {
             throw new IllegalArgumentException("userId가 null입니다. checkRiskAversionBias에서 userId를 전달/세팅해야 합니다.");
         }
 
+        // 마지막 경고 조회
+        HistoryDTO lastAlert = historyMapper.getLastAlert(
+            biasAlert.getUserId(),
+            biasAlert.getStockCode(),
+            biasAlert.getBiasType().getCode()
+        );
+
+        // 5분 체크
+        if (lastAlert != null && lastAlert.getTime() != null) {
+            Date lastTimeDate = lastAlert.getTime();
+            LocalDateTime lastTime = new java.sql.Timestamp(lastTimeDate.getTime()).toLocalDateTime();
+            LocalDateTime now = LocalDateTime.now();
+            long minutesDiff = ChronoUnit.MINUTES.between(lastTime, now);
+            
+            if (minutesDiff < 5) {
+                log.info("5분 이내 중복 경고 - 저장 생략 (마지막 경고: {}분 전)", minutesDiff);
+                return;
+            }
+        }
+
+        // 5분 지났으면 저장
         HistoryDTO history = HistoryDTO.builder()
                 .userId(biasAlert.getUserId())
                 .orderId(null)
