@@ -19,4 +19,13 @@ public interface HistoryMapper {
     );
 
     int insertHistory(HistoryDTO history);
+    
+    HistoryDTO getLastAlert(
+            @Param("userId") Long userId,
+            @Param("stockCode") String stockCode,
+            @Param("biasType") String biasType
+        );
+    int countUnreadAlerts(@Param("userId") Long userId);
+    int markAsRead(@Param("historyId") Long historyId);   
+    
 }

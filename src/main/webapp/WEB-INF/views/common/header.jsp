@@ -25,7 +25,7 @@
     <!-- ⭐ 매매 편향 경고 뱃지 -->
     <div class="bias-alert-badge" id="biasAlertBadge" style="display:none;">
         <span class="bias-alert-icon">⚠️</span>
-        <span class="bias-alert-text">안전선호 오류 경고</span>
+        <span class="bias-alert-text">위험회피 주의 경고</span>
     </div>
 
     <div class="header-user-info">
@@ -215,6 +215,42 @@
         }
     });
 
+// 페이지 로드 시 안 읽은 알림 확인
+async function checkUnreadAlerts() {
+    try {
+        const response = await fetch('/antmillion/api/history/unread-count?userId=1');
+        const count = await response.json();
+        
+        const notifBtn = document.querySelector('.header-notification-btn');
+        if (count > 0) {
+            notifBtn.classList.add('has-unread');
+            sessionStorage.setItem('hasUnreadAlert', 'true'); 
+            console.log('[알림] 안 읽은 알림:', count + '개');
+        } else {
+            notifBtn.classList.remove('has-unread');
+            sessionStorage.removeItem('hasUnreadAlert'); 
+            console.log('[알림] 안 읽은 알림 없음');
+        }
+    } catch (error) {
+        console.error('[알림] 조회 실패:', error);
+    }
+}
+
+// 알림 읽음 처리
+async function markNotificationAsRead(historyId) {
+    try {
+        await fetch('/antmillion/api/history/mark-read/' + historyId, {
+            method: 'POST'
+        });
+        console.log('[알림] 읽음 처리 완료:', historyId);
+        
+        // 빨간 점 다시 체크
+        checkUnreadAlerts();
+    } catch (error) {
+        console.error('[알림] 읽음 처리 실패:', error);
+    }
+}
+
 function closeProfile() {
     document.getElementById('profileModal').classList.remove('show');
 }
@@ -223,8 +259,8 @@ function showBiasAlert() {
     const badge = document.getElementById('biasAlertBadge');
     if (badge) {
         badge.style.display = 'flex';
-        sessionStorage.setItem('safeBias', 'true'); 
-        console.log('안전선호 경고 표시');
+        sessionStorage.setItem('riskAversionBias', 'true'); 
+        console.log('위험회피 경고 표시');
     }
 }
 
@@ -232,16 +268,23 @@ function hideBiasAlert() {
     const badge = document.getElementById('biasAlertBadge');
     if (badge) {
         badge.style.display = 'none';
-        sessionStorage.removeItem('safeBias'); 
-        console.log('안전선호 경고 제거');
+        sessionStorage.removeItem('riskAversionBias'); 
+        console.log('위험회피 경고 제거');
     }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const hasBias = sessionStorage.getItem('safeBias');
+    const hasUnreadAlert = sessionStorage.getItem('hasUnreadAlert');
+    if (hasUnreadAlert === 'true') {
+        const notifBtn = document.querySelector('.header-notification-btn');
+        notifBtn.classList.add('has-unread');
+        console.log('[초기 로드] 세션 기반 빨간 점 복원');
+    }
+    
+    const hasBias = sessionStorage.getItem('riskAversionBias');
     if (hasBias === 'true') {
         showBiasAlert();
-        console.log('[초기 로드] 세션 기반 안전선호 경고 복원');
+        console.log('[초기 로드] 세션 기반 위험회피 경고 복원');
     }
 
     const userProfile = document.getElementById('userProfile');
@@ -270,15 +313,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// ⭐ 뒤로가기/앞으로가기 대응
+//뒤로가기/앞으로가기 대응
 window.addEventListener('pageshow', function(event) {
     console.log('[pageshow] 이벤트 발생, bfcache:', event.persisted);
-    const hasBias = sessionStorage.getItem('safeBias');
+    const hasBias = sessionStorage.getItem('riskAversionBias');
     if (hasBias === 'true') {
         const badge = document.getElementById('biasAlertBadge');
         if (badge && badge.style.display !== 'flex') {
             showBiasAlert();
-            console.log('[뒤로가기] 세션 기반 안전선호 경고 복원');
+            console.log('[뒤로가기] 세션 기반 위험회피 경고 복원');
         }
     }
 });
@@ -296,6 +339,12 @@ function toggleNotifications(e) {
    
     if (!isVisible) {
         hideBiasAlert();
+        
+        // 빨간 점 제거
+        const notifBtn = document.querySelector('.header-notification-btn');
+        notifBtn.classList.remove('has-unread');
+        sessionStorage.removeItem('hasUnreadAlert'); 
+        console.log('[알림] 알림창 열림 - 빨간 점 제거');
     }
 }
 

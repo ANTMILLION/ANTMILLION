@@ -40,4 +40,14 @@ public class HistoryServiceImpl implements HistoryService {
 
         return historyMapper.selectHistoryListByDate(userId, startDate, endDate);
     }
+    @Override
+    public int getUnreadCount(Long userId) {
+        return historyMapper.countUnreadAlerts(userId);
+    }
+
+    @Override
+    public void markAsRead(Long historyId) {
+        historyMapper.markAsRead(historyId);
+    }
+    
 }
