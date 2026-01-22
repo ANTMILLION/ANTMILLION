@@ -146,6 +146,84 @@ function drawDetailChart(stockCode) {
     .catch(err => console.error("API 호출 에러:", err));
 }
 
+// 날짜 포맷 변경 (main.js의 formatDate 함수와 동일)
+function formatDate(yyyymmdd) {
+    return {
+        year: Number(yyyymmdd.substring(0, 4)),
+        month: Number(yyyymmdd.substring(4, 6)),
+        day: Number(yyyymmdd.substring(6, 8)),
+    };
+}
+
+// 일/주/월/년봉 차트 그리기 함수
+function drawPeriodChart(stockCode, period) {
+    const chartContainer = document.getElementById('detail-stockChart');
+    if (!chartContainer) {
+        console.error("#detail-stockChart 요소를 찾을 수 없음");
+        return;
+    }
+
+    chartContainer.innerHTML = ''; // 기존 차트 삭제
+
+    const width = chartContainer.clientWidth;
+    const height = chartContainer.clientHeight;
+
+    stockChart = LightweightCharts.createChart(chartContainer, {
+        width: width,
+        height: height,
+        layout: {
+            background: {type: 'solid', color: 'white'},
+            textColor: 'black'
+        },
+        grid: {
+            vertLines: { color: '#eee' },
+            horzLines: { color: '#eee' }
+        },
+        timeScale: {
+            borderColor: '#cccccc',
+            timeVisible: false,
+            secondsVisible: false
+        }
+    });
+
+    candleSeries = stockChart.addSeries(LightweightCharts.CandlestickSeries, {
+        upColor: '#e74c3c',
+        downColor: '#3498db',
+        borderUpColor: '#e74c3c',
+        borderDownColor: '#3498db',
+        wickUpColor: '#e74c3c',
+        wickDownColor: '#3498db'
+    });
+
+    // API 호출
+    fetch(`/antmillion/api/kis/periodChart/${stockCode}?period=${period}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data || data.length === 0) {
+                console.error("데이터가 비어있음");
+                return;
+            }
+
+            // 데이터 정렬
+            data.sort((a, b) => a.stck_bsop_date.localeCompare(b.stck_bsop_date));
+
+            // 차트 데이터 변환
+            const chartData = data.map(row => ({
+                time: formatDate(row.stck_bsop_date),
+                open: Number(row.stck_oprc),
+                high: Number(row.stck_hgpr),
+                low: Number(row.stck_lwpr),
+                close: Number(row.stck_clpr)
+            }));
+
+            if (chartData.length > 0) {
+                candleSeries.setData(chartData);
+                stockChart.timeScale().fitContent();
+            }
+        })
+        .catch(err => console.error("API 호출 에러:", err));
+}
+
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -153,6 +231,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (stockCode) {
         drawDetailChart(stockCode);
+
+        // 차트 기간 버튼 이벤트 리스너 추가
+        const periodButtons = document.querySelectorAll('.detail-period-btn');
+        periodButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 모든 버튼에서 active 클래스 제거
+                periodButtons.forEach(b => b.classList.remove('detail-period-active'));
+
+                // 클릭된 버튼에 active 클래스 추가
+                this.classList.add('detail-period-active');
+
+                const period = this.getAttribute('data-period');
+
+                if (period === 'minute') {
+                    // 분봉 차트
+                    drawDetailChart(stockCode);
+                } else {
+                    // 일/주/월/년봉 차트
+                    drawPeriodChart(stockCode, period);
+                }
+            });
+        });
     } else {
         console.error("URL에 종목 코드가 없습니다.");
     }
@@ -161,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 반응형 대응
 window.addEventListener('resize', () => {
     if (stockChart) {
-        const container = document.querySelector('.detail-chart-area');
+        const container = document.querySelector('#detail-stockChart');
         stockChart.resize(container.clientWidth, container.clientHeight);
     }
 });
