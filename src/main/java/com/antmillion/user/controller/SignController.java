@@ -36,6 +36,7 @@ public class SignController {
 	private final TermsProvider termsProvider;
 	private final SignService signService;
 	private final KakaoSignupStore kakaoSignupStore;
+	private static final Pattern EMAIL_RULE = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 	private static final Pattern PW_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
 
 	public SignController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore,
@@ -54,6 +55,13 @@ public class SignController {
 	@PostMapping("/login")
 	public String loginSubmit(@RequestParam("email") String email, @RequestParam("password") String password,
 			HttpServletResponse response, RedirectAttributes ra) {
+		email = (email == null) ? "" : email.trim();
+
+		if (email.isEmpty() || !EMAIL_RULE.matcher(email).matches()) {
+			ra.addFlashAttribute("loginError", "이메일 형식이 올바르지 않습니다.");
+			ra.addFlashAttribute("email", email);
+			return "redirect:/login";
+		}
 		if (password == null || !PW_RULE.matcher(password).matches()) {
 			ra.addFlashAttribute("loginError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
 			ra.addFlashAttribute("email", email);
@@ -67,7 +75,7 @@ public class SignController {
 
 			return "redirect:/";
 		} catch (Exception e) {
-			ra.addFlashAttribute("loginError", "아이디/비밀번호를 확인해 주세요.");
+			ra.addFlashAttribute("loginError", "이메일/비밀번호를 확인해 주세요.");
 			ra.addFlashAttribute("email", email);
 			return "redirect:/login";
 		}
@@ -100,6 +108,20 @@ public class SignController {
 		}
 		String email = (form.getEmail() == null) ? "" : form.getEmail().trim();
 		String password = (form.getPassword() == null) ? "" : form.getPassword().trim();
+
+		// 이메일 형식
+		if (email.isEmpty() || !EMAIL_RULE.matcher(email).matches()) {
+			model.addAttribute("error", "이메일 형식이 올바르지 않습니다.");
+			model.addAttribute("form", form);
+			return "login/signup";
+		}
+
+		// 비밀번호 규칙
+		if (password.isEmpty()) {
+			model.addAttribute("error", "비밀번호를 입력해 주세요.");
+			model.addAttribute("form", form);
+			return "login/signup";
+		}
 		if (password == null || password.isEmpty()) {
 			model.addAttribute("signupError", "비밀번호를 입력해 주세요.");
 			return "signup/signup";
@@ -149,10 +171,14 @@ public class SignController {
 	@GetMapping("/signup/check-email")
 	@ResponseBody
 	public Map<String, Object> checkEmail(@RequestParam("email") String email) {
-		if (email == null || email.trim().isEmpty()) {
-			return Map.of("available", false, "message", "이메일을 입력하세요.");
+		email = (email == null) ? "" : email.trim();
+		if (email.isEmpty()) {
+		    return Map.of("available", false, "message", "이메일을 입력하세요.");
 		}
-		boolean ok = signService.isEmailAvailable(email.trim());
+		if (!EMAIL_RULE.matcher(email).matches()) {
+		    return Map.of("available", false, "message", "이메일 형식이 올바르지 않습니다.");
+		}
+		boolean ok = signService.isEmailAvailable(email);
 		return Map.of("available", ok, "message", ok ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.");
 	}
 

@@ -157,6 +157,7 @@ public class SignService {
 	}
 
 	public TokenPair login(String email, String rawPassword) {
+		email = (email == null) ? "" : email.trim();
 		AuthMemberDTO member = authMemberMapper.selectByEmail(email);
 		if (member == null) {
 			throw new IllegalArgumentException("NO_USER");

@@ -21,7 +21,7 @@
 
       <form class="form" method="post" action="${cpath}/signup">
         <div class="row">
-            <input id="emailInput" type="text" name="email" placeholder="이메일을 입력하세요" value="${form.email}" />
+            <input id="emailInput" type="email" name="email" placeholder="이메일을 입력하세요" value="${form.email}" required />
                <button id="emailCheckBtn" class="btn small primary" type="button">중복 확인</button>
            </div>
             <div id="emailCheckMsg"></div>
@@ -53,7 +53,12 @@
     const email = (emailInput.value || '').trim();
     const res = await fetch(`${cpath}/signup/check-email?email=` + encodeURIComponent(email));
     const data = await res.json();
-
+    const emailRe = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRe.test(email)) {
+    	  emailMsg.className = 'msg-danger';
+    	  emailMsg.textContent = '이메일 형식이 올바르지 않습니다.';
+    	  return;
+    	}
     emailMsg.className = data.available ? 'msg-ok' : 'msg-danger';
     emailMsg.textContent = data.message;
   });
