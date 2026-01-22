@@ -234,6 +234,11 @@
             history.scrollRestoration = 'manual';
         }
     </script>
+    
+    <script>
+	    const contextPath = "${cpath}";
+	</script>
+
     <script src="${cpath}/resources/js/mypage/mypage.js"></script>
 </body>
 </html>

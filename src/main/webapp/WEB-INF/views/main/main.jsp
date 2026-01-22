@@ -76,11 +76,11 @@
                         <p class="main-market-index-symbol">KOSPI</p>
                     </div>
                 </div>
-                <div class="main-market-index-price">현재 수치</div>
+                <div class="main-market-index-price"></div>
                 <div class="main-market-index-change">
-                    <span class="main-change-label">전일대비</span>
-                    <span class="main-change-value main-positive">전일대비 금액</span>
-                    <span class="main-change-percent main-positive">전일대비 등락률</span>
+                    <span class="main-change-label"></span>
+                    <span class="main-change-value main-positive"></span>
+                    <span class="main-change-percent main-positive"></span>
                 </div>
                 <div class="main-market-index-chart" id="main-kospi-chart"></div>
             </div>
@@ -103,11 +103,11 @@
                         <p class="main-market-index-symbol">KOSDAQ</p>
                     </div>
                 </div>
-                <div class="main-market-index-price">현재 수치</div>
+                <div class="main-market-index-price"></div>
                 <div class="main-market-index-change">
-                    <span class="main-change-label">전일대비</span>
-                    <span class="main-change-value main-positive">전일대비 금액</span>
-                    <span class="main-change-percent main-positive">전일대비 등락률</span>
+                    <span class="main-change-label"></span>
+                    <span class="main-change-value main-positive"></span>
+                    <span class="main-change-percent main-positive"></span>
                 </div>
                 <div class="main-market-index-chart" id="main-kosdaq-chart"></div>
             </div>
@@ -134,8 +134,8 @@
                 <!-- 주식 차트 -->
 				<div class="main-stock-chart-card">
 				    <div class="main-chart-header">
-				        <h3 class="main-chart-stock-name" id="displayStockName">삼성전자</h3>
-				        <p class="main-chart-stock-code" id="displayStockCode">005930</p>
+				        <h3 class="main-chart-stock-name" id="displayStockName"></h3>
+				        <p class="main-chart-stock-code" id="displayStockCode"></p>
 				    </div>
 				    <div class="main-stock-chart-container" style="width: 100%; height: 400px;">
 				        <div id="main-stockChart" style="width: 100%; height: 100%;"></div>
