@@ -203,6 +203,11 @@ function initializeCharts() {
         '#main-kosdaq-chart',
         contextPath + '/api/kis/marketIndex/1001'
     );
+    
+    // 차트 생성 후 강제로 resize 이벤트 발생
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 100);
 }
 
 //코스피/코스닥 차트
@@ -210,6 +215,7 @@ function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
     const card = document.querySelector(cardSelector);
     const chartEl = card.querySelector(chartId);
     const container = chartEl.parentElement;
+    
     const chart = LightweightCharts.createChart(chartEl, {
         width: container.clientWidth,
         height: container.clientHeight,
@@ -222,6 +228,10 @@ function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
             horzLines: { color: '#eee' }
         },
         timeScale: {
+            borderColor: '#cccccc'
+        },
+        rightPriceScale: {
+            visible: true,
             borderColor: '#cccccc'
         }
     });
