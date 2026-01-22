@@ -37,7 +37,7 @@ public class BiasAlertController {
 
         System.out.println("BiasAlertController: API 호출 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode);
 
-        BiasAlertDTO result = biasAlertService.checkSafeHavenBias(accountId, stockCode, userId);
+        BiasAlertDTO result = biasAlertService.checkRiskAversionBias(accountId, stockCode, userId);
 
         if (result == null) {
             System.out.println("결과: 보유하지 않은 종목 (204 No Content)");
