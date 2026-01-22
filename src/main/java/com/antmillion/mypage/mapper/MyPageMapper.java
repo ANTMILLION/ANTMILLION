@@ -11,4 +11,9 @@ public interface MyPageMapper {
     
     // 실현손익 목록 조회 (명칭 통일 및 파라미터 Map으로 변경)
     List<Map<String, Object>> selectRealizedProfit(Map<String, Object> params);
+    
+    
+    
+    // 계좌정보 조회
+    Map<String, Object> selectAccountInfo(Long accountId);
 }
