@@ -24,21 +24,25 @@ import com.antmillion.auth.service.SignService.SignUpResult;
 import com.antmillion.auth.service.SignService.TokenPair;
 import com.antmillion.auth.terms.TermsProvider;
 import com.antmillion.auth.token.RefreshTokenStore;
+import com.antmillion.kakao.token.KakaoSignupStore;
 
 @Controller
 @RequestMapping
 public class SignController {
 
 	private static final String SIGNUP_SESSION_KEY = "signupForm";
+	private static final String KAKAO_SIGNUP_KEY = "KAKAO_SIGNUP_KEY";
 
 	private final TermsProvider termsProvider;
 	private final SignService signService;
-	private static final Pattern PW_RULE =
-		    Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
+	private final KakaoSignupStore kakaoSignupStore;
+	private static final Pattern PW_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
 
-	public SignController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore, TermsProvider termsProvider) {
+	public SignController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore,
+			TermsProvider termsProvider, KakaoSignupStore kakaoSignupStore) {
 		this.termsProvider = termsProvider;
 		this.signService = signService;
+		this.kakaoSignupStore = kakaoSignupStore;
 	}
 
 	// 로그인 화면
@@ -51,9 +55,9 @@ public class SignController {
 	public String loginSubmit(@RequestParam("email") String email, @RequestParam("password") String password,
 			HttpServletResponse response, RedirectAttributes ra) {
 		if (password == null || !PW_RULE.matcher(password).matches()) {
-		    ra.addFlashAttribute("loginError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
-		    ra.addFlashAttribute("email", email);
-		    return "redirect:/login";
+			ra.addFlashAttribute("loginError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
+			ra.addFlashAttribute("email", email);
+			return "redirect:/login";
 		}
 		try {
 			TokenPair tokens = signService.login(email, password);
@@ -64,14 +68,21 @@ public class SignController {
 			return "redirect:/";
 		} catch (Exception e) {
 			ra.addFlashAttribute("loginError", "아이디/비밀번호를 확인해 주세요.");
-		    ra.addFlashAttribute("email", email);
-		    return "redirect:/login";
+			ra.addFlashAttribute("email", email);
+			return "redirect:/login";
 		}
 	}
 
 	// 회원가입 1단계 화면
 	@GetMapping("/signup")
 	public String signupForm(Model model, HttpSession session) {
+		// 로컬 회원가입 화면 들어오면 카카오 가입 시도는 취소로 간주하고 정리
+		String kakaoKey = (String) session.getAttribute(KAKAO_SIGNUP_KEY);
+		if (kakaoKey != null) {
+			kakaoSignupStore.delete(kakaoKey);
+			session.removeAttribute(KAKAO_SIGNUP_KEY);
+		}
+
 		SignUpRequest saved = (SignUpRequest) session.getAttribute(SIGNUP_SESSION_KEY);
 		model.addAttribute("form", saved != null ? saved : new SignUpRequest());
 		return "login/signup";
@@ -81,24 +92,29 @@ public class SignController {
 	@PostMapping("/signup")
 	public String signupStep1Submit(@ModelAttribute("form") SignUpRequest form,
 			@RequestParam("passwordConfirm") String passwordConfirm, HttpSession session, Model model) {
+		// 로컬 회원가입 시작 = 카카오 가입 진행중이면 취소 처리
+		String kakaoKey = (String) session.getAttribute(KAKAO_SIGNUP_KEY);
+		if (kakaoKey != null) {
+			kakaoSignupStore.delete(kakaoKey);
+			session.removeAttribute(KAKAO_SIGNUP_KEY);
+		}
 		String email = (form.getEmail() == null) ? "" : form.getEmail().trim();
 		String password = (form.getPassword() == null) ? "" : form.getPassword().trim();
 		if (password == null || password.isEmpty()) {
-	        model.addAttribute("signupError", "비밀번호를 입력해 주세요.");
-	        return "signup/signup";
-	    }
+			model.addAttribute("signupError", "비밀번호를 입력해 주세요.");
+			return "signup/signup";
+		}
 
-	    if (!PW_RULE.matcher(password).matches()) {
-	        model.addAttribute("signupError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
-	        return "signup/signup";
-	    }
+		if (!PW_RULE.matcher(password).matches()) {
+			model.addAttribute("signupError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
+			return "signup/signup";
+		}
 
-	    if (!password.equals(passwordConfirm)) {
-	        model.addAttribute("signupError", "비밀번호가 일치하지 않습니다.");
-	        return "signup/signup";
-	    }
+		if (!password.equals(passwordConfirm)) {
+			model.addAttribute("signupError", "비밀번호가 일치하지 않습니다.");
+			return "signup/signup";
+		}
 		try {
-			
 
 			if (email.isEmpty()) {
 				throw new IllegalStateException("이메일을 입력하세요.");
@@ -144,12 +160,12 @@ public class SignController {
 	public String signupStep2Form(HttpSession session, RedirectAttributes ra, Model model) {
 		SignUpRequest sessionForm = (SignUpRequest) session.getAttribute(SIGNUP_SESSION_KEY);
 		if (sessionForm == null) {
-			ra.addFlashAttribute("error", "이메일 입력부터 다시 진행하세요.");
+			ra.addFlashAttribute("error", "이메일이나 비밀번호 입력이 잘못되었습니다.");
 			return "redirect:/signup";
 		}
-		
+
 		model.addAttribute("termsText", termsProvider.getServiceTerms());
-        model.addAttribute("privacyText", termsProvider.getPrivacyTerms());
+		model.addAttribute("privacyText", termsProvider.getPrivacyTerms());
 		return "login/signup_step2";
 	}
 
@@ -158,38 +174,87 @@ public class SignController {
 	public String signupStep2Submit(@RequestParam("nickname") String nickname,
 			@RequestParam(value = "agreeTerms", required = false) String agreeTerms,
 			@RequestParam(value = "agreePrivacy", required = false) String agreePrivacy, HttpSession session,
-			Model model, RedirectAttributes ra) {
+			Model model, RedirectAttributes ra, HttpServletResponse response) {
 		try {
 			SignUpRequest sessionForm = (SignUpRequest) session.getAttribute(SIGNUP_SESSION_KEY);
 			if (sessionForm == null)
 				return "redirect:/signup";
 
-			// step2 제출 직전에 이메일 중복 재검사 (우회/레이스 방지)
-			String email = sessionForm.getEmail();
-			if (email == null || email.trim().isEmpty()) {
-				session.removeAttribute(SIGNUP_SESSION_KEY);
-				return "redirect:/signup";
-			}
-			if (!signService.isEmailAvailable(email.trim())) {
-				// 세션을 지워서 step2 반복 진입도 막기
-				session.removeAttribute(SIGNUP_SESSION_KEY);
-				throw new IllegalStateException("이미 사용 중인 이메일입니다. 처음부터 다시 진행하세요.");
+			// 카카오 가입 플래그 (세션에 있으면 카카오 플로우)
+			String kakaoSignupKey = (String) session.getAttribute(KAKAO_SIGNUP_KEY);
+
+			// 로컬 우선: sessionForm에 email이 있으면 로컬로 본다
+			String emailInForm = sessionForm.getEmail();
+			boolean hasLocalEmail = (emailInForm != null && !emailInForm.trim().isEmpty());
+
+			boolean isKakao = (kakaoSignupKey != null) && !hasLocalEmail;
+
+			// 로컬일 때만: 이메일 중복 재검사
+			if (!isKakao) {
+				String email = sessionForm.getEmail();
+				if (email == null || email.trim().isEmpty()) {
+					session.removeAttribute(SIGNUP_SESSION_KEY);
+					return "redirect:/signup";
+				}
+				if (!signService.isEmailAvailable(email.trim())) {
+					session.removeAttribute(SIGNUP_SESSION_KEY);
+					throw new IllegalStateException("이미 사용 중인 이메일입니다. 처음부터 다시 진행하세요.");
+				}
 			}
 
+			// 공통: 닉네임/약관 체크
 			if (nickname == null || nickname.trim().isEmpty()) {
 				throw new IllegalStateException("닉네임을 입력하세요.");
+			}
+			if (!signService.isNicknameAvailable(nickname.trim())) {
+				throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
 			}
 			if (!"Y".equals(agreeTerms) || !"Y".equals(agreePrivacy)) {
 				throw new IllegalStateException("필수 약관에 동의해야 합니다.");
 			}
 
+			// 카카오면: Redis에서 kakaoId 꺼내서 카카오 회원가입 처리
+			if (isKakao) {
+				Long kakaoId = kakaoSignupStore.get(kakaoSignupKey);
+				if (kakaoId == null) {
+					session.removeAttribute(KAKAO_SIGNUP_KEY);
+					session.removeAttribute(SIGNUP_SESSION_KEY);
+					throw new IllegalStateException("카카오 가입 시간이 만료되었습니다. 다시 카카오 로그인을 진행하세요.");
+				}
+
+				// DB insert: member(email/password null) + account + social
+				SignUpResult result = signService.signUpKakao(kakaoId, nickname.trim());
+
+				// 가입과 동시에 로그인(토큰 발급 + 쿠키 세팅)
+				TokenPair tokens = signService.issueTokensByUserId(result.getUserId());
+				CookieUtil.addHttpOnlyCookie(response, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
+				CookieUtil.addHttpOnlyCookie(response, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+
+				// 임시 데이터 정리
+				kakaoSignupStore.delete(kakaoSignupKey);
+				session.removeAttribute(KAKAO_SIGNUP_KEY);
+				session.removeAttribute(SIGNUP_SESSION_KEY);
+
+				ra.addFlashAttribute("signupType", "KAKAO");
+				ra.addFlashAttribute("accountNumber", result.getAccountNumber());
+				ra.addFlashAttribute("balance", result.getBalance());
+				return "redirect:/signup/complete";
+			}
 			sessionForm.setNickname(nickname);
 
 			SignUpResult result = signService.signUpLocal(sessionForm);
 
+			// 혹시 남아있는 카카오 진행 흔적이 있으면 정리
+			String kakaoKeyLeft = (String) session.getAttribute(KAKAO_SIGNUP_KEY);
+			if (kakaoKeyLeft != null) {
+				kakaoSignupStore.delete(kakaoKeyLeft);
+				session.removeAttribute(KAKAO_SIGNUP_KEY);
+			}
+
 			// step 완료 후 세션 제거
 			session.removeAttribute(SIGNUP_SESSION_KEY);
 
+			ra.addFlashAttribute("signupType", "LOCAL");
 			ra.addFlashAttribute("accountNumber", result.getAccountNumber());
 			ra.addFlashAttribute("balance", result.getBalance());
 

@@ -37,10 +37,6 @@
         <button class="btn primary" type="submit">다음</button>
       </form>
 
-      <form style="margin-top: 10px;" method="post" action="${cpath}/signup/kakao">
-        <button class="btn kakao" type="submit" style="width: 100%;">카카오로 회원가입</button>
-      </form>
-
       <div class="center-links">
         이미 계정이 있나요? <a href="${cpath}/login">로그인</a>
       </div>

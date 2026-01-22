@@ -29,8 +29,8 @@
 					<button class="btn primary" type="submit">로그인</button>
 				</form>
 
-				<form style="margin-top: 10px;" method="post"
-					action="${cpath}/login">
+				<form style="margin-top: 10px;" method="get"
+					action="${cpath}/kakao/login">
 					<button class="btn kakao" type="submit" style="width: 100%;">카카오로
 						로그인</button>
 				</form>

@@ -21,6 +21,8 @@
       <form class="form" method="post" action="${cpath}/signup/step2">
         <div class="row">
             <input id="nicknameInput" type="text" name="nickname" placeholder="닉네임을 입력하세요" value="${nickname}" />
+            <input type="hidden" id="nicknameChecked" value="N" />
+            <input type="hidden" id="nicknameCheckedValue" value="" />
             <button id="nicknameCheckBtn" class="btn small primary" type="button">중복 확인</button>
         </div>
         <div id="nicknameCheckMsg"></div>
@@ -43,12 +45,13 @@
           <div class="msg-danger">${error}</div>
         </c:if>
 
-        <button class="btn primary" type="submit">회원가입 완료</button>
+        <button id="submitBtn" class="btn primary" type="submit" disabled>회원가입 완료</button>
+        <div id="formMsg" class="msg-danger" style="margin-top:8px;"></div>
       </form>
     </div>
   </div>
 </div>
-<!-- ✅ 서비스 이용약관 모달 -->
+<!-- 서비스 이용약관 모달 -->
 <div class="modal-backdrop" id="termsModal" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
     <div class="modal-head">
@@ -61,7 +64,7 @@
   </div>
 </div>
 
-<!-- ✅ 개인정보 수집·이용 동의 모달 -->
+<!-- 개인정보 수집·이용 동의 모달 -->
 <div class="modal-backdrop" id="privacyModal" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
     <div class="modal-head">
@@ -75,18 +78,91 @@
 </div>
 <script>
   const cpath = '${cpath}';
+  const formMsg = document.getElementById('formMsg');
   const nickBtn = document.getElementById('nicknameCheckBtn');
   const nickInput = document.getElementById('nicknameInput');
   const nickMsg = document.getElementById('nicknameCheckMsg');
 
+  const submitBtn = document.getElementById('submitBtn');
+  const nicknameChecked = document.getElementById('nicknameChecked');
+  const nicknameCheckedValue = document.getElementById('nicknameCheckedValue');
+
+// 잠금 상태로 관리
+  function lockSubmit(reason) {
+	  submitBtn.disabled = true;
+	  submitBtn.classList.add('btn-disabled');
+	  submitBtn.setAttribute('aria-disabled', 'true');
+	  formMsg.className = 'msg-danger';
+	  formMsg.textContent = reason || '필수 확인이 필요합니다.';
+}
+
+  function unlockSubmit() {
+	  submitBtn.disabled = false;
+	  submitBtn.classList.remove('btn-disabled');
+	  submitBtn.removeAttribute('aria-disabled');
+	  formMsg.textContent = '';
+}
+  
+  //초기 상태: 잠금
+  lockSubmit('닉네임 중복 확인을 완료해주세요.');
+  
+  //닉네임 입력 바뀌면 다시 잠금
+  nickInput.addEventListener('input', () => {
+    nicknameChecked.value = 'N';
+    nicknameCheckedValue.value = '';
+    nickMsg.className = '';
+    nickMsg.textContent = '';
+    lockSubmit('입력한 닉네임의 중복 확인을 해주세요.');
+  });
+
+  //중복 확인 버튼
   nickBtn.addEventListener('click', async () => {
     const nickname = (nickInput.value || '').trim();
+    if (!nickname) {
+      nickMsg.className = 'msg-danger';
+      nickMsg.textContent = '닉네임을 입력하세요.';
+      lockSubmit('닉네임을 입력한 후 중복 확인을 해주세요.');
+      return;
+    }
+
     const res = await fetch(`${cpath}/signup/check-nickname?nickname=` + encodeURIComponent(nickname));
     const data = await res.json();
 
     nickMsg.className = data.available ? 'msg-ok' : 'msg-danger';
     nickMsg.textContent = data.message;
+
+    if (data.available) {
+      nicknameChecked.value = 'Y';
+      nicknameCheckedValue.value = nickname;
+      unlockSubmit(); // 통과 시에만 잠금 해제
+    } else {
+      nicknameChecked.value = 'N';
+      nicknameCheckedValue.value = '';
+      lockSubmit('이미 사용 중인 닉네임입니다. 다른 닉네임을 확인해주세요.');
+    }
   });
+  
+  // 제출 직전 최종 검증
+  const form = document.querySelector('form.form');
+  form.addEventListener('submit', (e) => {
+    const cur = (nickInput.value || '').trim();
+    if (nicknameChecked.value !== 'Y' || nicknameCheckedValue.value !== cur) {
+      e.preventDefault();
+      nickMsg.className = 'msg-danger';
+      nickMsg.textContent = '닉네임 중복 확인을 완료해주세요.';
+      lockSubmit('닉네임 중복 확인을 완료해야 가입을 진행할 수 있어요.');
+      nickInput.focus();
+      return;
+    }
+    // 약관 동의 체크도 여기서 같이 막고 싶으면 같은 방식으로 추가 가능
+  });
+
+  submitBtn.addEventListener('click', () => {
+	  if (submitBtn.disabled) {
+	    formMsg.className = 'msg-danger';
+	    if (!formMsg.textContent) formMsg.textContent = '닉네임 중복 확인을 완료해주세요.';
+	  }
+	});
   
 //모달 열기/닫기
   const openModal = (selector) => {

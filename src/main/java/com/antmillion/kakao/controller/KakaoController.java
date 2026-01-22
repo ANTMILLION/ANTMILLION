@@ -12,7 +12,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.antmillion.auth.dto.SignUpRequest;
 import com.antmillion.auth.jwt.CookieUtil;
+import com.antmillion.auth.jwt.JwtProvider;
+import com.antmillion.auth.mapper.SocialMapper;
+import com.antmillion.auth.service.SignService;
+import com.antmillion.auth.terms.TermsProvider;
+import com.antmillion.auth.token.RefreshTokenStore;
+import com.antmillion.kakao.service.KakaoService;
+import com.antmillion.kakao.token.KakaoSignupStore;
 
 @Controller
 @RequestMapping("/kakao")
@@ -24,13 +32,21 @@ public class KakaoController {
     @Value("${kakao.redirect-uri}")
     private String redirectUri;
 
-    @Autowired
-    private com.antmillion.kakao.service.KakaoService kakaoService;
+    private final KakaoService kakaoService;
+    private final KakaoSignupStore kakaoSignupStore;
+    private final SocialMapper socialMapper;
+    private final SignService signService;
     
+    public KakaoController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore,
+			TermsProvider termsProvider, KakaoSignupStore kakaoSignupStore, SocialMapper socialMapper, KakaoService kakaoService) {
+		this.kakaoService = kakaoService;
+		this.socialMapper = socialMapper;
+		this.signService = signService;
+		this.kakaoSignupStore = kakaoSignupStore;
+	}
     // 선택: 이메일/프로필 등 동의항목을 추가로 강제하고 싶을 때
     // (처음부터 콘솔에서 동의항목 설정해두면 scope 없이도 동작하지만,
     //  추가동의 요청/명시가 필요하면 사용)
-    private static final String SCOPE = "profile_nickname";
 
     @GetMapping("/login")
     public String kakaoLogin(HttpServletResponse response) {
@@ -41,8 +57,7 @@ public class KakaoController {
                 + "?response_type=code"
                 + "&client_id=" + enc(clientId)
                 + "&redirect_uri=" + enc(redirectUri)
-                + "&state=" + enc(state)
-                + "&scope=" + enc(SCOPE);
+                + "&state=" + enc(state);
 
         return "redirect:" + url;
     }
@@ -80,8 +95,43 @@ public class KakaoController {
         // state 1회성: 바로 삭제 권장
         CookieUtil.deleteCookie(response, "KAKAO_STATE");
 
-        // 4) 여기서부터: code -> token -> user/me
-        // (아래 KakaoOAuthService 만들고 주입받아 호출)
-        return "redirect:/";
+        // 4) code -> token -> user/me
+        try {
+        var token = kakaoService.exchangeToken(code);
+        if (token == null || token.getAccessToken() == null) {
+            return "redirect:/login";
+        }
+
+        var user = kakaoService.getUserInfo(token.getAccessToken());
+        if (user == null || user.getId() == null) {
+            return "redirect:/login";
+        }
+
+        long kakaoId = user.getId();
+
+        // 5) 이미 가입된 카카오 유저면 바로 로그인 처리
+        Long userId = socialMapper.selectUserIdByKakaoId(kakaoId);
+        if (userId != null) {
+            var tokens = signService.issueTokensByUserId(userId);
+            CookieUtil.addHttpOnlyCookie(response, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
+            CookieUtil.addHttpOnlyCookie(response, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+            return "redirect:/";
+        }
+
+        // 6) 신규면: Redis에 kakaoId 임시 저장 + 세션에 signupKey 저장 후 step2로
+        String signupKey = UUID.randomUUID().toString();
+        kakaoSignupStore.save(signupKey, kakaoId, 600); // 10분 TTL
+
+        request.getSession().setAttribute("KAKAO_SIGNUP_KEY", signupKey);
+
+        // step2 진입 통과용(기존 로직 유지하려고 빈 폼 넣기)
+        request.getSession().removeAttribute("signupForm");
+        request.getSession().setAttribute("signupForm", new SignUpRequest());
+
+        return "redirect:/signup/step2";
+        } catch(Exception e) {
+        	System.out.println("[KAKAO] callback fail: " + e.getMessage());
+        	return "redirect:/login";
+        }
     }
 }

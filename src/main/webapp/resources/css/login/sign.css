@@ -107,7 +107,13 @@ input:focus{
 .center-links a{color:#2563eb; text-decoration:none;}
 .center-links a:hover{text-decoration:underline;}
 
-
+a.btn,
+a.btn:link,
+a.btn:visited,
+a.btn:hover,
+a.btn:active {
+  text-decoration: none;
+}
 
 .complete{
   text-align: center;
@@ -188,6 +194,9 @@ input[type="text"], input[type="password"]{
     margin-right: 0 !important;
   }
 }
+
+/* step2 버튼 중복확인 안할시 비활성화된것처럼 보이게 */
+.btn-disabled { opacity: .6; filter: grayscale(0.2); }
 
 /* 약관 체크라인 안의 보기 버튼에만 적용 */
 .form .checkline .btn-link{
