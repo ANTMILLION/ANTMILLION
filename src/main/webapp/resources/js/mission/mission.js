@@ -224,15 +224,15 @@ function showCompletion() {
 function updateHeaderUI(data) {
     // 헤더 상단 닉네임 변경
     const headerName = document.querySelector('.header-user-name');
-    if (headerName) headerName.textContent = data.nickName + "님"; // '님' 붙이기
+    if (headerName) headerName.textContent = data.nickName;
 
     // 헤더 드롭다운 안의 닉네임 변경
     const profileName = document.querySelector('.header-profile-nickname');
-    if (profileName) profileName.textContent = data.nickName + "님";
+    if (profileName) profileName.textContent = data.nickName;
 
     // 헤더 드롭다운 안의 랭크 이름(티어) 변경
     const rankName = document.querySelector('.header-profile-tier');
-    if (rankName) rankName.textContent = data.rankName + " 개미"; // '개미' 붙이기
+    if (rankName) rankName.textContent = data.rankName + " 개미";
 
     // 헤더 드롭다운 안의 이미지 변경
     const rankImg = document.querySelector('.header-profile-avatar');
