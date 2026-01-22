@@ -33,7 +33,7 @@ public class StockCache {
     //서버에서 필터링하여 결과 전달
     public List<StockDTO> searchStocks(String searchKeyword) {
         return cache.values().stream()
-                .filter(s -> s.getStockName().startsWith(searchKeyword))
+                .filter(s -> s.getStockName().toLowerCase().contains(searchKeyword.toLowerCase()))
                 .sorted(Comparator.comparing(StockDTO::getStockName))
                 .collect(Collectors.toList());
     }
