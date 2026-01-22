@@ -108,6 +108,31 @@
     border: 2px solid white;
 }
 
+.header-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 60px;
+    height: 44px;
+
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 13%;
+
+    font-size: 13px;
+    font-weight: 600;
+    color: #202124;
+    text-decoration: none;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-login-btn:hover {
+    background: #f8f9fa;
+}
+
 /* 사용자 프로필 래퍼 */
 .header-user-profile-wrapper {
     position: relative;

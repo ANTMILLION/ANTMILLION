@@ -68,32 +68,42 @@
             </div>
         </div>
 
-        <div class="header-user-profile-wrapper">
-            <div class="header-user-profile" id="userProfile">
-                <span class="header-user-name">${userRank.nickName}님</span>
-                <span class="header-dropdown-arrow">▼</span>
-            </div>
+        <c:choose>
+            <c:when test="${not empty userRank}">
+                <div class="header-user-profile-wrapper">
+                    <div class="header-user-profile" id="userProfile">
+                        <span class="header-user-name">${userRank.nickName}님</span>
+                        <span class="header-dropdown-arrow">▼</span>
+                    </div>
 
-            <!-- 프로필 모달 -->
-            <div class="header-profile-modal" id="profileModal">
-                <div class="header-profile-modal-header">
-                    <button class="header-profile-modal-close" onclick="closeProfile()">×</button>
-                </div>
+                    <!-- 프로필 모달 -->
+                    <div class="header-profile-modal" id="profileModal">
+                        <div class="header-profile-modal-header">
+                            <button class="header-profile-modal-close" onclick="closeProfile()">×</button>
+                        </div>
 
-                <div class="header-profile-modal-content">
-                    <img
-                        src="${cpath}/${userRank.rankImage}"
-                        alt="프로필" class="header-profile-avatar"
-                        onerror="this.src='${cpath}/resources/images/defaultant.png'">
-                    <div class="header-profile-tier">${userRank.rankName} 개미</div>
-                    <div class="header-profile-nickname">${userRank.nickName}님</div>
+                        <div class="header-profile-modal-content">
+                            <img
+                                src="${cpath}/${userRank.rankImage}"
+                                alt="프로필" class="header-profile-avatar"
+                                onerror="this.src='${cpath}/resources/images/defaultant.png'">
+                            <div class="header-profile-tier">${userRank.rankName} 개미</div>
+                            <div class="header-profile-nickname">${userRank.nickName}님</div>
+                        </div>
+                        <div class="header-profile-modal-footer">
+                            <form action="${cpath}/logout" method="post" onsubmit="return confirm('로그아웃 하시겠습니까?');">
+                                <button type="submit" class="header-logout-btn">로그아웃</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="header-profile-modal-footer">
-                    <button class="header-logout-btn" onclick="logout()">로그아웃</button>
-                </div>
-            </div>
-        </div>
+            </c:when>
+            <c:otherwise>
+                <button type="button" class="header-login-btn"
+                        onclick="location.href='${cpath}/login'">로그인
+                </button>
+            </c:otherwise>
+        </c:choose>
     </div>
 </header>
 
@@ -301,11 +311,5 @@ function toggleNotifications(e) {
 
 function toggleNotif() {
     document.getElementById('notifBox').style.display = 'none';
-}
-
-function logout() {
-    if (confirm('로그아웃 하시겠습니까?')) {
-        location.href = '${cpath}/logout.jsp';
-    }
 }
 </script>
