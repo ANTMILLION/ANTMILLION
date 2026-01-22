@@ -6,6 +6,8 @@ import com.antmillion.mission.mapper.MissionMapper;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +25,18 @@ public class MissionServiceImpl implements MissionService {
     private final MemberMapper memberMapper;
     private final AntRankService antRankService;
 
+    // 로그인한 유저 ID를 가져오는 메서드
+    private Long getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            return Long.valueOf(auth.getPrincipal().toString());
+        }
+        throw new IllegalStateException("로그인이 필요한 서비스입니다.");
+    }
+
     @Override
     public List<QuizQuestionResponseDTO> getDailyQuiz() {
-        Long userId = 1L;
+        Long userId = getCurrentUserId();
 
         // 오늘 날짜 구하기 (yyyy-MM-dd)
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -95,19 +106,30 @@ public class MissionServiceImpl implements MissionService {
         // 채점
         boolean isCorrect = realAnswer.equals(requestDTO.getChoiceNo());
         if(isCorrect) {
-            int count = missionMapper.countSolvedHistory(requestDTO.getUserId(), requestDTO.getQuizId());
-            if (count == 0) {
-                QuizLogDTO logDTO = QuizLogDTO.builder()
-                        .userId(requestDTO.getUserId())
-                        .quizId(requestDTO.getQuizId())
-                        .build();
-                missionMapper.insertQuizLog(logDTO);
+            try {
+                int count = missionMapper.countSolvedHistory(requestDTO.getUserId(), requestDTO.getQuizId());
+                if (count == 0) {
+                    QuizLogDTO logDTO = QuizLogDTO.builder()
+                            .userId(requestDTO.getUserId())
+                            .quizId(requestDTO.getQuizId())
+                            .build();
+                    missionMapper.insertQuizLog(logDTO);
 
-                // 포인트 조회
-                int quizPoint = missionMapper.selectQuizPointByQuizId(requestDTO.getQuizId());
+                    // 포인트 조회
+                    int quizPoint = missionMapper.selectQuizPointByQuizId(requestDTO.getQuizId());
 
-                // 포인트 지급
-                memberMapper.updateUserPoint(requestDTO.getUserId(),  quizPoint);
+                    // 포인트 지급
+                    memberMapper.updateUserPoint(requestDTO.getUserId(), quizPoint);
+
+                    // 랭크 갱신
+                    Long userId = requestDTO.getUserId();
+                    int newPoint = memberMapper.selectUserPoint(userId);
+                    antRankService.updateUserRank(userId, newPoint);
+                }
+            } catch (Exception e) {
+                System.err.println("퀴즈 로그 저장 중 오류: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("퀴즈 처리 중 오류가 발생했습니다.", e);
             }
         }
         return isCorrect;
@@ -115,9 +137,16 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public UserRankResponseDTO getUserMissionStatus(Long userId) {
-        // 사용자 포인트 확인
-        int point = memberMapper.selectUserPoint(userId);
-        // 랭크 계산
-        return antRankService.calculateRankStatus(userId, point);
+        if (userId == null) {
+            throw new IllegalArgumentException("사용자 ID가 필요합니다.");
+        }
+
+        try {
+            return antRankService.getUserRankInfo(userId);
+        } catch (Exception e) {
+            System.err.println("미션 상태 조회 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("미션 상태 조회 중 오류가 발생했습니다.", e);
+        }
     }
 }

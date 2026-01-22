@@ -18,7 +18,6 @@ public class AntRankServiceImpl implements AntRankService {
     private final MemberMapper memberMapper;
 
     @Override
-    @Transactional
     public UserRankResponseDTO calculateRankStatus(Long userId, int currentPoint) {
         List<AntRankDTO> ranks = antRankMapper.selectAllRanks();
 
@@ -53,10 +52,6 @@ public class AntRankServiceImpl implements AntRankService {
             }
         }
 
-        if (userId != null) {
-            memberMapper.updateUserRank(userId, currentRankId);
-        }
-
         // 남은 점수 계산
         int neededPoint = isMaxRank ? 0 : (nextRankPoint - currentPoint);
         if (currentPoint >= 10000) neededPoint = 0;
@@ -68,18 +63,24 @@ public class AntRankServiceImpl implements AntRankService {
                 .nextRankPoint(nextRankPoint)
                 .neededPoint(neededPoint)
                 .currentRankStartPoint(currentRankStartPoint)
+                .currentRankId(currentRankId)
                 .build();
     }
 
     @Override
-    @Transactional
     public UserRankResponseDTO getUserRankInfo(Long userId) {
         int currentPoint = memberMapper.selectUserPoint(userId);
         String nickName = memberMapper.selectUserNickName(userId);
 
         // 기존 랭크 계산 로직 재사용
-        UserRankResponseDTO responseDTO = calculateRankStatus(userId, currentPoint);
+        UserRankResponseDTO responseDTO = calculateRankStatus(null, currentPoint);
         responseDTO.assignNickName(nickName);
         return responseDTO;
+    }
+
+    @Transactional
+    public void updateUserRank(Long userId, int currentPoint) {
+        UserRankResponseDTO rank = calculateRankStatus(null, currentPoint);
+        memberMapper.updateUserRank(userId, rank.getCurrentRankId());
     }
 }
