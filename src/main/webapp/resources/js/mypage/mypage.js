@@ -264,15 +264,65 @@ let tabButtons, subTabButtons, filterButtons;
 document.addEventListener('DOMContentLoaded', function() {
     console.log("마이페이지 로드 완료");
     
+    // 1. UI 요소 참조 및 기본 이벤트 연결 (이게 최우선)
     initializeElements();
-    setupEventListeners();
-    renderInitialData();
+    setupEventListeners(); // 👈 여기서 탭 클릭 이벤트가 등록됩니다.
     
-    // ✅ 심리경고 전용 초기화
+    // 2. 첫 화면 데이터만 로드 (주식 잔고)
+    loadStockHoldings();
+    
+    // 탭 기간 조회 초기화
+    initializeSelectDates();
+    
+    // 3. 심리경고 전용 로직
     initializeHistoryDates();
     loadHistoryData();
     setupHistoryEventListeners();
+    
+    // ※ loadRealizedProfit()은 여기서 직접 호출하지 마세요!
 });
+
+// ===========================
+// 이벤트 리스너 통합 설정
+// ===========================
+function setupEventListeners() {
+    // 메인 탭 전환 버튼 이벤트
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = this.dataset.tab; // 'stock', 'realized' 등
+            console.log("탭 전환:", target);
+            
+            // 1. 모든 버튼 및 패널 비활성화
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.mypage-tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // 2. 현재 클릭한 탭 활성화
+            this.classList.add('active');
+            const targetPanel = document.getElementById(`${target}-panel`);
+            if (targetPanel) targetPanel.classList.add('active');
+            
+            // 3. 탭별 데이터 로드
+            if (target === 'stock') {
+                loadStockHoldings();
+            } else if (target === 'realized') {
+                loadRealizedProfit(); // ✅ 여기서 호출되어야 데이터가 그려집니다.
+            }
+        });
+    });
+
+    // 날짜 변경 시 자동 조회 (실현손익용)
+    const realizedDates = [document.getElementById("realizedStartDate"), document.getElementById("realizedEndDate")];
+    realizedDates.forEach(input => {
+        if(input) {
+            input.addEventListener("change", () => loadRealizedProfit());
+        }
+    });
+
+    // 기존의 나머지 리스너들 (서브탭 등) 유지...
+    setupDateFilters(); 
+}
 
 function initializeElements() {
     // DOM 요소 가져오기
@@ -287,34 +337,7 @@ function initializeElements() {
     filterButtons = document.querySelectorAll('.mypage-filter-button');
 }
 
-// ===========================
-// 이벤트 리스너 설정
-// ===========================
-function setupEventListeners() {
-    // 메인 탭 전환
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            switchTab(this.dataset.tab);
-        });
-    });
-    
-    // 서브 탭 전환 (체결내역)
-    subTabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            switchSubTab(this.dataset.subtab);
-        });
-    });
-    
-    // 필터 버튼 (매매내역)
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            filterTradingHistory(this.dataset.filter);
-        });
-    });
-    
-    // 기간 선택 초기화
-    setupDateFilters();
-}
+
 
 // ===========================
 // 기간 선택 필터 설정
@@ -469,39 +492,117 @@ function renderStockHoldings(holdings) { //  매개변수 추가
     }).join('');
 }
 
+// 실현손익 데이터를 불러오는 함수
+function loadRealizedProfit() {
+    // 1. JSP input에서 날짜 값 가져오기
+    const startDate = document.getElementById("realizedStartDate").value;
+    const endDate = document.getElementById("realizedEndDate").value;
+
+    console.log("조회 기간:", startDate, "~", endDate);
+
+    // 2. URL에 파라미터 추가
+    const url = `${contextPath}/mypage/api/realized-profit?startDate=${startDate}&endDate=${endDate}`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            renderRealizedProfit(data);
+        })
+        .catch(err => console.error("실현손익 조회 실패:", err));
+}
+
 // ===========================
 // 실현손익 렌더링
 // ===========================
-function renderRealizedProfits() {
-    if (!realizedList) return;
-    
-    realizedList.innerHTML = sampleData.realizedProfits.map(period => {
-        const isProfitable = period.amount >= 0;
-        const profitClass = isProfitable ? 'positive' : 'negative';
-        const profitSign = isProfitable ? '+' : '';
+function renderRealizedProfit(data) {
+    const listContainer = document.querySelector("#realizedList");
+    if (!listContainer) return;
+
+    if (!data || data.length === 0) {
+        listContainer.innerHTML = "<p class='no-data'>해당 기간 내 실현손익 내역이 없습니다.</p>";
+        return;
+    }
+
+    // 1. 데이터 월별 그룹화 처리
+    const groupedData = {};
+
+    data.forEach(item => {
+        let dateObj;
+        if (Array.isArray(item.tradeDate)) {
+            // [2026, 1, 22, ...] 형태 처리
+            dateObj = new Date(item.tradeDate[0], item.tradeDate[1] - 1, item.tradeDate[2]);
+        } else {
+            dateObj = new Date(item.tradeDate);
+        }
+
+        const monthKey = `${dateObj.getFullYear()}년 ${dateObj.getMonth() + 1}월`;
         
-        return `
+        if (!groupedData[monthKey]) {
+            groupedData[monthKey] = {
+                month: monthKey,
+                totalProfit: 0,
+                items: []
+            };
+        }
+        
+        groupedData[monthKey].items.push({
+            ...item,
+            formattedDate: `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일`
+        });
+        groupedData[monthKey].totalProfit += item.profit;
+    });
+
+    // 2. HTML 생성 (기존 UI 디자인 적용)
+    let html = "";
+    
+    // 월별로 반복
+    Object.values(groupedData).sort((a, b) => b.month.localeCompare(a.month)).forEach(group => {
+        const isMonthProfitable = group.totalProfit >= 0;
+        const monthClass = isMonthProfitable ? 'positive' : 'negative';
+        const monthSign = isMonthProfitable ? '+' : '';
+
+        html += `
             <div class="mypage-realized-item">
                 <div class="mypage-realized-header">
-                    <span class="mypage-realized-date">${period.date}</span>
-                    <span class="mypage-realized-amount ${profitClass}">
-                        ${profitSign}${period.amount.toLocaleString()}원
+                    <span class="mypage-realized-date">${group.month} </span>
+                    <span class="mypage-realized-amount ${monthClass}">
+                        ${monthSign}${formatNumber(group.totalProfit)}원
                     </span>
                 </div>
+                
                 <div class="mypage-realized-detail">
-                    ${period.items.map(item => `
-                        <div>
-                            <div class="mypage-realized-stock">${item.stock}</div>
-                            <div class="mypage-realized-info">
-                                ${item.date} <span class="${item.amount >= 0 ? 'positive' : 'negative'}">${item.amount >= 0 ? '+' : ''}${item.amount.toLocaleString()}원</span>
+                    ${group.items.map(item => {
+                        const isItemProfitable = item.profit >= 0;
+                        const itemClass = isItemProfitable ? 'positive' : 'negative';
+                        const itemSign = isItemProfitable ? '+' : '';
+                        
+                        
+                        return `
+                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                                <div class="mypage-realized-stock" style="font-weight: bold; font-size: 15px; margin-bottom: 5px;">
+                                    ${item.name}
+                                </div>
+                                <div class="mypage-realized-info" style="display: flex; justify-content: space-between; font-size: 13px;">
+                                    <span>${item.formattedDate} · ${item.shares}주 매도</span>
+                                    <span class="${itemClass}" style="font-weight: bold;">
+                                        ${itemSign}${formatNumber(item.profit)}원 (${itemSign}${Number(item.profitRate).toFixed(2)}%)
+                                    </span>
+                                </div>
+                                <div style="display: flex; gap: 10px; font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                                    <span>매수가: ${formatNumber(item.buyPrice)}원</span>
+                                    <span>매도가: ${formatNumber(item.sellPrice)}원</span>
+                                </div>
                             </div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
-    }).join('');
+    });
+
+    listContainer.innerHTML = html;
 }
+
 
 // ===========================
 // 체결내역 렌더링
@@ -579,6 +680,32 @@ function renderTradingHistory(filter) {
             </div>
         `;
     }).join('');
+}
+
+
+/**
+ * 기간 날짜 필드 초기화 (한달전 ~ 오늘 날짜로)
+ */
+function initializeSelectDates() {
+    const now = new Date(); // 현재 날짜 객체 생성
+    const today = now.toISOString().split('T')[0];
+    
+    // ✅ 한 달 전 날짜 계산
+    const lastMonth = new Date(now.setMonth(now.getMonth() - 1)).toISOString().split('T')[0];
+    
+    const startDateInput = document.getElementById("realizedStartDate");
+    const endDateInput = document.getElementById("realizedEndDate");
+    
+    if (startDateInput) {
+        // ✅ 오늘(today) 대신 한 달 전(lastMonth) 값을 할당
+        startDateInput.value = lastMonth;
+        console.log("기간 시작 날짜 초기화:", lastMonth);
+    }
+    
+    if (endDateInput) {
+        endDateInput.value = today;
+        console.log("기간 종료 날짜 초기화:", today);
+    }
 }
 
 /**
