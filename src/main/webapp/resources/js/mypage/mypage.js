@@ -398,19 +398,40 @@ function filterTradingHistory(filter) {
 // 초기 데이터 렌더링
 // ===========================
 function renderInitialData() {
-    renderStockHoldings();
+    //renderStockHoldings();
+    loadStockHoldings(); // ✅ 이 함수가 서버에서 데이터를 가져온 후 renderStockHoldings를 실행함
     renderRealizedProfits();
     renderExecutedOrders('all');
     renderTradingHistory('all');
 }
 
+// ✅ DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
+function loadStockHoldings() {
+    fetch(contextPath+'/mypage/api/stock-holdings') // 앞서 만든 컨트롤러 URL
+        .then(res => res.json())
+        .then(data => {
+            renderStockHoldings(data); // 데이터를 받아서 렌더링 함수에 전달
+        })
+        .catch(err => {
+            console.error("주식 잔고 로드 실패:", err);
+            if (stockList) stockList.innerHTML = "<p class='no-data'>데이터 로드 실패</p>";
+        });
+}
+
 // ===========================
-// 주식잔고 렌더링
+// 주식잔고 렌더링 (수정)
 // ===========================
-function renderStockHoldings() {
+function renderStockHoldings(holdings) { // ✅ 매개변수 추가
     if (!stockList) return;
     
-    stockList.innerHTML = sampleData.stockHoldings.map(stock => {
+    // ✅ 데이터가 없을 때 처리 추가
+    if (!holdings || holdings.length === 0) {
+        stockList.innerHTML = "<p class='no-data'>보유 중인 주식이 없습니다.</p>";
+        return;
+    }
+    
+    // ✅ sampleData.stockHoldings 대신 holdings 사용
+    stockList.innerHTML = holdings.map(stock => {
         const profitClass = stock.profit > 0 ? 'positive' : stock.profit < 0 ? 'negative' : 'neutral';
         const profitSign = stock.profit > 0 ? '+' : '';
         
