@@ -72,7 +72,7 @@
             <c:when test="${not empty userRank}">
                 <div class="header-user-profile-wrapper">
                     <div class="header-user-profile" id="userProfile">
-                        <span class="header-user-name">${userRank.nickName}님</span>
+                        <span class="header-user-name">${userRank.nickName}</span>
                         <span class="header-dropdown-arrow">▼</span>
                     </div>
 
@@ -88,7 +88,7 @@
                                 alt="프로필" class="header-profile-avatar"
                                 onerror="this.src='${cpath}/resources/images/defaultant.png'">
                             <div class="header-profile-tier">${userRank.rankName} 개미</div>
-                            <div class="header-profile-nickname">${userRank.nickName}님</div>
+                            <div class="header-profile-nickname">${userRank.nickName}</div>
                         </div>
                         <div class="header-profile-modal-footer">
                             <form action="${cpath}/logout" method="post" onsubmit="return confirm('로그아웃 하시겠습니까?');">

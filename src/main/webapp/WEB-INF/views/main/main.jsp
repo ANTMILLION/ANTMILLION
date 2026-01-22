@@ -25,33 +25,47 @@
         <div class="main-content-grid">
             <!-- 나의 랭크 카드 -->
             <div class="main-rank-card main-grid-rank">
-                <div class="main-rank-header">
-                    <h2 class="main-card-title">${userRank.nickName}님의 랭크</h2>
-                    <div class="main-rank-image-container">
-                        <img src="${cpath}/${userRank.rankImage}" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+            <c:choose>
+                <c:when test="${not empty userRank}">
+                    <div class="main-rank-header">
+                        <h2 class="main-card-title">나의 개미</h2>
+                        <div class="main-rank-image-container">
+                            <img src="${cpath}/${userRank.rankImage}" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+                        </div>
                     </div>
-                </div>
-                <div class="main-exp-bar-container"
-                     id="mainExpContainer"
-                     data-current="${userRank.currentPoint}"
-                     data-max="${userRank.nextRankPoint}"
-                     data-start="${userRank.currentRankStartPoint}">
+                    <div class="main-exp-bar-container"
+                         id="mainExpContainer"
+                         data-current="${userRank.currentPoint}"
+                         data-max="${userRank.nextRankPoint}"
+                         data-start="${userRank.currentRankStartPoint}">
 
-                    <div class="main-exp-bar" id="mainExpBar" style="width: 0%;"></div>
+                        <div class="main-exp-bar" id="mainExpBar" style="width: 0%;"></div>
 
-                    <div class="main-exp-text">
-                        <span class="main-exp-current">${userRank.currentPoint}</span>
-                        <span class="main-exp-divider">/</span>
-                        <c:choose>
-                            <c:when test="${userRank.nextRankPoint == 0 || userRank.nextRankPoint >= 10000}">
-                                <span class="main-exp-max">MAX</span>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="main-exp-max">${userRank.nextRankPoint}</span>
-                            </c:otherwise>
-                        </c:choose>
+                        <div class="main-exp-text">
+                            <span class="main-exp-current">${userRank.currentPoint}</span>
+                            <span class="main-exp-divider">/</span>
+                            <c:choose>
+                                <c:when test="${userRank.nextRankPoint == 0 || userRank.nextRankPoint >= 10000}">
+                                    <span class="main-exp-max">MAX</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="main-exp-max">${userRank.nextRankPoint}</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
-                </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="main-rank-header" style="flex-direction: column; text-align: center;">
+                        <h2 class="main-card-title">로그인이 필요해요!</h2>
+                        <div class="main-rank-image-container">
+                            <img src="${cpath}/resources/images/profile/challenger-ant.png"
+                                 alt="기본 이미지" class="main-rank-image" style="opacity: 0.5; filter: grayscale(100%);">
+                        </div>
+                        <p class="main-rank-text">지금 로그인하고<br>나의 투자 랭크를 확인해보세요.</p>
+                    </div>
+                </c:otherwise>
+            </c:choose>
             </div>
 
             <!-- 코스피 카드 -->
@@ -166,7 +180,6 @@
             }, 100);
         }
     });
-
 
     // 페이지 로드 시 스크롤을 맨 위로 이동
     window.onload = function() {
