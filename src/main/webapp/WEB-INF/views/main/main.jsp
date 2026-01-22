@@ -82,7 +82,9 @@
                     <span class="main-change-value main-positive"></span>
                     <span class="main-change-percent main-positive"></span>
                 </div>
-                <div class="main-market-index-chart" id="main-kospi-chart"></div>
+                <div class="main-market-index-chart-container">
+                    <div id="main-kospi-chart"></div>
+                </div>
             </div>
 
             <!-- 미션 카드 -->
@@ -115,7 +117,9 @@
                     <span class="main-change-value main-positive"></span>
                     <span class="main-change-percent main-positive"></span>
                 </div>
-                <div class="main-market-index-chart" id="main-kosdaq-chart"></div>
+                <div class="main-market-index-chart-container">
+                    <div id="main-kosdaq-chart"></div>
+                </div>
             </div>
 
             <!-- 주식 테이블과 차트 영역 -->

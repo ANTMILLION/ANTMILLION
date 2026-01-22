@@ -371,7 +371,7 @@ body {
     display: none !important;
 }
 
-.main-market-index-chart {
+.main-market-index-chart-container {
     flex: 1;
     position: relative;
     min-height: 0;
@@ -380,9 +380,10 @@ body {
     align-items: center;
     grid-column: 2;
     grid-row: 1 / 5;
+    overflow:  hidden;
 }
 
-.main-market-index-chart {
+.main-market-index-chart-container > div {
     width: 100% !important;
     height: 100% !important;
 }
