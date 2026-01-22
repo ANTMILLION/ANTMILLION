@@ -209,9 +209,10 @@ function initializeCharts() {
 function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
     const card = document.querySelector(cardSelector);
     const chartEl = card.querySelector(chartId);
+    const container = chartEl.parentElement;
     const chart = LightweightCharts.createChart(chartEl, {
-        width: document.getElementById('main-kospi-chart').clientWidth,
-        height: document.getElementById('main-kospi-chart').clientHeight,
+        width: container.clientWidth,
+        height: container.clientHeight,
         layout: {
             background: {type: 'solid', color: 'white'},
             textColor: 'black'
@@ -252,6 +253,7 @@ function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
             candleSeries.setData(chartData);
             chart.timeScale().fitContent();
         });
+    chartEl._chart = chart;
 }
 
 //코스피/코스닥 차트 헤더 변경 - 현재 수치, 전일대비
@@ -414,6 +416,19 @@ document.addEventListener('mouseover', (e) => {
 
 // 차트 반응형
 window.addEventListener('resize', () => {
+    // 코스피 차트
+    const kospiChartEl = document.getElementById('main-kospi-chart');
+    if (kospiChartEl && kospiChartEl._chart) {
+        const container = kospiChartEl.parentElement;
+        kospiChartEl._chart.resize(container.clientWidth, container.clientHeight);
+    }
+
+    // 코스닥 차트
+    const kosdaqChartEl = document.getElementById('main-kosdaq-chart');
+    if (kosdaqChartEl && kosdaqChartEl._chart) {
+        const container = kosdaqChartEl.parentElement;
+        kosdaqChartEl._chart.resize(container.clientWidth, container.clientHeight);
+    }
     if (stockChart) {
         const container = document.getElementById('main-stockChart');
         stockChart.resize(container.clientWidth, container.clientHeight);

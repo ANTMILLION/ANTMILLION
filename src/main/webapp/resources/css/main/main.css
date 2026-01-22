@@ -352,7 +352,7 @@ body {
     display: none !important;
 }
 
-.main-market-index-chart {
+.main-market-index-chart-container {
     flex: 1;
     position: relative;
     min-height: 0;
@@ -363,9 +363,9 @@ body {
     grid-row: 1 / 5;
 }
 
-.main-market-index-chart {
-    width: 100% !important;
-    height: 100% !important;
+.main-market-index-chart-container > div {
+    width:  100%;
+    height: 100%;
 }
 
 .main-stock-section {
