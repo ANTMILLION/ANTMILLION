@@ -25,20 +25,47 @@
         <div class="main-content-grid">
             <!-- 나의 랭크 카드 -->
             <div class="main-rank-card main-grid-rank">
-                <div class="main-rank-header">
-                    <h2 class="main-card-title">나의 랭크</h2>
-                    <div class="main-rank-image-container">
-                        <img src="${cpath}/resources/images/profile/gold-ant.png" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+            <c:choose>
+                <c:when test="${not empty userRank}">
+                    <div class="main-rank-header">
+                        <h2 class="main-card-title">나의 개미</h2>
+                        <div class="main-rank-image-container">
+                            <img src="${cpath}/${userRank.rankImage}" alt="랭크 이미지" class="main-rank-image" id="main-rankImage">
+                        </div>
                     </div>
-                </div>
-                <div class="main-exp-bar-container">
-                    <div class="main-exp-bar" style="width: 68%;"></div>
-                    <div class="main-exp-text">
-                        <span class="main-exp-current">680</span>
-                        <span class="main-exp-divider">/</span>
-                        <span class="main-exp-max">1000</span>
+                    <div class="main-exp-bar-container"
+                         id="mainExpContainer"
+                         data-current="${userRank.currentPoint}"
+                         data-max="${userRank.nextRankPoint}"
+                         data-start="${userRank.currentRankStartPoint}">
+
+                        <div class="main-exp-bar" id="mainExpBar" style="width: 0%;"></div>
+
+                        <div class="main-exp-text">
+                            <span class="main-exp-current">${userRank.currentPoint}</span>
+                            <span class="main-exp-divider">/</span>
+                            <c:choose>
+                                <c:when test="${userRank.nextRankPoint == 0 || userRank.nextRankPoint >= 10000}">
+                                    <span class="main-exp-max">MAX</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="main-exp-max">${userRank.nextRankPoint}</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
-                </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="main-rank-header" style="flex-direction: column; text-align: center;">
+                        <h2 class="main-card-title">로그인이 필요해요!</h2>
+                        <div class="main-rank-image-container">
+                            <img src="${cpath}/resources/images/profile/challenger-ant.png"
+                                 alt="기본 이미지" class="main-rank-image" style="opacity: 0.5; filter: grayscale(100%);">
+                        </div>
+                        <p class="main-rank-text">지금 로그인하고<br>나의 투자 랭크를 확인해보세요.</p>
+                    </div>
+                </c:otherwise>
+            </c:choose>
             </div>
 
             <!-- 코스피 카드 -->
@@ -58,14 +85,20 @@
                 <div class="main-market-index-chart" id="main-kospi-chart"></div>
             </div>
 
-
             <!-- 미션 카드 -->
             <div class="main-mission-card main-grid-mission">
                 <div class="main-mission-header">
                     <h3>미션 : 오늘의 경제 퀴즈 풀기</h3>
                 </div>
                 <p class="main-mission-description">OX 퀴즈 맞히고 100P 받아가세요!</p>
-                <a href="${cpath}/mission" class="main-mission-button">도전하기</a>
+                <c:choose>
+                    <c:when test="${missionCompleted}">
+                        <span class="main-mission-completed-button">미션완료</span>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${cpath}/mission" class="main-mission-button">도전하기</a>
+                    </c:otherwise>
+                </c:choose>
             </div>
 
             <!-- 코스닥 카드 -->
@@ -119,6 +152,41 @@
     </main>
 </div>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // HTML 태그에서 데이터 가져오기
+        const container = document.getElementById('mainExpContainer');
+        const progressBar = document.getElementById('mainExpBar');
+
+        if (container && progressBar) {
+            // data- 속성은 문자열이므로 숫자로 변환
+            const currentPoint = parseInt(container.getAttribute('data-current')) || 0;
+            const nextRankPoint = parseInt(container.getAttribute('data-max')) || 0;
+            const startPoint = parseInt(container.getAttribute('data-start')) || 0;
+
+            // 미션 페이지와 동일한 계산 로직 적용
+            let percent = 0;
+
+            // 최고 레벨(nextRankPoint가 0이거나 10000 이상)인지 확인
+            if (nextRankPoint > 0 && nextRankPoint < 10000) {
+                const rangeTotal = nextRankPoint - startPoint;   // 이번 랭크의 전체 구간
+                const rangeCurrent = currentPoint - startPoint;  // 내가 달성한 구간
+
+                if (rangeTotal > 0) {
+                    percent = (rangeCurrent / rangeTotal) * 100;
+                }
+            } else {
+                percent = 100;
+            }
+
+            // 0 ~ 100% 사이로 제한
+            percent = Math.max(0, Math.min(100, percent));
+
+            setTimeout(() => {
+                progressBar.style.width = percent + "%";
+            }, 100);
+        }
+    });
+
     // 페이지 로드 시 스크롤을 맨 위로 이동
     window.onload = function() {
         window.scrollTo(0, 0);

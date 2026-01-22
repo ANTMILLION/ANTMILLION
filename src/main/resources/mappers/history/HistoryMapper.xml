@@ -79,36 +79,5 @@
         #{isRead}
         )
     </insert>
-    
-       <select id="getLastAlert" resultType="com.antmillion.history.dto.HistoryDTO">
-        SELECT 
-            history_id AS historyId,
-            user_id AS userId,
-            stock_code AS stockCode,
-            bias_type AS biasType,
-            time
-        FROM history
-        WHERE user_id = #{userId}
-          AND stock_code = #{stockCode}
-          AND bias_type = #{biasType}
-        ORDER BY time DESC
-        LIMIT 1
-    </select>
-    
-        <!-- 안 읽은 알림 개수 조회 -->
-    <select id="countUnreadAlerts" resultType="int">
-        SELECT COUNT(*)
-        FROM history
-        WHERE user_id = #{userId}
-          AND is_read = false
-    </select>
-
-    <!-- 알림 읽음 처리 -->
-    <update id="markAsRead">
-        UPDATE history
-        SET is_read = true
-        WHERE history_id = #{historyId}
-    </update>
-    
 
 </mapper>

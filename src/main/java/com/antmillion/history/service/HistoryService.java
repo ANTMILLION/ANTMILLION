@@ -13,7 +13,4 @@ public interface HistoryService {
         String startDate,
         String endDate
     );
-    
-    int getUnreadCount(Long userId);
-    void markAsRead(Long historyId);
 }

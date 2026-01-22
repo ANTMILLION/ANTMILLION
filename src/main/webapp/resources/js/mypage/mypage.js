@@ -2,10 +2,11 @@
 // BiasType 매핑
 // ===========================
 const biasTypeMap = {
-    RISK_AVERSION: { title: "위험회피 주의", icon: "⚠️" },
-    LOSS_AVERSION: { title: "손실회피 주의", icon: "⚠️" },
-    SUNK_COST: { title: "매몰비용오류 경고", icon: "⚠️" },
-    FOMO: { title: "FOMO 주의", icon: "⚠️" }
+    SAFE_HAVEN: { title: "안전선호 편향 경고", icon: "⚠️" },
+    LOSS_AVERSION: { title: "손실회피 편향 경고", icon: "⚠️" },
+    CONFIRMATION: { title: "확증 편향 경고", icon: "⚠️" },
+    SUNK_COST: { title: "매몰비용 오류 경고", icon: "⚠️" },
+    ANCHORING: { title: "앵커링 편향 경고", icon: "⚠️" }
 };
 
 // ===========================
@@ -428,7 +429,7 @@ function renderInitialData() {
     renderTradingHistory('all');
 }
 
-// DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
+// ✅ DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
 function loadStockHoldings() {
     fetch(contextPath+'/mypage/api/stock-holdings') // 앞서 만든 컨트롤러 URL
         .then(res => res.json())
@@ -444,10 +445,10 @@ function loadStockHoldings() {
 // ===========================
 // 주식잔고 렌더링 (수정)
 // ===========================
-function renderStockHoldings(holdings) { //  매개변수 추가
+function renderStockHoldings(holdings) { // ✅ 매개변수 추가
     if (!stockList) return;
     
-    // 데이터가 없을 때 처리 추가
+    // ✅ 데이터가 없을 때 처리 추가
     if (!holdings || holdings.length === 0) {
         stockList.innerHTML = "<p class='no-data'>보유 중인 주식이 없습니다.</p>";
         return;
@@ -751,7 +752,7 @@ function loadHistoryData() {
 
     console.log("심리경고 조회 - startDate:", startDate, "endDate:", endDate);
 
-    let url = "/antmillion/api/history/list";
+    let url = "/antmillion/history/api/list";
 
     if (startDate && endDate) {
         url += `?startDate=${startDate}&endDate=${endDate}`;
@@ -794,7 +795,7 @@ function loadHistoryData() {
                 const transactionClass = history.transactionType === '매수' ? 'buy' : 'sell';
                 const transactionText = history.transactionType || '-';
 
-                //  수정된 HTML 구조
+                // ✅ 수정된 HTML 구조
                 const html = `
                     <div class="mypage-warning-container">
                         <div class="mypage-warning-header">

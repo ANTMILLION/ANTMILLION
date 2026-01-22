@@ -10,4 +10,6 @@ public interface MissionService {
     List<QuizQuestionResponseDTO> getDailyQuiz();
     boolean checkAndLogAnswer(QuizSubmissionRequestDTO requestDTO);
     UserRankResponseDTO getUserMissionStatus(Long userId);
+    Long getCurrentUserId();
+    boolean isTodayMissionCompleted(Long userId);
 }
