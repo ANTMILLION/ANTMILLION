@@ -145,7 +145,7 @@ body {
 
 /* 차트 영역 */
 .detail-chart-area {
-	height: 400px;
+	height: 350px;
 	width: 100%;
 	position: relative;
 	background-color: #ffffff;
@@ -163,7 +163,7 @@ body {
 /* 차트 내부 영역 */
 #detail-stockChart {
     width: 100%;
-    height: 100%;
+    flex: 1;
 }
 
 /* Lightweight charts 로고 삭제 */
@@ -404,7 +404,7 @@ body {
 
 	/* 차트 높이 조정 */
 	.detail-chart-area {
-		height: 450px;
+		height: 350px;
 	}
 }
 
@@ -450,7 +450,7 @@ body {
 	}
 
 	.detail-chart-area {
-		height: 350px;
+		height: 300px;
 	}
 }
 
@@ -467,4 +467,33 @@ body {
 		align-items: flex-start;
 		gap: 12px;
 	}
+}
+
+.detail-chart-period-buttons {
+	display: flex;
+	gap: 8px;
+	padding: 8px 10px;
+	flex-shrink: 0;
+	border-radius: 8px 8px 0 0;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.detail-period-btn {
+	padding: 8px 16px;
+	border: 1px solid #ddd;
+	background-color: white;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: all 0.3s;
+}
+
+.detail-period-btn:hover {
+	background-color: #f0f0f0;
+}
+
+.detail-period-active {
+	background-color: #2271e9;
+	color: white;
+	border-color: #2271e9;
 }

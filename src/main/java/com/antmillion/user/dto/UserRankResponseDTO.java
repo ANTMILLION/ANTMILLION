@@ -13,4 +13,10 @@ public class UserRankResponseDTO {
     private int nextRankPoint;         // 다음 랭크 목표 포인트
     private int neededPoint;           // 다음 랭크까지 남은 포인트
     private int currentRankStartPoint; // 현재 랭크의 시작 포인트
+    private String nickName;           // 사용자 닉네임
+    private int currentRankId;         // 랭크 아이디
+
+    public void assignNickName(String nickName) {
+        this.nickName = nickName;
+    }
 }

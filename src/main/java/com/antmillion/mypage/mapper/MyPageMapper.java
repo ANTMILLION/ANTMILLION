@@ -1,0 +1,14 @@
+package com.antmillion.mypage.mapper;
+
+import java.util.List;
+import java.util.Map;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface MyPageMapper {
+	// 특정 계좌의 주식 잔고 목록 조회
+    List<Map<String, Object>> selectStockHoldings(Long accountId);
+    
+    // 실현손익 목록 조회 (명칭 통일 및 파라미터 Map으로 변경)
+    List<Map<String, Object>> selectRealizedProfit(Map<String, Object> params);
+}

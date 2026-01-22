@@ -15,6 +15,7 @@ function formatDate(yyyymmdd) {
 function createMainStockItemHTML(stock, index) {
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
+    const currentPrice = Number(stock.stck_prpr).toLocaleString('ko-KR') + '원';
 
     return `
         <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
@@ -28,7 +29,7 @@ function createMainStockItemHTML(stock, index) {
                 </div>
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
-            <div class="main-stocklist-price">${stock.stck_prpr}</div>
+            <div class="main-stocklist-price">${currentPrice}</div>
             <div class="main-stocklist-change">${stock.acml_vol}</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
@@ -80,6 +81,9 @@ function renderMainStocks() {
                         if (chartStockCode) {
                             chartStockCode.textContent = firstStock.mksc_shrn_iscd;
                         }
+
+                        //1번 항목의 차트 그리기
+                        drawStockMinuteChart(firstStock.mksc_shrn_iscd);
                     }
                 });
         });
@@ -177,10 +181,15 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeMainPage() {
     // 종목 리스트 렌더링
     renderMainStocks();
-    
-    // 차트 초기화
-    initializeCharts();
-    
+
+    // ✅ 레이아웃 완전 확정 후 차트 초기화
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            initializeCharts();
+        });
+    });
+
+
     // 미션 버튼 이벤트
     initializeMissionButton();
 }
@@ -199,15 +208,22 @@ function initializeCharts() {
         '#main-kosdaq-chart',
         contextPath + '/api/kis/marketIndex/1001'
     );
+    
+    // 차트 생성 후 강제로 resize 이벤트 발생
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 100);
 }
 
 //코스피/코스닥 차트
 function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
     const card = document.querySelector(cardSelector);
     const chartEl = card.querySelector(chartId);
+    const container = chartEl.parentElement;
+    
     const chart = LightweightCharts.createChart(chartEl, {
-        width: document.getElementById('main-kospi-chart').clientWidth,
-        height: document.getElementById('main-kospi-chart').clientHeight,
+        width: container.clientWidth,
+        height: container.clientHeight,
         layout: {
             background: {type: 'solid', color: 'white'},
             textColor: 'black'
@@ -217,6 +233,10 @@ function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
             horzLines: { color: '#eee' }
         },
         timeScale: {
+            borderColor: '#cccccc'
+        },
+        rightPriceScale: {
+            visible: true,
             borderColor: '#cccccc'
         }
     });
@@ -247,7 +267,12 @@ function drawMarketIndexChart(cardSelector, chartId, apiUrl) {
 
             candleSeries.setData(chartData);
             chart.timeScale().fitContent();
+
+            setTimeout(() => {
+                chart.resize(container.clientWidth, container.clientHeight);
+            }, 50);
         });
+    chartEl._chart = chart;
 }
 
 //코스피/코스닥 차트 헤더 변경 - 현재 수치, 전일대비
@@ -408,22 +433,21 @@ document.addEventListener('mouseover', (e) => {
     }
 });
 
-// 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-    // HTML 헤더에 이미 적혀있는 종목 코드를 읽어옴
-    const defaultCodeEl = document.getElementById('displayStockCode');
-    
-    if (defaultCodeEl) {
-        const defaultStockCode = defaultCodeEl.textContent.trim();
-        console.log("초기 종목 코드 로드:", defaultStockCode);
-        
-        // 읽어온 코드로 차트 그리기 실행
-        drawStockMinuteChart(defaultStockCode);
-    }
-});
-
 // 차트 반응형
 window.addEventListener('resize', () => {
+    // 코스피 차트
+    const kospiChartEl = document.getElementById('main-kospi-chart');
+    if (kospiChartEl && kospiChartEl._chart) {
+        const container = kospiChartEl.parentElement;
+        kospiChartEl._chart.resize(container.clientWidth, container.clientHeight);
+    }
+
+    // 코스닥 차트
+    const kosdaqChartEl = document.getElementById('main-kosdaq-chart');
+    if (kosdaqChartEl && kosdaqChartEl._chart) {
+        const container = kosdaqChartEl.parentElement;
+        kosdaqChartEl._chart.resize(container.clientWidth, container.clientHeight);
+    }
     if (stockChart) {
         const container = document.getElementById('main-stockChart');
         stockChart.resize(container.clientWidth, container.clientHeight);
