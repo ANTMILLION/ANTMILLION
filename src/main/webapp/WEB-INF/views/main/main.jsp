@@ -85,14 +85,20 @@
                 <div class="main-market-index-chart" id="main-kospi-chart"></div>
             </div>
 
-
             <!-- 미션 카드 -->
             <div class="main-mission-card main-grid-mission">
                 <div class="main-mission-header">
                     <h3>미션 : 오늘의 경제 퀴즈 풀기</h3>
                 </div>
                 <p class="main-mission-description">OX 퀴즈 맞히고 100P 받아가세요!</p>
-                <a href="${cpath}/mission" class="main-mission-button">도전하기</a>
+                <c:choose>
+                    <c:when test="${missionCompleted}">
+                        <span class="main-mission-completed-button">미션완료</span>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${cpath}/mission" class="main-mission-button">도전하기</a>
+                    </c:otherwise>
+                </c:choose>
             </div>
 
             <!-- 코스닥 카드 -->
