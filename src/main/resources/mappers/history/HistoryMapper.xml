@@ -94,5 +94,21 @@
         ORDER BY time DESC
         LIMIT 1
     </select>
+    
+        <!-- 안 읽은 알림 개수 조회 -->
+    <select id="countUnreadAlerts" resultType="int">
+        SELECT COUNT(*)
+        FROM history
+        WHERE user_id = #{userId}
+          AND is_read = false
+    </select>
+
+    <!-- 알림 읽음 처리 -->
+    <update id="markAsRead">
+        UPDATE history
+        SET is_read = true
+        WHERE history_id = #{historyId}
+    </update>
+    
 
 </mapper>

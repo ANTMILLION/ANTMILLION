@@ -25,4 +25,7 @@ public interface HistoryMapper {
             @Param("stockCode") String stockCode,
             @Param("biasType") String biasType
         );
+    int countUnreadAlerts(@Param("userId") Long userId);
+    int markAsRead(@Param("historyId") Long historyId);   
+    
 }

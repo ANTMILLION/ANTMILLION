@@ -359,7 +359,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // 헤더에 경고 표시
                         if (typeof showBiasAlert === 'function') {
-                            showBiasAlert();
+                            showBiasAlert();                            
+                            // 빨간 점도 켜기
+                            if (typeof checkUnreadAlerts === 'function') {
+                                checkUnreadAlerts();
+                                }
                         } else {
                             console.error('showBiasAlert 함수 없음!');
                         }

@@ -106,6 +106,10 @@
     background: #ea4335;
     border-radius: 50%;
     border: 2px solid white;
+    display: none;
+}
+.header-notification-btn.has-unread::after {
+    display: block;
 }
 
 /* 사용자 프로필 래퍼 */
