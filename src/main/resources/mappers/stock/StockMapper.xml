@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.antmillion.stock.mapper.StockMapper">
+
+    <select id="findAll" resultType="com.antmillion.stock.dto.StockDTO">
+        SELECT
+            stock_code as stockCode,
+            stock_name as stockName,
+            stock_image as stockImage
+        FROM stock
+    </select>
+
+</mapper>

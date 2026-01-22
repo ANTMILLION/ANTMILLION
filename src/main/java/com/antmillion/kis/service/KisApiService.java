@@ -335,8 +335,11 @@ public class KisApiService {
     	
     	// response가 null이 아니고 리스트가 비어있지 않을 때만 저장
     	if (response != null && response.getOutput2() != null) {
-    	    kisChartRedisRepository.saveStreamMinute(stockCode, today, response.getOutput2());
-    	    return response.getOutput2();
+    		List<StreamMinutePrice> minuteData = response.getOutput2();
+    	    Collections.reverse(minuteData); // 과거 -> 최신 순으로 정렬
+    	    
+    	    kisChartRedisRepository.saveStreamMinute(stockCode, today, minuteData);
+    	    return minuteData;
     	}
     	return Collections.emptyList(); // 빈 리스트 반환
     }
