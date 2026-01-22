@@ -272,6 +272,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 2. 첫 화면 데이터만 로드 (주식 잔고)
     loadStockHoldings();
     
+    // 탭 기간 조회 초기화
+    initializeSelectDates();
+    
     // 3. 심리경고 전용 로직
     initializeHistoryDates();
     loadHistoryData();
@@ -678,6 +681,32 @@ function renderTradingHistory(filter) {
             </div>
         `;
     }).join('');
+}
+
+
+/**
+ * 기간 날짜 필드 초기화 (한달전 ~ 오늘 날짜로)
+ */
+function initializeSelectDates() {
+    const now = new Date(); // 현재 날짜 객체 생성
+    const today = now.toISOString().split('T')[0];
+    
+    // ✅ 한 달 전 날짜 계산
+    const lastMonth = new Date(now.setMonth(now.getMonth() - 1)).toISOString().split('T')[0];
+    
+    const startDateInput = document.getElementById("realizedStartDate");
+    const endDateInput = document.getElementById("realizedEndDate");
+    
+    if (startDateInput) {
+        // ✅ 오늘(today) 대신 한 달 전(lastMonth) 값을 할당
+        startDateInput.value = lastMonth;
+        console.log("기간 시작 날짜 초기화:", lastMonth);
+    }
+    
+    if (endDateInput) {
+        endDateInput.value = today;
+        console.log("기간 종료 날짜 초기화:", today);
+    }
 }
 
 /**
