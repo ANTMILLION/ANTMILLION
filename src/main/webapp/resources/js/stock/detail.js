@@ -111,6 +111,9 @@ function drawDetailChart(stockCode) {
             return;
         }
 
+        const currentPrice = document.getElementById("detail-current-price-h3");
+        currentPrice.innerText = Number(data[data.length-1].stck_prpr).toLocaleString('ko-KR') + '원';
+
         // 데이터 정렬
         data.sort((a, b) => (a.stck_bsop_date + a.stck_cntg_hour).localeCompare(b.stck_bsop_date + b.stck_cntg_hour));
 

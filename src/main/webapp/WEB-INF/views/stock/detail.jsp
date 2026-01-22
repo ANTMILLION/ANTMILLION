@@ -27,7 +27,7 @@
                                 </h2>
                             </div>
                             <div class="detail-current-price">
-                                <h3>129,300원</h3>
+                                <h3 id="detail-current-price-h3"></h3>
                             </div>
                         </div>
                         <button class="detail-favorite-btn" data-code="${stock.stockCode}">

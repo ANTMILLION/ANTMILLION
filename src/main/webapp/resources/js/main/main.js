@@ -15,6 +15,7 @@ function formatDate(yyyymmdd) {
 function createMainStockItemHTML(stock, index) {
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
+    const currentPrice = Number(stock.stck_prpr).toLocaleString('ko-KR') + '원';
 
     return `
         <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
@@ -28,7 +29,7 @@ function createMainStockItemHTML(stock, index) {
                 </div>
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
-            <div class="main-stocklist-price">${stock.stck_prpr}</div>
+            <div class="main-stocklist-price">${currentPrice}</div>
             <div class="main-stocklist-change">${stock.acml_vol}</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
@@ -80,6 +81,9 @@ function renderMainStocks() {
                         if (chartStockCode) {
                             chartStockCode.textContent = firstStock.mksc_shrn_iscd;
                         }
+
+                        //1번 항목의 차트 그리기
+                        drawStockMinuteChart(firstStock.mksc_shrn_iscd);
                     }
                 });
         });
@@ -405,20 +409,6 @@ document.addEventListener('mouseover', (e) => {
                 drawStockMinuteChart(stockCode);
             }
         }
-    }
-});
-
-// 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-    // HTML 헤더에 이미 적혀있는 종목 코드를 읽어옴
-    const defaultCodeEl = document.getElementById('displayStockCode');
-    
-    if (defaultCodeEl) {
-        const defaultStockCode = defaultCodeEl.textContent.trim();
-        console.log("초기 종목 코드 로드:", defaultStockCode);
-        
-        // 읽어온 코드로 차트 그리기 실행
-        drawStockMinuteChart(defaultStockCode);
     }
 });
 
