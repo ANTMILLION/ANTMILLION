@@ -10,7 +10,7 @@ async function checkBiasAlert(stockCode) {
     console.log('[API 호출] stockCode:', stockCode);
     
     try {
-        const url = '/' + contextPath + '/api/bias-alert/check?stockCode=' + stockCode;
+        const url = contextPath + '/api/bias-alert/check?stockCode=' + stockCode;
         console.log('[API URL]', url);
         
         const response = await fetch(url);
@@ -360,6 +360,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         // 헤더에 경고 표시
                         if (typeof showBiasAlert === 'function') {
                             showBiasAlert();
+                            
+                            // 빨간 점도 켜기 (DB 저장 후 체크하도록 딜레이)
+                            if (typeof checkUnreadAlerts === 'function') {
+                                setTimeout(() => { checkUnreadAlerts(); }, 0);
+                            }
                         } else {
                             console.error('showBiasAlert 함수 없음!');
                         }
@@ -420,5 +425,3 @@ document.querySelector('.detail-favorite-btn').addEventListener('click', functio
             console.error('관심종목 토글 실패:', error);
         });
 });
-
-

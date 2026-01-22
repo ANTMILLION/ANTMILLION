@@ -2,11 +2,10 @@
 // BiasType 매핑
 // ===========================
 const biasTypeMap = {
-    SAFE_HAVEN: { title: "안전선호 편향 경고", icon: "⚠️" },
-    LOSS_AVERSION: { title: "손실회피 편향 경고", icon: "⚠️" },
-    CONFIRMATION: { title: "확증 편향 경고", icon: "⚠️" },
-    SUNK_COST: { title: "매몰비용 오류 경고", icon: "⚠️" },
-    ANCHORING: { title: "앵커링 편향 경고", icon: "⚠️" }
+    RISK_AVERSION: { title: "위험회피 주의", icon: "⚠️" },
+    LOSS_AVERSION: { title: "손실회피 주의", icon: "⚠️" },
+    SUNK_COST: { title: "매몰비용오류 경고", icon: "⚠️" },
+    FOMO: { title: "FOMO 주의", icon: "⚠️" }
 };
 
 // ===========================
@@ -267,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 1. UI 요소 참조 및 기본 이벤트 연결 (이게 최우선)
     initializeElements();
-    setupEventListeners(); // 👈 여기서 탭 클릭 이벤트가 등록됩니다.
+    setupEventListeners(); 
     
     // 2. 첫 화면 데이터만 로드 (주식 잔고)
     loadStockHoldings();
@@ -308,7 +307,7 @@ function setupEventListeners() {
             if (target === 'stock') {
                 loadStockHoldings();
             } else if (target === 'realized') {
-                loadRealizedProfit(); // ✅ 여기서 호출되어야 데이터가 그려집니다.
+                loadRealizedProfit(); 
             }
         });
     });
@@ -423,13 +422,13 @@ function filterTradingHistory(filter) {
 // ===========================
 function renderInitialData() {
     //renderStockHoldings();
-    loadStockHoldings(); // ✅ 이 함수가 서버에서 데이터를 가져온 후 renderStockHoldings를 실행함
+    loadStockHoldings(); // 
     renderRealizedProfits();
     renderExecutedOrders('all');
     renderTradingHistory('all');
 }
 
-// ✅ DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
+// DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
 function loadStockHoldings() {
     fetch(contextPath+'/mypage/api/stock-holdings') // 앞서 만든 컨트롤러 URL
         .then(res => res.json())
@@ -448,13 +447,13 @@ function loadStockHoldings() {
 function renderStockHoldings(holdings) { // ✅ 매개변수 추가
     if (!stockList) return;
     
-    // ✅ 데이터가 없을 때 처리 추가
+    // 데이터가 없을 때 처리 추가
     if (!holdings || holdings.length === 0) {
         stockList.innerHTML = "<p class='no-data'>보유 중인 주식이 없습니다.</p>";
         return;
     }
     
-    // ✅ sampleData.stockHoldings 대신 holdings 사용
+    // sampleData.stockHoldings 대신 holdings 사용
     stockList.innerHTML = holdings.map(stock => {
         const profitClass = stock.profit > 0 ? 'positive' : stock.profit < 0 ? 'negative' : 'neutral';
         const profitSign = stock.profit > 0 ? '+' : '';
@@ -691,14 +690,14 @@ function initializeSelectDates() {
     const now = new Date(); // 현재 날짜 객체 생성
     const today = now.toISOString().split('T')[0];
     
-    // ✅ 한 달 전 날짜 계산
+    // 한 달 전 날짜 계산
     const lastMonth = new Date(now.setMonth(now.getMonth() - 1)).toISOString().split('T')[0];
     
     const startDateInput = document.getElementById("realizedStartDate");
     const endDateInput = document.getElementById("realizedEndDate");
     
     if (startDateInput) {
-        // ✅ 오늘(today) 대신 한 달 전(lastMonth) 값을 할당
+        // 오늘(today) 대신 한 달 전(lastMonth) 값을 할당
         startDateInput.value = lastMonth;
         console.log("기간 시작 날짜 초기화:", lastMonth);
     }
@@ -752,7 +751,7 @@ function loadHistoryData() {
 
     console.log("심리경고 조회 - startDate:", startDate, "endDate:", endDate);
 
-    let url = "/antmillion/history/api/list";
+    let url = "/antmillion/api/history/list";
 
     if (startDate && endDate) {
         url += `?startDate=${startDate}&endDate=${endDate}`;
@@ -795,7 +794,7 @@ function loadHistoryData() {
                 const transactionClass = history.transactionType === '매수' ? 'buy' : 'sell';
                 const transactionText = history.transactionType || '-';
 
-                // ✅ 수정된 HTML 구조
+                // 수정된 HTML 구조
                 const html = `
                     <div class="mypage-warning-container">
                         <div class="mypage-warning-header">
