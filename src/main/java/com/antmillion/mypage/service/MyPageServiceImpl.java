@@ -1,23 +1,31 @@
 package com.antmillion.mypage.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.antmillion.mypage.mapper.MyPageMapper;
 
+import lombok.RequiredArgsConstructor;
+@RequiredArgsConstructor
 @Service
 public class MyPageServiceImpl implements MyPageService {
 
-    @Autowired
-    private MyPageMapper myPageMapper;
+    private final MyPageMapper myPageMapper;
+    
+    @Override
+    public List<Map<String, Object>> getRealizedProfit(Long accountId, String startDate, String endDate) {
+        // 매퍼에 넘길 파라미터 맵 생성 (또는 DTO 사용)
+        Map<String, Object> params = new HashMap<>();
+        params.put("accountId", accountId);
+        params.put("startDate", startDate);
+        params.put("endDate", endDate);
+        
+        return myPageMapper.selectRealizedProfit(params);
+    }
 
-	/*
-	 * @Override public List<Map<String, Object>> getStockHoldings(Long accountId) {
-	 * return myPageMapper.selectStockHoldings(accountId); }
-	 */
     
     @Override
     public List<Map<String, Object>> getStockHoldings(Long accountId) {
