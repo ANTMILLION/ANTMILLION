@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +14,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.antmillion.mypage.service.MyPageService;
 
+import lombok.RequiredArgsConstructor;
+@RequiredArgsConstructor
 @RequestMapping({"/mypage"})
 @Controller
 public class MyPageController {
-
-    @Autowired
-    private MyPageService myPageService;
+   
+    private final MyPageService myPageService;
 
     /**
      * 마이페이지 메인 화면 이동

@@ -4,16 +4,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.antmillion.mypage.mapper.MyPageMapper;
 
+import lombok.RequiredArgsConstructor;
+@RequiredArgsConstructor
 @Service
 public class MyPageServiceImpl implements MyPageService {
 
-    @Autowired
-    private MyPageMapper myPageMapper;
+    private final MyPageMapper myPageMapper;
     
     @Override
     public List<Map<String, Object>> getRealizedProfit(Long accountId, String startDate, String endDate) {
