@@ -26,12 +26,12 @@ public class MissionServiceImpl implements MissionService {
     private final AntRankService antRankService;
 
     // 로그인한 유저 ID를 가져오는 메서드
-    private Long getCurrentUserId() {
+    public Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
             return Long.valueOf(auth.getPrincipal().toString());
         }
-        throw new IllegalStateException("로그인이 필요한 서비스입니다.");
+        return null;
     }
 
     @Override
@@ -148,5 +148,10 @@ public class MissionServiceImpl implements MissionService {
             e.printStackTrace();
             throw new RuntimeException("미션 상태 조회 중 오류가 발생했습니다.", e);
         }
+    }
+
+    public boolean isTodayMissionCompleted(Long userId) {
+        int solvedCount = missionMapper.countTodaySolvedQuiz(userId);
+        return solvedCount >= 2;
     }
 }

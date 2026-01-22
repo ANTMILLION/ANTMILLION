@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/mission")
@@ -54,17 +55,15 @@ public class MissionController {
     @GetMapping("/status")
     @ResponseBody
     public UserRankResponseDTO getMissionStatus() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = missionService.getCurrentUserId();
+        return missionService.getUserMissionStatus(userId);
+    }
 
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            throw new IllegalStateException("로그인이 필요한 서비스입니다.");
-        }
-
-        try {
-            Long userId = Long.valueOf(auth.getPrincipal().toString());
-            return missionService.getUserMissionStatus(userId);
-        } catch (NumberFormatException e) {
-            throw new IllegalStateException("유효하지 않은 사용자 정보입니다.");
-        }
+    @GetMapping("/today-status")
+    @ResponseBody
+    public Map<String, Object> getTodayMissionStatus() {
+        Long userId = missionService.getCurrentUserId();
+        boolean completed = missionService.isTodayMissionCompleted(userId);
+        return Map.of("completed", completed);
     }
 }
