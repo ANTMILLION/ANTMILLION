@@ -30,4 +30,7 @@ public interface MissionMapper {
 
     // 퀴즈 포인트 조회
     int selectQuizPointByQuizId(@Param("quizId") Long quizId);
+
+    // 오늘 미션 완료 여부 조회
+    int countTodaySolvedQuiz(@Param("userId") Long userId);
 }

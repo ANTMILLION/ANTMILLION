@@ -79,4 +79,11 @@
         FROM quiz_question
         WHERE quiz_id = #{quizId}
     </select>
+
+    <select id="countTodaySolvedQuiz" resultType="int">
+        SELECT COUNT(DISTINCT quiz_id)
+        FROM quiz_log
+        WHERE user_id = #{userId}
+        AND DATE(solved_at) = CURDATE()
+    </select>
 </mapper>
