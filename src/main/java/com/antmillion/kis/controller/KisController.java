@@ -1,8 +1,11 @@
 package com.antmillion.kis.controller;
 
 import com.antmillion.kis.dto.*;
+import com.antmillion.kis.manager.KisWebSocketManager;
 import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -16,7 +19,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@RestController
+//@RestController 
+@Controller // 테스트를 위해서 @Controller 활성화 했습니다.
 @RequestMapping("/api/kis")
 public class KisController {
 
@@ -40,6 +44,15 @@ public class KisController {
     	return kisApiService.getKisApprovalKey();
     }
     
+    /**
+     * 웹소켓 테스트용
+     */
+    private final KisWebSocketManager manager;
+    @RequestMapping("/stock")
+    public String stockPage() {
+        manager.connect();
+        return "kis/kisWebSocketTransactionPrice";
+    }
 
     /**
      * 일봉 : 60일치
