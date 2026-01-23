@@ -25,7 +25,7 @@
     <!-- ⭐ 매매 편향 경고 뱃지 -->
     <div class="bias-alert-badge" id="biasAlertBadge" style="display:none;">
         <span class="bias-alert-icon">⚠️</span>
-        <span class="bias-alert-text">위험회피 주의 경고</span>
+        <span class="bias-alert-text">위험회피 주의</span>
     </div>
 
     <div class="header-user-info">
@@ -272,10 +272,10 @@ function showBiasAlert(biasType = 'RISK_AVERSION') {
         
         // 편향 타입에 따라 텍스트 및 색상 변경
         if (biasType === 'LOSS_AVERSION') {
-            textSpan.textContent = '손실회피 주의 경고';
+            textSpan.textContent = '손실회피 주의';
             badge.classList.remove('risk-aversion');  // 초록색 제거
         } else {
-            textSpan.textContent = '위험회피 주의 경고';
+            textSpan.textContent = '위험회피 주의';
             badge.classList.add('risk-aversion');  // 초록색 추가
         }
         
