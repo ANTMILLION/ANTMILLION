@@ -244,7 +244,7 @@ public class BiasAlertService {
      */
     private String getBiasTypeString(BiasType biasType) {
         if (biasType == null) return "UNKNOWN";
-        return biasType.getCode(); // RISK_AVERSION / LOSS_AVERSION ...
+        return biasType.getCode(); 
     }
 
     /**
