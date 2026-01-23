@@ -20,38 +20,50 @@ function formatTodayKorean() {
 // 서버 API 호출하여 데이터 가져오기
 function getDailyQuiz() {
     $.ajax({
-        url: cpath + '/mission/daily',
+        url: cpath + "/mission/today-status",
         type: 'GET',
         dataType: 'json',
-        success: function (data) {
-            if (!data || data.length === 0) {
-                showCompletion();
-                return;
-            }
+        success: function (statusData) {
+            correctAnswers = statusData.solvedCount || 0;
+            $.ajax({
+                url: cpath + '/mission/daily',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if ((!data || data.length === 0) && correctAnswers >= 2) {
+                        showCompletion();
+                        return;
+                    }
 
-            // 날짜 변경
-            const quizTitle = document.querySelector('.mission-quiz-date');
-            if (quizTitle) {
-                quizTitle.textContent = formatTodayKorean();
-            }
+                    // 날짜 변경
+                    const quizTitle = document.querySelector('.mission-quiz-date');
+                    if (quizTitle) {
+                        quizTitle.textContent = formatTodayKorean();
+                    }
 
-            quizData = data.map(q => ({
-                id: q.quizId,
-                type: q.type,
-                question: q.question,
-                point: q.point,
-                options: q.choices.map((c, index) => ({
-                    id: c.quizChoiceId,
-                    no: c.choiceNo,
-                    text: c.choiceText,
-                }))
-            }));
+                    quizData = data.map(q => ({
+                        id: q.quizId,
+                        type: q.type,
+                        question: q.question,
+                        point: q.point,
+                        options: q.choices.map((c, index) => ({
+                            id: c.quizChoiceId,
+                            no: c.choiceNo,
+                            text: c.choiceText,
+                        }))
+                    }));
 
-            currentQuizIndex = 0;
-            loadQuiz(currentQuizIndex);
-        },
-        error: function (xhr, status, error) {
-            console.error('퀴즈 데이터를 가져오는 중 오류 발생:', error);
+                    totalQuizCount = quizData.length + correctAnswers;
+                    currentQuizIndex = 0;
+                    updateProgress();
+                    if (quizData.length > 0) {
+                        loadQuiz(currentQuizIndex);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('퀴즈 데이터를 가져오는 중 오류 발생:', error);
+                }
+            });
         }
     });
 }
@@ -154,7 +166,7 @@ function showPointsMessage() {
 
 // 진행률 업데이트
 function updateProgress() {
-    const progress = Math.round((correctAnswers / quizData.length) * 100);
+    const progress = Math.round((correctAnswers / totalQuizCount) * 100);
     document.getElementById('mission-progressBar').style.width = progress + '%';
     document.getElementById('mission-progressStatus').textContent = progress + '% 달성!';
 }

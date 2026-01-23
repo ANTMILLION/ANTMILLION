@@ -63,7 +63,7 @@ public class MissionController {
     @ResponseBody
     public Map<String, Object> getTodayMissionStatus() {
         Long userId = missionService.getCurrentUserId();
-        boolean completed = missionService.isTodayMissionCompleted(userId);
-        return Map.of("completed", completed);
+        int solvedCount = missionService.getTodaySolvedCount(userId);
+        return Map.of("solvedCount", solvedCount);
     }
 }

@@ -154,4 +154,8 @@ public class MissionServiceImpl implements MissionService {
         int solvedCount = missionMapper.countTodaySolvedQuiz(userId);
         return solvedCount >= 2;
     }
+
+    public int getTodaySolvedCount(Long userId) {
+        return missionMapper.countTodaySolvedQuiz(userId);
+    }
 }

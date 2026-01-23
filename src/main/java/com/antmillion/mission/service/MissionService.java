@@ -12,4 +12,5 @@ public interface MissionService {
     UserRankResponseDTO getUserMissionStatus(Long userId);
     Long getCurrentUserId();
     boolean isTodayMissionCompleted(Long userId);
+    int getTodaySolvedCount(Long userId);
 }

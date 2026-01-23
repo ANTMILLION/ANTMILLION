@@ -28,4 +28,15 @@ public interface BiasAlertMapper {
      * @return 현재가
      */
     BigDecimal selectCurrentPrice(@Param("stockCode") String stockCode);
+    
+    /**
+     * 최근 5거래일간 매도 이력 체크 (손실회피 편향용)
+     * @param userId 사용자 ID
+     * @param stockCode 종목 코드
+     * @return 최근 5일 내 매도 이력 있으면 true
+     */
+    boolean checkRecentSellHistory(
+        @Param("userId") Long userId,
+        @Param("stockCode") String stockCode
+    );
 }

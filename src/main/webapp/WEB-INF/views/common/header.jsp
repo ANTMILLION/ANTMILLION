@@ -7,8 +7,8 @@
         <input type="text" id="stockSearchInput" placeholder="종목을 검색하세요" autocomplete="off">
         <button class="header-search-btn" id="stockSearchBtn">
             <img
-                    src="${cpath}/resources/images/icon/search.png"
-                    alt="검색" class="header-search-icon">
+                src="${cpath}/resources/images/icon/search.png"
+                alt="검색" class="header-search-icon">
         </button>
 
         <!-- 검색 결과 드롭다운 -->
@@ -22,21 +22,21 @@
         </div>
     </div>
 
-    <!-- 매매 편향 경고 뱃지 -->
+    <!-- ⭐ 매매 편향 경고 뱃지 -->
     <div class="bias-alert-badge" id="biasAlertBadge" style="display:none;">
         <span class="bias-alert-icon">⚠️</span>
-        <span class="bias-alert-text">위험회피 주의 경고</span>
+        <span class="bias-alert-text">위험회피 주의</span>
     </div>
 
     <div class="header-user-info">
         <button class="header-notification-btn" onclick="toggleNotifications(event)">
             <img
-                    src="${cpath}/resources/images/icon/alarm.png" alt="알림" class="header-alarm-icon">
+                src="${cpath}/resources/images/icon/alarm.png" alt="알림" class="header-alarm-icon">
         </button>
 
         <div id="notifBox" class="header-notif-dropdown">
             <div
-                    style="padding: 20px; font-weight: bold; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                style="padding: 20px; font-weight: bold; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
                 <span>알림 메시지</span>
                 <span style="color: #ccc; cursor: pointer;" onclick="toggleNotif()">✕</span>
             </div>
@@ -84,9 +84,9 @@
 
                         <div class="header-profile-modal-content">
                             <img
-                                    src="${cpath}/${userRank.rankImage}"
-                                    alt="프로필" class="header-profile-avatar"
-                                    onerror="this.src='${cpath}/resources/images/defaultant.png'">
+                                src="${cpath}/${userRank.rankImage}"
+                                alt="프로필" class="header-profile-avatar"
+                                onerror="this.src='${cpath}/resources/images/defaultant.png'">
                             <div class="header-profile-tier">${userRank.rankName} 개미</div>
                             <div class="header-profile-nickname">${userRank.nickName}</div>
                         </div>
@@ -225,146 +225,157 @@
         }
     });
 
-    // 페이지 로드 시 안 읽은 알림 확인
-    async function checkUnreadAlerts() {
-        try {
-            const response = await fetch('/antmillion/api/history/unread-count?userId=1');
-            const count = await response.json();
-
-            const notifBtn = document.querySelector('.header-notification-btn');
-            if (count > 0) {
-                notifBtn.classList.add('has-unread');
-                sessionStorage.setItem('hasUnreadAlert', 'true');
-                console.log('[알림] 안 읽은 알림:', count + '개');
-            } else {
-                notifBtn.classList.remove('has-unread');
-                sessionStorage.removeItem('hasUnreadAlert');
-                console.log('[알림] 안 읽은 알림 없음');
-            }
-        } catch (error) {
-            console.error('[알림] 조회 실패:', error);
-        }
-    }
-
-    // 알림 읽음 처리
-    async function markNotificationAsRead(historyId) {
-        try {
-            await fetch('/antmillion/api/history/mark-read/' + historyId, {
-                method: 'POST'
-            });
-            console.log('[알림] 읽음 처리 완료:', historyId);
-
-            // 빨간 점 다시 체크
-            checkUnreadAlerts();
-        } catch (error) {
-            console.error('[알림] 읽음 처리 실패:', error);
-        }
-    }
-
-    function closeProfile() {
-        document.getElementById('profileModal').classList.remove('show');
-    }
-
-    function showBiasAlert() {
-        const badge = document.getElementById('biasAlertBadge');
-        if (badge) {
-            badge.style.display = 'flex';
-            sessionStorage.setItem('riskAversionBias', 'true');
-            console.log('위험회피 경고 표시');
-        }
-    }
-
-    function hideBiasAlert() {
-        const badge = document.getElementById('biasAlertBadge');
-        if (badge) {
-            badge.style.display = 'none';
-            sessionStorage.removeItem('riskAversionBias');
-            console.log('위험회피 경고 제거');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // 빨간 점 복원
-        const hasUnreadAlert = sessionStorage.getItem('hasUnreadAlert');
-        if (hasUnreadAlert === 'true') {
-            const notifBtn = document.querySelector('.header-notification-btn');
+// 페이지 로드 시 안 읽은 알림 확인
+async function checkUnreadAlerts() {
+    try {
+        const response = await fetch('/antmillion/api/history/unread-count?userId=1');
+        const count = await response.json();
+        
+        const notifBtn = document.querySelector('.header-notification-btn');
+        if (count > 0) {
             notifBtn.classList.add('has-unread');
-            console.log('[초기 로드] 세션 기반 빨간 점 복원');
-        }
-
-        const hasBias = sessionStorage.getItem('riskAversionBias');
-        if (hasBias === 'true') {
-            showBiasAlert();
-            console.log('[초기 로드] 세션 기반 위험회피 경고 복원');
-        }
-
-        const userProfile = document.getElementById('userProfile');
-        const profileModal = document.getElementById('profileModal');
-
-        if (userProfile) {
-            userProfile.addEventListener('click', function(e) {
-                e.stopPropagation();
-                profileModal.classList.toggle('show');
-                document.getElementById('notifBox').style.display = 'none';
-            });
-        }
-
-        document.addEventListener('click', function(e) {
-            const wrapper = document.querySelector('.header-user-profile-wrapper');
-            const notifBtn = document.querySelector('.header-notification-btn');
-            const notifBox = document.getElementById('notifBox');
-
-            if (wrapper && !wrapper.contains(e.target)) {
-                profileModal.classList.remove('show');
-            }
-
-            if (notifBtn && !notifBtn.contains(e.target) && !notifBox.contains(e.target)) {
-                notifBox.style.display = 'none';
-            }
-        });
-    });
-
-    // 뒤로가기/앞으로가기 대응
-    window.addEventListener('pageshow', function(event) {
-        console.log('[pageshow] 이벤트 발생, bfcache:', event.persisted);
-        const hasBias = sessionStorage.getItem('riskAversionBias');
-        if (hasBias === 'true') {
-            const badge = document.getElementById('biasAlertBadge');
-            if (badge && badge.style.display !== 'flex') {
-                showBiasAlert();
-                console.log('[뒤로가기] 세션 기반 위험회피 경고 복원');
-            }
-        }
-    });
-
-
-    function toggleNotifications(e) {
-        if (e) e.stopPropagation();
-
-        const notifBox = document.getElementById('notifBox');
-        const isVisible = notifBox.style.display === 'block';
-
-        document.getElementById('profileModal').classList.remove('show');
-        notifBox.style.display = isVisible ? 'none' : 'block';
-
-        if (!isVisible) {
-            hideBiasAlert();
-
-            // 빨간 점 제거
-            const notifBtn = document.querySelector('.header-notification-btn');
+            sessionStorage.setItem('hasUnreadAlert', 'true'); 
+            console.log('[알림] 안 읽은 알림:', count + '개');
+        } else {
             notifBtn.classList.remove('has-unread');
-            sessionStorage.removeItem('hasUnreadAlert');
-            console.log('[알림] 알림창 열림 - 빨간 점 제거');
+            sessionStorage.removeItem('hasUnreadAlert'); 
+            console.log('[알림] 안 읽은 알림 없음');
         }
+    } catch (error) {
+        console.error('[알림] 조회 실패:', error);
+    }
+}
+
+// 알림 읽음 처리
+async function markNotificationAsRead(historyId) {
+    try {
+        await fetch('/antmillion/api/history/mark-read/' + historyId, {
+            method: 'POST'
+        });
+        console.log('[알림] 읽음 처리 완료:', historyId);
+        
+        // 빨간 점 다시 체크
+        checkUnreadAlerts();
+    } catch (error) {
+        console.error('[알림] 읽음 처리 실패:', error);
+    }
+}
+
+function closeProfile() {
+    document.getElementById('profileModal').classList.remove('show');
+}
+
+function showBiasAlert(biasType = 'RISK_AVERSION') {
+    const badge = document.getElementById('biasAlertBadge');
+    if (badge) {
+        const textSpan = badge.querySelector('.bias-alert-text');
+        
+        // 편향 타입에 따라 텍스트 및 색상 변경
+        if (biasType === 'LOSS_AVERSION') {
+            textSpan.textContent = '손실회피 주의';
+            badge.classList.remove('risk-aversion');  // 초록색 제거
+        } else {
+            textSpan.textContent = '위험회피 주의';
+            badge.classList.add('risk-aversion');  // 초록색 추가
+        }
+        
+        badge.style.display = 'flex';
+        console.log(biasType + ' 경고 표시');
+    }
+}
+
+function hideBiasAlert() {
+    const badge = document.getElementById('biasAlertBadge');
+    if (badge) {
+        badge.style.display = 'none';
+        console.log('경고 제거');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // 빨간 점만 복원 (알림창 열어야 꺼짐)
+    const hasUnreadAlert = sessionStorage.getItem('hasUnreadAlert');
+    if (hasUnreadAlert === 'true') {
+        const notifBtn = document.querySelector('.header-notification-btn');
+        notifBtn.classList.add('has-unread');
+        console.log('[초기 로드] 세션 기반 빨간 점 복원');
+    }
+    
+    // 경고 배지는 복원하지 않음 (페이지마다 새로 체크)
+    console.log('[초기 로드] 경고 배지는 각 페이지에서 체크');
+
+    const userProfile = document.getElementById('userProfile');
+    const profileModal = document.getElementById('profileModal');
+
+    if (userProfile) {
+        userProfile.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileModal.classList.toggle('show');
+            document.getElementById('notifBox').style.display = 'none';
+        });
     }
 
-    function toggleNotif() {
-        document.getElementById('notifBox').style.display = 'none';
-    }
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.header-user-profile-wrapper');
+        const notifBtn = document.querySelector('.header-notification-btn');
+        const notifBox = document.getElementById('notifBox');
 
-    function logout() {
-        if (confirm('로그아웃 하시겠습니까?')) {
-            location.href = '${cpath}/logout.jsp';
+        if (wrapper && !wrapper.contains(e.target)) {
+            profileModal.classList.remove('show');
+        }
+
+        if (notifBtn && !notifBtn.contains(e.target) && !notifBox.contains(e.target)) {
+            notifBox.style.display = 'none';
+        }
+    });
+});
+
+// 뒤로가기/앞으로가기 대응
+window.addEventListener('pageshow', function(event) {
+    console.log('[pageshow] 이벤트 발생, bfcache:', event.persisted);
+    
+    // 빨간 점만 복원 (경고 배지는 복원 안 함)
+    const hasUnreadAlert = sessionStorage.getItem('hasUnreadAlert');
+    if (hasUnreadAlert === 'true') {
+        const notifBtn = document.querySelector('.header-notification-btn');
+        if (notifBtn && !notifBtn.classList.contains('has-unread')) {
+            notifBtn.classList.add('has-unread');
+            console.log('[뒤로가기] 빨간 점 복원');
         }
     }
+});
+
+
+function toggleNotifications(e) {
+    if (e) e.stopPropagation();
+
+    const notifBox = document.getElementById('notifBox');
+    const isVisible = notifBox.style.display === 'block';
+
+    const profileModal = document.getElementById('profileModal');
+    if (profileModal) {
+        profileModal.classList.remove('show');
+    }
+    notifBox.style.display = isVisible ? 'none' : 'block';
+
+    if (!isVisible) {
+        hideBiasAlert();
+        
+        // 빨간 점 제거
+        const notifBtn = document.querySelector('.header-notification-btn');
+        notifBtn.classList.remove('has-unread');
+        sessionStorage.removeItem('hasUnreadAlert'); 
+        console.log('[알림] 알림창 열림 - 빨간 점 제거');
+    }
+}
+
+function toggleNotif() {
+    document.getElementById('notifBox').style.display = 'none';
+}
+
+function logout() {
+    if (confirm('로그아웃 하시겠습니까?')) {
+        location.href = '${cpath}/logout.jsp';
+    }
+}
 </script>
