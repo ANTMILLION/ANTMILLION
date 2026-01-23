@@ -1,5 +1,6 @@
 package com.antmillion.kis.handler;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,8 +39,6 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         System.out.println("KIS 웹소켓 핸드셰이크 성공");
-        
-        
     }
 
     @Override
@@ -47,10 +46,18 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
     	// 역할: 데이터 수신 응답 및 처리 (OnMessage)
         String payload = message.getPayload();
         
-     // 1. PINGPONG 처리
+        // 1. PINGPONG 처리
         if (payload.contains("PINGPONG")) {
         	manager.updateLastHeartbeatTime(); // 수신 시간 갱신
             System.out.println("PINGPONG 수신 완료");
+            try {
+            	// 한투 가이드: 받은 PINGPONG 메시지를 그대로 다시 보내야 연결이 유지됨
+				session.sendMessage(new TextMessage(payload));
+				System.out.println("PINGPONG 응답 완료");
+			} catch (IOException e) {
+				System.err.println("PINGPONG 응답 전송 실패: " + e.getMessage());
+				manager.monitorHealth(); // 재연결
+			}
             return;
         }
         
@@ -73,8 +80,9 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
                 tradeData.put("prdyCtrt", data[5]);     // 대비율
                 tradeData.put("shnuRate", data[22]);     // 매수 비율
                 
+                String stockCode = data[0];
                 // STOMP 전송
-                messagingTemplate.convertAndSend("/topic/kis-trade", tradeData); // 실시간 체결가
+                messagingTemplate.convertAndSend("/topic/kis-trade/" + stockCode, tradeData); // 실시간 체결가
                 System.out.println("체결가 수신: " + tradeData);
             }
         } catch (Exception e) {

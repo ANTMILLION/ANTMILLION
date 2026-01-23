@@ -45,11 +45,13 @@ public class KisWebSocketManager {
     
     @PostConstruct
     public void init() {
+    	session = null;
     	connect();
     }
 
 	// 웹소켓 연결
-    public void connect() {
+    public synchronized void connect() {
+    	
         if (session != null && session.isOpen()) return;
 
         try {
@@ -59,9 +61,10 @@ public class KisWebSocketManager {
             
             session = client.doHandshake(handler, WS_URL).get();   
             lastHeartbeatTime = System.currentTimeMillis();
-            System.out.println("KIS 서버와 웹소켓 연결 완료");
             isConnected = true;
+            System.out.println("KIS 서버와 웹소켓 연결 완료");
         } catch (Exception e) {
+        	isConnected = false;
             System.err.println("웹소켓 연결 실패: " + e.getMessage());
         }
     }
@@ -83,7 +86,8 @@ public class KisWebSocketManager {
     // 웹소켓 재연결
     public void monitorHealth() {
         if (session == null || !session.isOpen()) {
-            System.out.println("세션 재연결...");
+            System.out.println("세션이 끊겼으므로 재연결 시도");
+            session = null;
             connect();
             return;
         }
@@ -91,6 +95,15 @@ public class KisWebSocketManager {
     
     public void updateLastHeartbeatTime() {
         this.lastHeartbeatTime = System.currentTimeMillis();
+    }
+    
+    // 세션 관리용
+    public void subscribe(String stockCode) {
+        if (this.session == null || !this.session.isOpen()) {
+            connect();
+        }
+        
+        this.sendSubscribeMessage(this.session, stockCode);  // 실제 구독 메시지 전송
     }
     
     public void sendSubscribeMessage(WebSocketSession session, String stockCode) {
