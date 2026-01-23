@@ -80,15 +80,10 @@
         WHERE quiz_id = #{quizId}
     </select>
 
-    <update id="updateUserPoint">
-        UPDATE member
-        SET point = LEAST(10000, GREATEST(0, COALESCE(point, 0) + #{point}))
+    <select id="countTodaySolvedQuiz" resultType="int">
+        SELECT COUNT(DISTINCT quiz_id)
+        FROM quiz_log
         WHERE user_id = #{userId}
-    </update>
-
-    <select id="selectUserPoint" resultType="int">
-        SELECT point
-        FROM member
-        WHERE user_id = #{userId}
+        AND DATE(solved_at) = CURDATE()
     </select>
 </mapper>

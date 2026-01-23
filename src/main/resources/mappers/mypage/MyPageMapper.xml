@@ -16,5 +16,44 @@
 	    WHERE
 	        a.account_id = #{accountId}
     </select>
+    
+    <select id="selectRealizedProfit" resultType="map">
+	    SELECT 
+	        s.stock_name AS "name",
+	        so.quantity AS "shares",
+	        a.avg_price AS "buyPrice", 
+	        so.order_price AS "sellPrice",
+	        (so.order_price - a.avg_price) * so.quantity AS "profit",
+	        ROUND(((so.order_price - a.avg_price) / a.avg_price) * 100, 2) AS "profitRate",
+	        so.updated_at AS "tradeDate"
+	    FROM stock_order so
+	    JOIN stock s ON so.stock_code = s.stock_code
+	    LEFT JOIN asset a ON so.account_id = a.account_id AND so.stock_code = a.stock_code
+	    WHERE so.account_id = #{accountId}
+	      AND so.transaction_type = 'SELL'
+	      AND so.status = 'COMPLETED'
+	    
+	    <if test="startDate != null and startDate != ''">
+	        AND so.updated_at &gt;= #{startDate}
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        AND so.updated_at &lt;= STR_TO_DATE(CONCAT(#{endDate}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
+	    </if>
+	    
+	    ORDER BY so.updated_at DESC
+	</select>
+	
+    
+
+	<select id="selectAccountInfo" resultType="map">
+	    SELECT 
+	        m.nickname AS "nickname",
+	        a.account_number AS "accountNumber",
+	        a.balance AS "balance",
+	        a.account_created_at AS "createdAt"
+	    FROM account a
+	    JOIN member m ON a.user_id = m.user_id
+	    WHERE a.account_id = #{accountId}
+	</select>
 
 </mapper>

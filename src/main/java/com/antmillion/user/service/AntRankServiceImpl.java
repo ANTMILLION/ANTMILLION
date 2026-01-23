@@ -1,10 +1,12 @@
 package com.antmillion.user.service;
 
+import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.user.dto.AntRankDTO;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.mapper.AntRankMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,14 +15,16 @@ import java.util.List;
 public class AntRankServiceImpl implements AntRankService {
 
     private final AntRankMapper antRankMapper;
+    private final MemberMapper memberMapper;
 
     @Override
-    public UserRankResponseDTO calculateRankStatus(int currentPoint) {
+    public UserRankResponseDTO calculateRankStatus(Long userId, int currentPoint) {
         List<AntRankDTO> ranks = antRankMapper.selectAllRanks();
 
         // 초기값 설정
         String rankName = ranks.get(0).getRankType();
         String rankImage = ranks.get(0).getRankImage();
+        int currentRankId = ranks.get(0).getRankId();
         int nextRankPoint = 0;
         int currentRankStartPoint = 0;
         boolean isMaxRank = false;
@@ -33,6 +37,7 @@ public class AntRankServiceImpl implements AntRankService {
             if (currentPoint >= rank.getRequiredPoint()) {
                 rankName = rank.getRankType();
                 rankImage = rank.getRankImage();
+                currentRankId = rank.getRankId();
                 currentRankStartPoint = rank.getRequiredPoint();
 
                 // 다음 단계 목표 설정
@@ -58,6 +63,24 @@ public class AntRankServiceImpl implements AntRankService {
                 .nextRankPoint(nextRankPoint)
                 .neededPoint(neededPoint)
                 .currentRankStartPoint(currentRankStartPoint)
+                .currentRankId(currentRankId)
                 .build();
+    }
+
+    @Override
+    public UserRankResponseDTO getUserRankInfo(Long userId) {
+        int currentPoint = memberMapper.selectUserPoint(userId);
+        String nickName = memberMapper.selectUserNickName(userId);
+
+        // 기존 랭크 계산 로직 재사용
+        UserRankResponseDTO responseDTO = calculateRankStatus(null, currentPoint);
+        responseDTO.assignNickName(nickName);
+        return responseDTO;
+    }
+
+    @Transactional
+    public void updateUserRank(Long userId, int currentPoint) {
+        UserRankResponseDTO rank = calculateRankStatus(null, currentPoint);
+        memberMapper.updateUserRank(userId, rank.getCurrentRankId());
     }
 }

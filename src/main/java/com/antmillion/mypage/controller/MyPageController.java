@@ -5,21 +5,22 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.antmillion.mypage.service.MyPageService;
 
+import lombok.RequiredArgsConstructor;
+@RequiredArgsConstructor
 @RequestMapping({"/mypage"})
 @Controller
 public class MyPageController {
-
-    @Autowired
-    private MyPageService myPageService;
+   
+    private final MyPageService myPageService;
 
     /**
      * 마이페이지 메인 화면 이동
@@ -28,6 +29,7 @@ public class MyPageController {
     public String mainPage() {
         return "mypage/mypage";
     }
+
 
     /**
      * 주식 잔고 데이터를 JSON으로 반환
@@ -49,4 +51,36 @@ public class MyPageController {
         
         return ResponseEntity.ok(holdings);
     }
+    
+    
+    @GetMapping("/api/realized-profit")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getRealizedProfit(
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate,
+            HttpSession session) {
+        
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) accountId = 1L;
+        
+        // 서비스로 날짜 데이터 전달
+        List<Map<String, Object>> result = myPageService.getRealizedProfit(accountId, startDate, endDate);
+        return ResponseEntity.ok(result);
+    }
+    
+    
+    
+    
+    
+    @GetMapping("/api/account-info")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getAccountInfo(HttpSession session) {
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) accountId = 1L; // 테스트용
+        
+        Map<String, Object> result = myPageService.getAccountInfo(accountId);
+        return ResponseEntity.ok(result);
+    }
+    
+    
 }

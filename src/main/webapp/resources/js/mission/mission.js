@@ -20,38 +20,50 @@ function formatTodayKorean() {
 // 서버 API 호출하여 데이터 가져오기
 function getDailyQuiz() {
     $.ajax({
-        url: cpath + '/mission/daily',
+        url: cpath + "/mission/today-status",
         type: 'GET',
         dataType: 'json',
-        success: function (data) {
-            if (!data || data.length === 0) {
-                showCompletion();
-                return;
-            }
+        success: function (statusData) {
+            correctAnswers = statusData.solvedCount || 0;
+            $.ajax({
+                url: cpath + '/mission/daily',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if ((!data || data.length === 0) && correctAnswers >= 2) {
+                        showCompletion();
+                        return;
+                    }
 
-            // 날짜 변경
-            const quizTitle = document.querySelector('.mission-quiz-date');
-            if (quizTitle) {
-                quizTitle.textContent = formatTodayKorean();
-            }
+                    // 날짜 변경
+                    const quizTitle = document.querySelector('.mission-quiz-date');
+                    if (quizTitle) {
+                        quizTitle.textContent = formatTodayKorean();
+                    }
 
-            quizData = data.map(q => ({
-                id: q.quizId,
-                type: q.type,
-                question: q.question,
-                point: q.point,
-                options: q.choices.map((c, index) => ({
-                    id: c.quizChoiceId,
-                    no: c.choiceNo,
-                    text: c.choiceText,
-                }))
-            }));
+                    quizData = data.map(q => ({
+                        id: q.quizId,
+                        type: q.type,
+                        question: q.question,
+                        point: q.point,
+                        options: q.choices.map((c, index) => ({
+                            id: c.quizChoiceId,
+                            no: c.choiceNo,
+                            text: c.choiceText,
+                        }))
+                    }));
 
-            currentQuizIndex = 0;
-            loadQuiz(currentQuizIndex);
-        },
-        error: function (xhr, status, error) {
-            console.error('퀴즈 데이터를 가져오는 중 오류 발생:', error);
+                    totalQuizCount = quizData.length + correctAnswers;
+                    currentQuizIndex = 0;
+                    updateProgress();
+                    if (quizData.length > 0) {
+                        loadQuiz(currentQuizIndex);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('퀴즈 데이터를 가져오는 중 오류 발생:', error);
+                }
+            });
         }
     });
 }
@@ -154,7 +166,7 @@ function showPointsMessage() {
 
 // 진행률 업데이트
 function updateProgress() {
-    const progress = Math.round((correctAnswers / quizData.length) * 100);
+    const progress = Math.round((correctAnswers / totalQuizCount) * 100);
     document.getElementById('mission-progressBar').style.width = progress + '%';
     document.getElementById('mission-progressStatus').textContent = progress + '% 달성!';
 }
@@ -207,6 +219,8 @@ function showCompletion() {
 
             // 포인트 정보 업데이트
             updateRankProgress(data);
+
+            updateHeaderUI(data);
         },
         error: function(xhr, status, error) {
             console.error('랭크 정보 조회 실패:', error);
@@ -216,6 +230,28 @@ function showCompletion() {
 
     // 서버에 완료 전송
     submitCompletion();
+}
+
+// 헤더(상단바)의 정보 업데이트
+function updateHeaderUI(data) {
+    // 헤더 상단 닉네임 변경
+    const headerName = document.querySelector('.header-user-name');
+    if (headerName) headerName.textContent = data.nickName;
+
+    // 헤더 드롭다운 안의 닉네임 변경
+    const profileName = document.querySelector('.header-profile-nickname');
+    if (profileName) profileName.textContent = data.nickName;
+
+    // 헤더 드롭다운 안의 랭크 이름(티어) 변경
+    const rankName = document.querySelector('.header-profile-tier');
+    if (rankName) rankName.textContent = data.rankName + " 개미";
+
+    // 헤더 드롭다운 안의 이미지 변경
+    const rankImg = document.querySelector('.header-profile-avatar');
+    if (rankImg) {
+        rankImg.src = cpath + '/' + data.rankImage;
+        rankImg.alt = data.rankName;
+    }
 }
 
 // 랭크 진행률 업데이트 함수 (새로 분리)
@@ -262,7 +298,7 @@ function updateRankProgress(data) {
 // 정답 제출 (AJAX)
 function submitAnswer(quizId, optionId, buttonElement) {
     const requestData = {
-        userId : 1, // 세션 ID로 변경 필요
+        userId : currentUserId,
         quizId : quizId,
         choiceNo : optionId
     }

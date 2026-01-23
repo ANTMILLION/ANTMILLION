@@ -5,10 +5,14 @@ import com.antmillion.mission.dto.QuizSubmissionRequestDTO;
 import com.antmillion.mission.service.MissionService;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/mission")
@@ -25,18 +29,41 @@ public class MissionController {
     @GetMapping("/daily")
     @ResponseBody
     public List<QuizQuestionResponseDTO> getDailyQuizData() {
-        return missionService.getDailyQuiz();
+        try {
+            return missionService.getDailyQuiz();
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            System.err.println("퀴즈 조회 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     @PostMapping("/check")
     @ResponseBody
     public boolean checkAnswer(@RequestBody QuizSubmissionRequestDTO requestDTO) {
-        return missionService.checkAndLogAnswer(requestDTO);
+        try {
+            return missionService.checkAndLogAnswer(requestDTO);
+        } catch (Exception e) {
+            System.err.println("퀴즈 채점 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @GetMapping("/status")
     @ResponseBody
     public UserRankResponseDTO getMissionStatus() {
-        return missionService.getUserMissionStatus(1L); // 추후 변경 예정
+        Long userId = missionService.getCurrentUserId();
+        return missionService.getUserMissionStatus(userId);
+    }
+
+    @GetMapping("/today-status")
+    @ResponseBody
+    public Map<String, Object> getTodayMissionStatus() {
+        Long userId = missionService.getCurrentUserId();
+        int solvedCount = missionService.getTodaySolvedCount(userId);
+        return Map.of("solvedCount", solvedCount);
     }
 }

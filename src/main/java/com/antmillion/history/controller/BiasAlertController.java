@@ -37,7 +37,7 @@ public class BiasAlertController {
 
         System.out.println("BiasAlertController: API 호출 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode);
 
-        BiasAlertDTO result = biasAlertService.checkSafeHavenBias(accountId, stockCode, userId);
+        BiasAlertDTO result = biasAlertService.checkRiskAversionBias(accountId, stockCode, userId);
 
         if (result == null) {
             System.out.println("결과: 보유하지 않은 종목 (204 No Content)");
@@ -47,5 +47,27 @@ public class BiasAlertController {
         System.out.println("결과: " + result);
         return ResponseEntity.ok(result);
     }
+    
+    /**
+     * 손실회피 편향 체크
+     * 조건: 수익률 -7% 이하 && 최근 5거래일간 매도 이력 없음
+     */
+    @GetMapping("/check-loss-aversion")
+    public ResponseEntity<BiasAlertDTO> checkLossAversion(
+            @RequestParam(required = false, defaultValue = "1") Long accountId,
+            @RequestParam(required = false, defaultValue = "1") Long userId,
+            @RequestParam String stockCode) {
 
+        System.out.println("BiasAlertController: 손실회피 체크 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode);
+
+        BiasAlertDTO result = biasAlertService.checkLossAversionBias(accountId, stockCode, userId);
+
+        if (result == null) {
+            System.out.println("결과: 보유하지 않은 종목 (204 No Content)");
+            return ResponseEntity.noContent().build();
+        }
+
+        System.out.println("결과: " + result);
+        return ResponseEntity.ok(result);
+    }
 }

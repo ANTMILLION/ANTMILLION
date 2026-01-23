@@ -401,6 +401,14 @@ body {
     font-size: 13px;
     color: var(--text-secondary);
 }
+/* 실현손익 개별 종목 색상 강제 적용 */
+.mypage-realized-info span.positive {
+    color: var(--color-positive) !important;
+}
+
+.mypage-realized-info span.negative {
+    color: var(--color-negative) !important;
+}
 
 /* ===========================
    체결내역
