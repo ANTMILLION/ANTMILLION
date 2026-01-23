@@ -52,7 +52,7 @@ public class KisController {
     @RequestMapping("/stock/{stockCode}")
     public String stockPage(@PathVariable("stockCode") String stockCode) {
         WebSocketSession session = kisWebSocketManager.getSession();
-        sendSubscribeMessage(session, stockCode); // 실제 구독 메시지 전송
+        kisWebSocketManager.sendSubscribeMessage(session, stockCode); // 실제 구독 메시지 전송
         return "kis/kisWebSocketTransactionPrice";
     }
 

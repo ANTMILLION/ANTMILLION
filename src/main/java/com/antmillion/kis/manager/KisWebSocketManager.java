@@ -6,12 +6,17 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
+import com.antmillion.kis.dto.KisWebSocketTransactionPriceRequest;
 import com.antmillion.kis.handler.KisWebSocketHandler;
 import com.antmillion.kis.service.KisApiService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 웹소켓 Connection 처리
@@ -25,11 +30,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class KisWebSocketManager {
     private final KisApiService kisApiService;
     private final SimpMessagingTemplate messagingTemplate; // STOMP 전송용 주입
+    @Getter @Setter
     private WebSocketSession session;
     private long lastHeartbeatTime;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String WS_URL = "ws://ops.koreainvestment.com:21000"; // 실전투자 기준
     private boolean isConnected = false; // 연결 상태 저장
+    private String approvalKey;
 
     public KisWebSocketManager(KisApiService kisApiService, SimpMessagingTemplate messagingTemplate) {
         this.kisApiService = kisApiService;
@@ -46,7 +53,7 @@ public class KisWebSocketManager {
         if (session != null && session.isOpen()) return;
 
         try {
-            String approvalKey = kisApiService.getKisApprovalKey();
+        	approvalKey = kisApiService.getKisApprovalKey();
             KisWebSocketHandler handler = new KisWebSocketHandler(this, approvalKey, messagingTemplate, objectMapper);
             StandardWebSocketClient client = new StandardWebSocketClient();
             
@@ -82,15 +89,34 @@ public class KisWebSocketManager {
         }
     }
     
-    public void setSession(WebSocketSession session) {
-        this.session = session;
-    }
-    
-    public WebSocketSession getSession() {
-        return session;
-    }
-    
     public void updateLastHeartbeatTime() {
         this.lastHeartbeatTime = System.currentTimeMillis();
+    }
+    
+    public void sendSubscribeMessage(WebSocketSession session, String stockCode) {
+    	// 역할: 구독 요청 (Subscribe)
+    	KisWebSocketTransactionPriceRequest request = KisWebSocketTransactionPriceRequest.builder()
+    	        .header(KisWebSocketTransactionPriceRequest.Header.builder()
+    	            .approvalKey(approvalKey)
+    	            .custtype("P")
+    	            .trType("1")
+    	            .contentType("utf-8")
+    	            .build())
+    	        .body(KisWebSocketTransactionPriceRequest.Body.builder()
+    	            .input(KisWebSocketTransactionPriceRequest.Body.Input.builder()
+    	                .trId("H0STCNT0")   // 실시간 체결가 tr_id
+    	                .trKey(stockCode)
+    	                .build())
+    	            .build())
+    	        .build();
+
+    	    // JSON 변환
+    	    try {
+    	    	String json = objectMapper.writeValueAsString(request);
+				session.sendMessage(new TextMessage(json));
+				System.out.println("구독 요청 전송 완료: " + json);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
     }
 }

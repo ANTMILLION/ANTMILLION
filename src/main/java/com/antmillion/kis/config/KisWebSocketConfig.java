@@ -18,7 +18,7 @@ public class KisWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${kis.app-key}")
     public String appKey;
 
-    @Value("${kis.secret-key}")
+    @Value("${kis.app-secret}")
     public String secretKey;
 
     @Value("${kis.mode}")

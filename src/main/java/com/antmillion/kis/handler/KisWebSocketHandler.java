@@ -9,7 +9,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.antmillion.kis.dto.KisWebSocketTransactionPriceRequest;
 import com.antmillion.kis.manager.KisWebSocketManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -81,33 +80,6 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         } catch (Exception e) {
             System.err.println("데이터 처리 오류: " + e.getMessage());
         }
-    }
-
-    private void sendSubscribeMessage(WebSocketSession session, String stockCode) throws Exception {
-    	// 역할: 구독 요청 (Subscribe)
-    	// header: approval_key, content-type, body: tr_id, tr_key 등 필요
-    	
-    	
-    	KisWebSocketTransactionPriceRequest request = KisWebSocketTransactionPriceRequest.builder()
-    	        .header(KisWebSocketTransactionPriceRequest.Header.builder()
-    	            .approvalKey(approvalKey)
-    	            .custtype("P")
-    	            .trType("1")
-    	            .contentType("utf-8")
-    	            .build())
-    	        .body(KisWebSocketTransactionPriceRequest.Body.builder()
-    	            .input(KisWebSocketTransactionPriceRequest.Body.Input.builder()
-    	                .trId("H0STCNT0")   // 실시간 체결가 tr_id
-    	                .trKey(stockCode)
-    	                .build())
-    	            .build())
-    	        .build();
-
-    	    // JSON 변환
-    	    String json = objectMapper.writeValueAsString(request);
-    	    session.sendMessage(new TextMessage(json));
-
-    	    System.out.println("구독 요청 전송 완료: " + json);
     }
 
     @Override
