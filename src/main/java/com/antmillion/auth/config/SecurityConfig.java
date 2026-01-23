@@ -50,20 +50,20 @@ public class SecurityConfig {
                 org.springframework.security.config.http.SessionCreationPolicy.STATELESS
             ))
             .authorizeHttpRequests(auth -> auth
-                // public
-                .requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/login"), new AntPathRequestMatcher("/signup"),
-                        new AntPathRequestMatcher("/signup/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/error"), new AntPathRequestMatcher("/404"), new AntPathRequestMatcher("/500")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/" )).permitAll()
-
-                // 로그인 필요 (JSP는 RT 쿠키로 인증, API는 AT 헤더로 인증)
-                .requestMatchers(new AntPathRequestMatcher("/mypage"), new AntPathRequestMatcher("/mypage/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/trade"), new AntPathRequestMatcher("/trade/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+            	// 로그인 불필요
+//                .requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/login"), new AntPathRequestMatcher("/signup"),
+//                        new AntPathRequestMatcher("/signup/**")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/error"), new AntPathRequestMatcher("/404"), new AntPathRequestMatcher("/500")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/" )).permitAll()
+//
+//                // 로그인 필요 (JSP는 RT 쿠키로 인증, API는 AT 헤더로 인증)
+//                .requestMatchers(new AntPathRequestMatcher("/mypage"), new AntPathRequestMatcher("/mypage/**")).authenticated()
+//                .requestMatchers(new AntPathRequestMatcher("/trade"), new AntPathRequestMatcher("/trade/**")).authenticated()
+//                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
 
                 // 이외에는 오픈
                 .anyRequest().permitAll()
