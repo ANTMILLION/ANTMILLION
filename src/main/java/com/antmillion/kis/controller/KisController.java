@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class KisController {
 
     private final KisApiService kisApiService;
+    private final KisWebSocketManager kisWebSocketManager;
 
     /**
      * 한국투자증권 api의 응답을 확인하기위한 컨트롤러
@@ -47,10 +49,10 @@ public class KisController {
     /**
      * 웹소켓 테스트용
      */
-    private final KisWebSocketManager manager;
-    @RequestMapping("/stock")
-    public String stockPage() {
-        manager.connect();
+    @RequestMapping("/stock/{stockCode}")
+    public String stockPage(@PathVariable("stockCode") String stockCode) {
+        WebSocketSession session = kisWebSocketManager.getSession();
+        sendSubscribeMessage(session, stockCode); // 실제 구독 메시지 전송
         return "kis/kisWebSocketTransactionPrice";
     }
 

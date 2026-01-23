@@ -2,6 +2,8 @@ package com.antmillion.kis.manager;
 
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
@@ -27,10 +29,16 @@ public class KisWebSocketManager {
     private long lastHeartbeatTime;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String WS_URL = "ws://ops.koreainvestment.com:21000"; // 실전투자 기준
+    private boolean isConnected = false; // 연결 상태 저장
 
     public KisWebSocketManager(KisApiService kisApiService, SimpMessagingTemplate messagingTemplate) {
         this.kisApiService = kisApiService;
         this.messagingTemplate = messagingTemplate;
+    }
+    
+    @PostConstruct
+    public void init() {
+    	connect();
     }
 
 	// 웹소켓 연결
@@ -45,6 +53,7 @@ public class KisWebSocketManager {
             session = client.doHandshake(handler, WS_URL).get();   
             lastHeartbeatTime = System.currentTimeMillis();
             System.out.println("KIS 서버와 웹소켓 연결 완료");
+            isConnected = true;
         } catch (Exception e) {
             System.err.println("웹소켓 연결 실패: " + e.getMessage());
         }
@@ -61,6 +70,7 @@ public class KisWebSocketManager {
             }
         }
         this.session = null;
+        isConnected = false;
     }
     
     // 웹소켓 재연결
@@ -74,6 +84,10 @@ public class KisWebSocketManager {
     
     public void setSession(WebSocketSession session) {
         this.session = session;
+    }
+    
+    public WebSocketSession getSession() {
+        return session;
     }
     
     public void updateLastHeartbeatTime() {

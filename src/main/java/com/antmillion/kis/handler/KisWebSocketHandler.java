@@ -40,7 +40,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         System.out.println("KIS 웹소켓 핸드셰이크 성공");
         
-        sendSubscribeMessage(session); // 실제 구독 메시지 전송
+        
     }
 
     @Override
@@ -83,7 +83,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void sendSubscribeMessage(WebSocketSession session) throws Exception {
+    private void sendSubscribeMessage(WebSocketSession session, String stockCode) throws Exception {
     	// 역할: 구독 요청 (Subscribe)
     	// header: approval_key, content-type, body: tr_id, tr_key 등 필요
     	
@@ -98,7 +98,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
     	        .body(KisWebSocketTransactionPriceRequest.Body.builder()
     	            .input(KisWebSocketTransactionPriceRequest.Body.Input.builder()
     	                .trId("H0STCNT0")   // 실시간 체결가 tr_id
-    	                .trKey("005930")
+    	                .trKey(stockCode)
     	                .build())
     	            .build())
     	        .build();
