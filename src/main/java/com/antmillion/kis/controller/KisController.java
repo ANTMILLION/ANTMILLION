@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-//@RestController 
-@Controller // 테스트를 위해서 @Controller 활성화 했습니다.
+@RestController
+//@Controller // 테스트를 위해서 @Controller 활성화 했습니다.
 @RequestMapping("/api/kis")
 public class KisController {
 
