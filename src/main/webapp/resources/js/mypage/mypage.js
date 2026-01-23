@@ -4,7 +4,7 @@
 const biasTypeMap = {
     RISK_AVERSION: { title: "위험회피 주의", icon: "⚠️" },
     LOSS_AVERSION: { title: "손실회피 주의", icon: "⚠️" },
-    SUNK_COST: { title: "매몰비용오류 경고", icon: "⚠️" },
+    SUNK_COST: { title: "매몰비용 경고", icon: "⚠️" },
     FOMO: { title: "FOMO 주의", icon: "⚠️" }
 };
 
