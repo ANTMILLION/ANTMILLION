@@ -6,6 +6,7 @@ import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -50,9 +51,9 @@ public class KisController {
      * 웹소켓 테스트용
      */
     @RequestMapping("/stock/{stockCode}")
-    public String stockPage(@PathVariable("stockCode") String stockCode) {
-        WebSocketSession session = kisWebSocketManager.getSession();
-        kisWebSocketManager.sendSubscribeMessage(session, stockCode); // 실제 구독 메시지 전송
+    public String stockPage(@PathVariable("stockCode") String stockCode, Model model) {
+    	kisWebSocketManager.subscribe(stockCode);
+    	model.addAttribute("stockCode", stockCode);
         return "kis/kisWebSocketTransactionPrice";
     }
 

@@ -12,13 +12,11 @@ function connect() {
         console.log('Connected: ' + frame);
 
         // 2. 백엔드에서 쏘는 Topic 주소를 구독
-        stompClient.subscribe('/topic/kis-trade', function (response) {
+        stompClient.subscribe('/topic/kis-trade/' + currentStockCode, function (response) {
 
             // 전달받은 데이터를 JSON으로 파싱
             var tradeData = JSON.parse(response.body);
-            
                 console.log("수신 데이터:", tradeData);
-            
             // 화면 갱신 함수 호출
             updateUI(tradeData);
         });
@@ -46,5 +44,4 @@ function updateUI(data) {
 // 페이지 로드 시 연결 시작
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM 로드 완료, 연결 시작!");
-    connect();
 });

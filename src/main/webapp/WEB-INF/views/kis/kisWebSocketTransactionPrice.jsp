@@ -32,7 +32,8 @@
 		src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 	<script
 		src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-		<script> const contextPath = '<%=request.getContextPath()%>'; </script>
+		<script> const contextPath = '<%=request.getContextPath()%>'; 
+		const currentStockCode = "${stockCode}";</script>
 		
 	<script src="${cpath}/resources/js/kis/kisWebSocketTransactionPrice.js"></script>
 </body>
