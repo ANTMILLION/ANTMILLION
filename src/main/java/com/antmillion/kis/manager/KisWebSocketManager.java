@@ -9,6 +9,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import com.antmillion.kis.handler.KisWebSocketHandler;
 import com.antmillion.kis.service.KisApiService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 웹소켓 Connection 처리
@@ -24,6 +25,7 @@ public class KisWebSocketManager {
     private final SimpMessagingTemplate messagingTemplate; // STOMP 전송용 주입
     private WebSocketSession session;
     private long lastHeartbeatTime;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final String WS_URL = "ws://ops.koreainvestment.com:21000"; // 실전투자 기준
 
     public KisWebSocketManager(KisApiService kisApiService, SimpMessagingTemplate messagingTemplate) {
@@ -37,7 +39,7 @@ public class KisWebSocketManager {
 
         try {
             String approvalKey = kisApiService.getKisApprovalKey();
-            KisWebSocketHandler handler = new KisWebSocketHandler(this, approvalKey, messagingTemplate);
+            KisWebSocketHandler handler = new KisWebSocketHandler(this, approvalKey, messagingTemplate, objectMapper);
             StandardWebSocketClient client = new StandardWebSocketClient();
             
             session = client.doHandshake(handler, WS_URL).get();   
