@@ -75,6 +75,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
                 Map<String, String> tradeData = new HashMap<>();
                 tradeData.put("mkscShrnIscd", data[0]); // 종목코드
                 tradeData.put("stckPrpr", data[2]);     // 현재가
+                tradeData.put("prdySign", data[3]); // 전일 대비 부호
                 tradeData.put("prdyVrss", data[4]);	// 전일 대비
                 tradeData.put("prdyCtrt", data[5]);     // 대비율
                 tradeData.put("shnuRate", data[22]);     // 매수 비율
