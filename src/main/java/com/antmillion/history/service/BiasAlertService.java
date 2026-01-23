@@ -28,6 +28,9 @@ public class BiasAlertService {
     // 위험회피 편향 기준
     private static final BigDecimal RISK_AVERSION_PROFIT_THRESHOLD = new BigDecimal("3.0");
     private static final int RISK_AVERSION_HOLDING_DAYS = 3;
+    
+    // 손실회피 편향 기준
+    private static final BigDecimal LOSS_AVERSION_LOSS_THRESHOLD = new BigDecimal("-7.0");
 
     /**
      * 위험회피 편향 체크
@@ -73,6 +76,60 @@ public class BiasAlertService {
                 .build();
 
         //핵심: 경고가 뜨는 순간 자동 저장
+        if (hasAlert) {
+            saveBiasAlert(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * 손실회피 편향 체크
+     * 조건: 수익률 -7% 이하 && 최근 5거래일간 매도 이력 없음
+     */
+    public BiasAlertDTO checkLossAversionBias(Long accountId, String stockCode, Long userId) {
+        log.info("손실회피 체크 시작 - accountId={}, stockCode={}, userId={}", accountId, stockCode, userId);
+
+        // 1. 보유 자산 조회
+        BiasAlertDTO asset = biasAlertMapper.selectAssetForBiasCheck(accountId, stockCode);
+
+        if (asset == null) {
+            log.info("보유하지 않은 종목 - stockCode={}", stockCode);
+            return null;
+        }
+
+        // 2. 현재가 조회
+        BigDecimal currentPrice = biasAlertMapper.selectCurrentPrice(stockCode);
+
+        // 3. 수익률 계산
+        BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
+
+        // 4. 최근 5거래일 매도 이력 체크
+        boolean hasRecentSell = biasAlertMapper.checkRecentSellHistory(userId, stockCode);
+
+        // 5. 편향 조건 체크: 수익률 -7% 이하 && 최근 5거래일 매도 이력 없음
+        boolean hasAlert = profitRate.compareTo(LOSS_AVERSION_LOSS_THRESHOLD) <= 0
+                && !hasRecentSell;
+
+        log.info("손실회피 체크 결과 - 수익률: {}%, 최근매도이력: {}, 경고: {}",
+                profitRate, hasRecentSell, hasAlert);
+
+        // 6. 결과 DTO 만들기
+        BiasAlertDTO result = BiasAlertDTO.builder()
+                .userId(userId)
+                .stockCode(asset.getStockCode())
+                .stockName(asset.getStockName())
+                .quantity(asset.getQuantity())
+                .avgPrice(asset.getAvgPrice())
+                .currentPrice(currentPrice)
+                .profitRate(profitRate)
+                .purchaseDate(asset.getPurchaseDate())
+                .holdingDays(asset.getHoldingDays())
+                .biasType(BiasType.LOSS_AVERSION)
+                .hasAlert(hasAlert)
+                .build();
+
+        // 7. 경고가 뜨는 순간 자동 저장
         if (hasAlert) {
             saveBiasAlert(result);
         }
@@ -131,7 +188,7 @@ public class BiasAlertService {
      */
     private String getBiasTypeString(BiasType biasType) {
         if (biasType == null) return "UNKNOWN";
-        return biasType.getCode(); // RISK_AVERSION / LOSS_AVERSION ...
+        return biasType.getCode(); 
     }
 
     /**
