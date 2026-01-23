@@ -42,5 +42,18 @@
 	    
 	    ORDER BY so.updated_at DESC
 	</select>
+	
+    
+
+	<select id="selectAccountInfo" resultType="map">
+	    SELECT 
+	        m.nickname AS "nickname",
+	        a.account_number AS "accountNumber",
+	        a.balance AS "balance",
+	        a.account_created_at AS "createdAt"
+	    FROM account a
+	    JOIN member m ON a.user_id = m.user_id
+	    WHERE a.account_id = #{accountId}
+	</select>
 
 </mapper>
