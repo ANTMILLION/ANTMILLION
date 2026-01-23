@@ -598,7 +598,7 @@ to {
     align-items: center;
     gap: 10px;
     padding: 10px 18px;
-    background: linear-gradient(135deg, #ff9f43 0%, #ff6a3d 100%);
+    background: linear-gradient(135deg, #ff9f43 0%, #ff6a3d 100%); 
     border-radius: 18px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -608,6 +608,25 @@ to {
     animation: biasAlertSlideIn 0.5s ease;
     margin-left: auto;
     margin-right: 12px;
+}
+
+/* 위험회피 - 초록색 */
+.bias-alert-badge.risk-aversion {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    box-shadow: 0 4px 15px rgba(86, 171, 47, 0.45);
+}
+
+.bias-alert-badge.risk-aversion::after {
+    border-left-color: #a8e063;
+}
+
+.bias-alert-badge.risk-aversion:hover {
+    background: linear-gradient(135deg, #4a9428 0%, #95d64f 100%);
+    box-shadow: 0 6px 20px rgba(86, 171, 47, 0.6);
+}
+
+.bias-alert-badge.risk-aversion:hover::after {
+    border-left-color: #95d64f;
 }
 
 /* 말풍선 꼬리 */
