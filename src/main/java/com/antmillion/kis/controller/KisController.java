@@ -46,16 +46,6 @@ public class KisController {
     public String approval() {
     	return kisApiService.getKisApprovalKey();
     }
-    
-    /**
-     * 웹소켓 테스트용
-     */
-    @RequestMapping("/stock/{stockCode}")
-    public String stockPage(@PathVariable("stockCode") String stockCode, Model model) {
-    	kisWebSocketManager.subscribe(stockCode);
-    	model.addAttribute("stockCode", stockCode);
-        return "kis/kisWebSocketTransactionPrice";
-    }
 
     /**
      * 일봉 : 60일치
