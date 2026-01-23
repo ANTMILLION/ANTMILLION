@@ -41,7 +41,10 @@ public class KisWebSocketManager {
     private String approvalKey;
 
     @Getter
-    private final Set<String> subscribedStocks = ConcurrentHashMap.newKeySet();
+    private final Set<String> presentSubscribedStocks = ConcurrentHashMap.newKeySet();
+
+    @Getter
+    private final Set<String> askBidSubscribedStocks = ConcurrentHashMap.newKeySet();
 
     public KisWebSocketManager(KisApiService kisApiService, SimpMessagingTemplate messagingTemplate) {
         this.kisApiService = kisApiService;
@@ -86,12 +89,6 @@ public class KisWebSocketManager {
     public void monitorHealth() {
         if (session == null || !session.isOpen()) {
             System.out.println("세션이 끊겼으므로 재연결 시도");
-
-            // 🆕 기존 구독 목록 백업
-            Set<String> oldSubscriptions = ConcurrentHashMap.newKeySet();
-            oldSubscriptions.addAll(subscribedStocks);
-            subscribedStocks.clear();
-
             session = null;
             connect();
         }
@@ -104,43 +101,76 @@ public class KisWebSocketManager {
     // 세션 관리용
     public synchronized void subscribe(String stockCode, String trId) {
         // 중복 구독 방지
-        if (subscribedStocks.contains(stockCode)) {
-            System.out.println("이미 구독 중인 종목: " + stockCode);
-            return;
+        if (trId.equals("H0UNCNT0")) {
+            if (presentSubscribedStocks.contains(stockCode)) {
+                System.out.println("이미 체결가 구독 중인 종목: " + stockCode);
+                return;
+            }
+
+        } else {
+            if (askBidSubscribedStocks.contains(stockCode)) {
+                System.out.println("이미 호가 구독 중인 종목: " + stockCode);
+                return;
+            }
         }
 
-        if (this.session == null || !this.session.isOpen()) {
+        if (session == null || !session.isOpen()) {
+            System.out.println("웹소켓 세션 연결");
             connect();
         }
         
         this.sendSubscribeMessage(this.session, stockCode, "1", trId);  // 실제 구독 메시지 전송
-        subscribedStocks.add(stockCode);
-        System.out.println("구독 완료: " + stockCode + " (전체 " + subscribedStocks.size() + "개)");
+
+        if (trId.equals("H0UNCNT0")) {
+            presentSubscribedStocks.add(stockCode);
+        } else {
+            askBidSubscribedStocks.add(stockCode);
+        }
+
+        System.out.println("구독 완료: " + stockCode + " trId: " + trId);
     }
 
     // 🆕 구독 해제 메소드
     public synchronized void unsubscribe(String stockCode, String trId) {
-        if (!subscribedStocks.contains(stockCode)) {
-            System.out.println("구독 중이 아닌 종목: " + stockCode);
-            return;
+        if (trId.equals("H0UNCNT0")) {
+            if (!presentSubscribedStocks.contains(stockCode)) {
+                System.out.println("체결가 구독 중이 아닌 종목: " + stockCode);
+                return;
+            }
+        } else {
+            if (!askBidSubscribedStocks.contains(stockCode)) {
+                System.out.println("호가 구독 중이 아닌 종목: " + stockCode);
+                return;
+            }
         }
 
         if (this.session != null && this.session.isOpen()) {
             sendSubscribeMessage(this.session, stockCode, "2", trId);  // "2" = 구독 해제
-            subscribedStocks.remove(stockCode);
-            System.out.println("구독 해제: " + stockCode + " (남은 " + subscribedStocks.size() + "개)");
+            if (trId.equals("H0UNCNT0")) {
+                presentSubscribedStocks.remove(stockCode);
+            } else {
+                askBidSubscribedStocks.remove(stockCode);
+            }
+            System.out.println("구독 해제: " + stockCode + " trId: " + trId);
         }
     }
 
     // 🆕 전체 구독 해제
     public synchronized void unsubscribeAll(String trId) {
-        if (subscribedStocks.isEmpty()) {
-            System.out.println("구독 중인 종목이 없습니다.");
-            return;
+        if (trId.equals("H0UNCNT0")) {
+            if (presentSubscribedStocks.isEmpty()) {
+                System.out.println("체결가 구독 중인 종목이 없습니다.");
+                return;
+            }
+        } else {
+            if (askBidSubscribedStocks.isEmpty()) {
+                System.out.println("호가 구독 중인 종목이 없습니다.");
+                return;
+            }
         }
 
-        System.out.println("전체 구독 해제 시작 (" + subscribedStocks.size() + "개)");
-
+        System.out.println(trId + " 전체 구독 해제 시작");
+        Set<String> subscribedStocks = trId.equals("H0UNCNT0") ? presentSubscribedStocks : askBidSubscribedStocks;
         // 복사본으로 반복 (ConcurrentModificationException 방지)
         Set<String> stocksToUnsubscribe = ConcurrentHashMap.newKeySet();
         stocksToUnsubscribe.addAll(subscribedStocks);
@@ -149,7 +179,7 @@ public class KisWebSocketManager {
             unsubscribe(stockCode, trId);
         }
 
-        System.out.println("전체 구독 해제 완료");
+        System.out.println(trId + " 전체 구독 해제 완료");
     }
 
     // 🆕 구독/해제 메시지 전송 (통합)
