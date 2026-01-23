@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -23,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * KIS 서버 → JSON 메시지 → ObjectMapper → DTO(자바 객체) → 메모리 저장 → STOMP 전송
  */
 
-@Component
 public class KisWebSocketHandler extends TextWebSocketHandler {
 	private final KisWebSocketManager manager;
 	private final String approvalKey;
@@ -66,7 +64,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         // 3. 실시간 실무 데이터 처리 (문자열 파싱)
         try {
             String[] parts = payload.split("\\|");
-            if (parts.length > 5 && "H0STCNT0".equals(parts[1])) {
+            if ("H0STCNT0".equals(parts[1])) {
             	String[] data = parts[3].split("\\^");
             	// [0], [2], [4], [5], [22]
                 Map<String, String> tradeData = new HashMap<>();
