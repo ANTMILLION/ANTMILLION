@@ -20,16 +20,22 @@ public class KisWebSocketController {
      * 단일 종목 구독
      * POST /api/kis/websocket/subscribe/005930
      */
-    @GetMapping("/subscribe/{stockCode}")
+    @PostMapping("/subscribe/{stockCode}")
     public Map<String, Object> subscribe(
             @PathVariable("stockCode") String stockCode,
             @RequestParam("trId") String trId) {
         Map<String, Object> response = new HashMap<>();
         try {
             kisWebSocketManager.subscribe(stockCode, trId);
+            Set<String> stocks;
+            if (trId.equals("H0UNCNT0")) {
+                stocks = kisWebSocketManager.getPresentSubscribedStocks();
+            } else {
+                stocks = kisWebSocketManager.getAskBidSubscribedStocks();
+            }
             response.put("success", true);
             response.put("stockCode", stockCode);
-            response.put("subscribedStocks", kisWebSocketManager.getSubscribedStocks());
+            response.put("subscribedStocks", stocks);
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "구독 실패: " + e.getMessage());
@@ -42,7 +48,7 @@ public class KisWebSocketController {
      * POST /api/kis/websocket/subscribe-multiple
      * Body: ["005930", "000660", "035720"]
      */
-    @GetMapping("/subscribe-multiple")
+    @PostMapping("/subscribe-multiple")
     public Map<String, Object> subscribeMultiple(
             @RequestBody List<String> stockCodes,
             @RequestParam("trId") String  trId
@@ -52,9 +58,15 @@ public class KisWebSocketController {
             for (String stockCode : stockCodes) {
                 kisWebSocketManager.subscribe(stockCode, trId);
             }
+            Set<String> stocks;
+            if (trId.equals("H0UNCNT0")) {
+                stocks = kisWebSocketManager.getPresentSubscribedStocks();
+            } else {
+                stocks = kisWebSocketManager.getAskBidSubscribedStocks();
+            }
             response.put("success", true);
             response.put("count", stockCodes.size());
-            response.put("subscribedStocks", kisWebSocketManager.getSubscribedStocks());
+            response.put("subscribedStocks", stocks);
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "구독 실패: " + e.getMessage());
@@ -66,7 +78,7 @@ public class KisWebSocketController {
      * 단일 종목 구독 해제
      * DELETE /api/kis/websocket/unsubscribe/005930
      */
-    @GetMapping("/unsubscribe/{stockCode}")
+    @PostMapping("/unsubscribe/{stockCode}")
     public Map<String, Object> unsubscribe(
             @PathVariable String stockCode,
             @RequestParam("trId") String  trId
@@ -74,9 +86,15 @@ public class KisWebSocketController {
         Map<String, Object> response = new HashMap<>();
         try {
             kisWebSocketManager.unsubscribe(stockCode, trId);
+            Set<String> stocks;
+            if (trId.equals("H0UNCNT0")) {
+                stocks = kisWebSocketManager.getPresentSubscribedStocks();
+            } else {
+                stocks = kisWebSocketManager.getAskBidSubscribedStocks();
+            }
             response.put("success", true);
             response.put("message", "구독 해제: " + stockCode);
-            response.put("subscribedStocks", kisWebSocketManager.getSubscribedStocks());
+            response.put("subscribedStocks", stocks);
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "구독 해제 실패: " + e.getMessage());
@@ -88,14 +106,20 @@ public class KisWebSocketController {
      * 전체 구독 해제
      * DELETE /api/kis/websocket/unsubscribe-all
      */
-    @GetMapping("/unsubscribe-all")
+    @PostMapping("/unsubscribe-all")
     public Map<String, Object> unsubscribeAll(@RequestParam("trId") String trId) {
         Map<String, Object> response = new HashMap<>();
         try {
             kisWebSocketManager.unsubscribeAll(trId);
+            Set<String> stocks;
+            if (trId.equals("H0UNCNT0")) {
+                stocks = kisWebSocketManager.getPresentSubscribedStocks();
+            } else {
+                stocks = kisWebSocketManager.getAskBidSubscribedStocks();
+            }
             response.put("success", true);
             response.put("message", "전체 구독 해제 완료");
-            response.put("subscribedStocks", kisWebSocketManager.getSubscribedStocks());
+            response.put("subscribedStocks", stocks);
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "전체 구독 해제 실패: " + e.getMessage());
@@ -108,9 +132,13 @@ public class KisWebSocketController {
      * GET /api/kis/websocket/subscribed
      */
     @GetMapping("/subscribed")
-    public Map<String, Object> getSubscribedStocks() {
+    public Map<String, Object> getSubscribedStocks(
+            @RequestParam("trId") String trId
+    ) {
         Map<String, Object> response = new HashMap<>();
-        Set<String> subscribed = kisWebSocketManager.getSubscribedStocks();
+        Set<String> subscribed = trId.equals("H0UNCNT0") ?
+                kisWebSocketManager.getPresentSubscribedStocks()
+                : kisWebSocketManager.getAskBidSubscribedStocks();
         response.put("count", subscribed.size());
         response.put("stocks", subscribed);
         return response;
