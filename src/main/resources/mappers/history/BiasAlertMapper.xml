@@ -3,7 +3,7 @@
 
 <mapper namespace="com.antmillion.history.mapper.BiasAlertMapper">
 
-    <!-- ⭐ ResultMap 추가 -->
+    <!--ResultMap 추가 -->
     <resultMap id="BiasAlertResultMap" type="com.antmillion.history.dto.BiasAlertDTO">
         <result property="stockCode" column="stockCode"/>
         <result property="stockName" column="stockName"/>
@@ -34,10 +34,25 @@
         SELECT 
             CASE 
                 WHEN #{stockCode} = '005930' THEN 72100.00
-                WHEN #{stockCode} = '000660' THEN 51000.00
-                WHEN #{stockCode} = '035720' THEN 185000.00
+                WHEN #{stockCode} = '000660' THEN 47430.00
                 ELSE 50000.00
             END AS currentPrice
     </select>
+    
+    <!-- 최근 5거래일간 매도 이력 체크 (손실회피용) -->
+    <select id="checkRecentSellHistory" resultType="boolean">
+        SELECT 
+            CASE 
+                WHEN COUNT(*) > 0 THEN TRUE 
+                ELSE FALSE 
+            END
+        FROM stock_order
+        WHERE account_id = (SELECT account_id FROM account WHERE user_id = #{userId} LIMIT 1)
+          AND stock_code = #{stockCode}
+          AND transaction_type = 'SELL'
+          AND status = 'COMPLETED'
+          AND created_at >= DATE_SUB(NOW(), INTERVAL 5 DAY)
+    </select>
 
+    
 </mapper>
