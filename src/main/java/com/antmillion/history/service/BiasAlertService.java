@@ -31,6 +31,10 @@ public class BiasAlertService {
     
     // 손실회피 편향 기준
     private static final BigDecimal LOSS_AVERSION_LOSS_THRESHOLD = new BigDecimal("-7.0");
+    
+    // 매몰비용오류 편향 기준
+    private static final BigDecimal SUNK_COST_LOSS_THRESHOLD = new BigDecimal("-10.0");
+    private static final int SUNK_COST_HOLDING_DAYS = 21;
 
     /**
      * 위험회피 편향 체크
@@ -138,6 +142,58 @@ public class BiasAlertService {
     }
 
     /**
+     * 매몰비용오류 편향 체크
+     * 조건: 수익률 -10% 이하 && 보유기간 21일 이상
+     * 타이밍: 페이지 로드(상시) + 매수 탭 전환 시
+     */
+    public BiasAlertDTO checkSunkCostBias(Long accountId, String stockCode, Long userId) {
+        log.info("매몰비용오류 체크 시작 - accountId={}, stockCode={}, userId={}", accountId, stockCode, userId);
+
+        // 1. 보유 자산 조회
+        BiasAlertDTO asset = biasAlertMapper.selectAssetForBiasCheck(accountId, stockCode);
+
+        if (asset == null) {
+            log.info("보유하지 않은 종목 - stockCode={}", stockCode);
+            return null;
+        }
+
+        // 2. 현재가 조회
+        BigDecimal currentPrice = biasAlertMapper.selectCurrentPrice(stockCode);
+
+        // 3. 수익률 계산
+        BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
+
+        // 4. 편향 조건 체크: 수익률 -10% 이하 && 보유기간 21일 이상
+        boolean hasAlert = profitRate.compareTo(SUNK_COST_LOSS_THRESHOLD) <= 0
+                && asset.getHoldingDays() >= SUNK_COST_HOLDING_DAYS;
+
+        log.info("매몰비용오류 체크 결과 - 수익률: {}%, 보유일수: {}일, 경고: {}",
+                profitRate, asset.getHoldingDays(), hasAlert);
+
+        // 5. 결과 DTO 만들기
+        BiasAlertDTO result = BiasAlertDTO.builder()
+                .userId(userId)
+                .stockCode(asset.getStockCode())
+                .stockName(asset.getStockName())
+                .quantity(asset.getQuantity())
+                .avgPrice(asset.getAvgPrice())
+                .currentPrice(currentPrice)
+                .profitRate(profitRate)
+                .purchaseDate(asset.getPurchaseDate())
+                .holdingDays(asset.getHoldingDays())
+                .biasType(BiasType.SUNK_COST)
+                .hasAlert(hasAlert)
+                .build();
+
+        // 6. 경고가 뜨는 순간 자동 저장
+        if (hasAlert) {
+            saveBiasAlert(result);
+        }
+
+        return result;
+    }
+
+    /**
      * 심리 경고 저장
      * 5분 중복 방지 로직 추가
      */
@@ -188,7 +244,7 @@ public class BiasAlertService {
      */
     private String getBiasTypeString(BiasType biasType) {
         if (biasType == null) return "UNKNOWN";
-        return biasType.getCode(); 
+        return biasType.getCode(); // RISK_AVERSION / LOSS_AVERSION ...
     }
 
     /**
