@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.antmillion.mypage.dto.ExecutedOrdersDTO;
 import com.antmillion.mypage.mapper.MyPageMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,12 @@ public class MyPageServiceImpl implements MyPageService {
         params.put("endDate", endDate);
         
         return myPageMapper.selectRealizedProfit(params);
+    }
+    
+    @Override
+    public List<ExecutedOrdersDTO> getExecutedOrders(Long accountId, String startDate, String endDate) {
+        // Mapper의 select id인 selectExecutedOrders를 호출
+        return myPageMapper.selectExecutedOrders(accountId, startDate, endDate);
     }
     
     
