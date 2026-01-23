@@ -44,4 +44,5 @@ function updateUI(data) {
 // 페이지 로드 시 연결 시작
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM 로드 완료, 연결 시작!");
+    connect();
 });
