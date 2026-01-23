@@ -272,7 +272,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadStockHoldings();
     
     // 탭 기간 조회 초기화
-    initializeSelectDates();
+    initializeRealizedDates();
+    initializeExcutedDates();
     
     // 3. 심리경고 전용 로직
     initializeHistoryDates();
@@ -289,7 +290,7 @@ function setupEventListeners() {
     // 메인 탭 전환 버튼 이벤트
     tabButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const target = this.dataset.tab; // 'stock', 'realized' 등
+            const target = this.dataset.tab; // 'stock', 'realized', 'executed', 'account'
             console.log("탭 전환:", target);
             
             // 1. 모든 버튼 및 패널 비활성화
@@ -308,19 +309,49 @@ function setupEventListeners() {
                 loadStockHoldings();
             } else if (target === 'realized') {
                 loadRealizedProfit(); 
+            } else if (target === 'executed') { // 👈 체결내역 탭 추가
+                loadExecutedOrders(); 
             } else if (target === 'account') { // 👈 계좌정보 탭 추가
                 loadAccountInfo();
             }
         });
     });
 
-    // 날짜 변경 시 자동 조회 (실현손익용)
-    const realizedDates = [document.getElementById("realizedStartDate"), document.getElementById("realizedEndDate")];
+    // 실현손익 날짜 변경 시 자동 조회
+    const realizedDates = [
+        document.getElementById("realizedStartDate"), 
+        document.getElementById("realizedEndDate")
+    ];
     realizedDates.forEach(input => {
         if(input) {
             input.addEventListener("change", () => loadRealizedProfit());
         }
     });
+    
+    
+    // 체결내역 전용 리스너
+    // 1. 체결내역 서브탭(전체/체결/미체결) 전환 이벤트
+    subTabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            subTabButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const subtab = this.dataset.subtab;
+            renderExecutedOrders(subtab); // 필터링 함수 호출
+        });
+    });
+
+    // 2. 체결내역 날짜 변경 시 자동 조회
+    const executedDates = [
+        document.getElementById("executedStartDate"), 
+        document.getElementById("executedEndDate")
+    ];
+    executedDates.forEach(input => {
+        if(input) {
+            input.addEventListener("change", () => loadExecutedOrders());
+        }
+    });
+    
 
     // 기존의 나머지 리스너들 (서브탭 등) 유지...
     setupDateFilters(); 
@@ -606,44 +637,69 @@ function renderRealizedProfit(data) {
 }
 
 
-// ===========================
-// 체결내역 렌더링
-// ===========================
+/**
+ * 서버에서 체결내역 데이터를 가져옴
+ */
+function loadExecutedOrders() {
+    const startDate = document.getElementById("executedStartDate").value;
+    const endDate = document.getElementById("executedEndDate").value;
+    
+    const activeSubTab = document.querySelector('.mypage-sub-tab-button.active')?.dataset.subtab || 'all';
+
+    fetch(`${contextPath}/mypage/api/executed-orders?startDate=${startDate}&endDate=${endDate}`)
+        .then(res => res.json())
+        .then(data => {
+            window.executedOrderData = data; // 전역 변수에 데이터 저장
+            renderExecutedOrders(activeSubTab);
+        })
+        .catch(err => {
+            console.error("체결내역 로드 실패:", err);
+            const tbody = document.querySelector('#executedTable tbody');
+            if(tbody) tbody.innerHTML = '<tr><td colspan="6" class="no-data">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        });
+}
+
+/**
+ * 데이터를 기반으로 이미지와 같은 2줄 구조 테이블 렌더링
+ */
 function renderExecutedOrders(filter) {
-    if (!executedTable) return;
-    
-    const tbody = executedTable.querySelector('tbody');
-    if (!tbody) return;
-    
-    let orders = sampleData.executedOrders.all;
-    
-    // 필터 적용
+    const tbody = document.querySelector('#executedTable tbody');
+    if (!tbody || !window.executedOrderData) return;
+
+    // 1. 필터링 로직 (ExecutedOrdersDTO의 unexecutedQty 기준)
+    let filtered = window.executedOrderData;
     if (filter === 'executed') {
-        orders = orders.filter(order => order.executedQty > 0 && order.unexecutedQty === 0);
+        filtered = window.executedOrderData.filter(o => o.unexecutedQty === 0);
     } else if (filter === 'unexecuted') {
-        orders = orders.filter(order => order.unexecutedQty > 0);
+        filtered = window.executedOrderData.filter(o => o.unexecutedQty > 0);
     }
-    
-    tbody.innerHTML = orders.map(order => {
-        const typeClass = order.type === 'buy' ? 'mypage-buy-badge' : 'mypage-sell-badge';
-        const typeText = order.type === 'buy' ? '매수' : '매도';
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">내역이 없습니다.</td></tr>';
+        return;
+    }
+
+    // 2. 2줄 구조 HTML 생성
+    tbody.innerHTML = filtered.map(o => {
+        const typeClass = o.type === 'BUY' ? 'positive' : 'negative';
+        const typeText = o.type === 'BUY' ? '매수' : '매도';
         
         return `
             <tr class="mypage-main-row">
-                <td>${order.stock}</td>
-                <td>${order.orderQty}</td>
-                <td>${order.executedQty}</td>
-                <td>${order.unexecutedQty}</td>
-                <td>${order.unexecutedAmount === 0 ? '0' : order.unexecutedAmount.toLocaleString()}</td>
-                <td>${order.time}</td>
+                <td class="stock-name" style="font-weight: bold;">${o.stockName}</td>
+                <td>${formatNumber(o.orderQty)}</td>
+                <td>${formatNumber(o.executedQty)}</td>
+                <td>${formatNumber(o.unexecutedQty)}</td>
+                <td>${formatNumber(o.unexecutedAmount)}</td>
+                <td class="time-col" style="color: #999;">${o.orderTime}</td>
             </tr>
-            <tr class="mypage-sub-row">
-                <td><span class="${typeClass}">${typeText}</span></td>
-                <td>${order.orderPrice === '-' ? '-' : order.orderPrice.toLocaleString()}</td>
-                <td>${order.executedPrice === '-' ? '-' : order.executedPrice.toLocaleString()}</td>
-                <td>${order.orderAmount === 0 ? '0' : order.orderAmount.toLocaleString()}</td>
-                <td>${order.stockCode}</td>
-                <td>${order.executedTime}</td>
+            <tr class="mypage-sub-row" style="color: #888; font-size: 0.9em; border-bottom: 1px solid #f4f4f4;">
+                <td><span class="mypage-badge ${typeClass}" style="font-weight: bold;">${typeText}</span></td>
+                <td>${formatNumber(o.orderPrice)}</td>
+                <td>${o.executedPrice ? formatNumber(Math.floor(o.executedPrice)) : '-'}</td>
+                <td>${formatNumber(o.orderAmount)}</td>
+                <td class="stock-code">${o.stockCode}</td>
+                <td class="time-col" style="color: #bbb;">${o.executedTime || '-'}</td>
             </tr>
         `;
     }).join('');
@@ -688,9 +744,30 @@ function loadAccountInfo() {
 
 
 /**
- * 기간 날짜 필드 초기화 (한달전 ~ 오늘 날짜로)
+ * 실현손익탭 기간 날짜 필드 초기화 (한달전 ~ 오늘 날짜로)
  */
-function initializeSelectDates() {
+function initializeRealizedDates() {
+    const now = new Date(); // 현재 날짜 객체 생성
+    const today = now.toISOString().split('T')[0];
+    
+    const startDateInput = document.getElementById("executedStartDate");
+    const endDateInput = document.getElementById("executedEndDate");
+    
+    if (startDateInput) {
+        startDateInput.value = today;
+        console.log("기간 시작 날짜 초기화:", today);
+    }
+    
+    if (endDateInput) {
+        endDateInput.value = today;
+        console.log("기간 종료 날짜 초기화:", today);
+    }
+}
+
+/**
+ * 체결내역탭 기간 날짜 필드 초기화 (한달전 ~ 오늘 날짜로)
+ */
+ function initializeExcutedDates() {
     const now = new Date(); // 현재 날짜 객체 생성
     const today = now.toISOString().split('T')[0];
     
