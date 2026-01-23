@@ -162,7 +162,7 @@ public class SignService {
 		if (member == null) {
 			throw new IllegalArgumentException("NO_USER");
 		}
-
+		
 		if (member.getPassword() == null || !passwordEncoder.matches(rawPassword, member.getPassword())) {
 			throw new IllegalArgumentException("BAD_CREDENTIALS");
 		}

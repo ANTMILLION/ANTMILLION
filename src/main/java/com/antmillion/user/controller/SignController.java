@@ -56,7 +56,7 @@ public class SignController {
 	public String loginSubmit(@RequestParam("email") String email, @RequestParam("password") String password,
 			HttpServletResponse response, RedirectAttributes ra) {
 		email = (email == null) ? "" : email.trim();
-
+		
 		if (email.isEmpty() || !EMAIL_RULE.matcher(email).matches()) {
 			ra.addFlashAttribute("loginError", "이메일 형식이 올바르지 않습니다.");
 			ra.addFlashAttribute("email", email);

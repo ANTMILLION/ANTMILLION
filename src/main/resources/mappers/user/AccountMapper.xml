@@ -5,36 +5,43 @@
 
 <mapper namespace="com.antmillion.auth.mapper.AccountMapper">
 
-  <resultMap id="AccountMap" type="com.antmillion.user.dto.AccountDTO">
-    <id     property="accountId" column="account_id"/>
-    <result property="userId" column="user_id"/>
-    <result property="accountNumber" column="account_number"/>
-    <result property="balance" column="balance"/>
-  </resultMap>
+	<resultMap id="AccountMap"
+		type="com.antmillion.user.dto.AccountDTO">
+		<id property="accountId" column="account_id" />
+		<result property="userId" column="user_id" />
+		<result property="accountNumber" column="account_number" />
+		<result property="balance" column="balance" />
+		<result property="accountCreatedAt" column="account_created_at" />
+	</resultMap>
 
-  <!-- (A) account_id가 AUTO_INCREMENT라면: useGeneratedKeys 사용 가능 -->
-  <insert id="insertAccount" parameterType="com.antmillion.user.dto.AccountDTO"
-          useGeneratedKeys="true" keyProperty="accountId">
-    INSERT INTO account (user_id, account_number, balance)
-    VALUES (#{userId}, #{accountNumber}, #{balance})
-  </insert>
+	<insert id="insertAccount"
+		parameterType="com.antmillion.user.dto.AccountDTO"
+		useGeneratedKeys="true" keyProperty="accountId">
+		INSERT INTO account (user_id, account_number, balance, account_created_at)
+		VALUES (#{userId}, #{accountNumber}, #{balance}, SYSDATE())
+	</insert>
 
-  <select id="selectByUserId" resultMap="AccountMap">
-    SELECT account_id, user_id, account_number, balance
-    FROM account
-    WHERE user_id = #{userId}
-  </select>
+	<select id="selectByUserId" resultMap="AccountMap">
+		SELECT account_id,
+		user_id, account_number, balance, account_created_at
+		FROM account
+		WHERE
+		user_id = #{userId}
+	</select>
 
-  <select id="selectByAccountId" resultMap="AccountMap">
-    SELECT account_id, user_id, account_number, balance
-    FROM account
-    WHERE account_id = #{accountId}
-  </select>
+	<select id="selectByAccountId" resultMap="AccountMap">
+		SELECT account_id,
+		user_id, account_number, balance, account_created_at
+		FROM account
+		WHERE
+		account_id = #{accountId}
+	</select>
 
-  <update id="updateBalance">
-    UPDATE account
-    SET balance = #{balance}
-    WHERE account_id = #{accountId}
-  </update>
+	<update id="updateBalance">
+		UPDATE account
+		SET balance = #{balance}
+		WHERE
+		account_id = #{accountId}
+	</update>
 
 </mapper>

@@ -22,7 +22,7 @@
 
 				<form class="form" method="post" action="${cpath}/login">
 					<input type="email" name="email" placeholder="이메일을 입력하세요" value="${email}" required />
-					<input type="password" name="password"  placeholder="비밀번호를 입력하세요" title="비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다." pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required/>
+					<input type="password" name="password" placeholder="비밀번호를 입력하세요" title="비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다." pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required/>
 					<c:if test="${not empty loginError}">
                         <div class="msg-danger">${loginError}</div>
                     </c:if>
