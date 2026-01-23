@@ -1,5 +1,7 @@
 package com.antmillion.auth.config;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -11,6 +13,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.antmillion.auth.jwt.CookieUtil;
 import com.antmillion.auth.jwt.JwtAuthFilter;
+import com.antmillion.auth.jwt.RtCookieAuthFilter;
 import com.antmillion.auth.jwt.JwtProvider;
 import com.antmillion.auth.token.RefreshTokenStore;
 
@@ -35,6 +38,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RtCookieAuthFilter rtCookieAuthFilter() {
+        return new RtCookieAuthFilter(jwtProvider, refreshTokenStore);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
@@ -42,21 +50,22 @@ public class SecurityConfig {
                 org.springframework.security.config.http.SessionCreationPolicy.STATELESS
             ))
             .authorizeHttpRequests(auth -> auth
-//                .requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/signup")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/signup/step2")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/signup/complete")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-//                // 여기는 “로그인 필요”
-//                .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
-//                .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
-//                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
-                // 이외에는 전부 오픈
+                // public
+                .requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/login"), new AntPathRequestMatcher("/signup"),
+                        new AntPathRequestMatcher("/signup/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/error"), new AntPathRequestMatcher("/404"), new AntPathRequestMatcher("/500")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/" )).permitAll()
+
+                // 로그인 필요 (JSP는 RT 쿠키로 인증, API는 AT 헤더로 인증)
+                .requestMatchers(new AntPathRequestMatcher("/mypage"), new AntPathRequestMatcher("/mypage/**")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/trade"), new AntPathRequestMatcher("/trade/**")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+
+                // 이외에는 오픈
                 .anyRequest().permitAll()
             )
             .formLogin(form -> form.disable())
@@ -70,16 +79,29 @@ public class SecurityConfig {
                         long userId = Long.parseLong(claims.getSubject());
                         refreshTokenStore.delete(userId);
                     }
-                    CookieUtil.deleteCookie(res, "AT");
                     CookieUtil.deleteCookie(res, "RT");
                 })
                 .logoutSuccessUrl("/")
             )
             .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
+                String uri = req.getRequestURI();
+                String cpath = req.getContextPath();
+                String path = (cpath != null && !cpath.isEmpty()) ? uri.substring(cpath.length()) : uri;
+
+                // API 호출은 리다이렉트 대신 401로 응답(프론트 fetch에서 처리)
+                if (path.startsWith("/api/") || path.startsWith("/auth/")) {
+                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+
                 res.sendRedirect(req.getContextPath() + "/login");
             }));
 
-          http.addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+        // RT 쿠키로 화면 요청 인증
+        http.addFilterBefore(rtCookieAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        // AT 헤더로 API 인증
+        http.addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
           return http.build();
     }
 }

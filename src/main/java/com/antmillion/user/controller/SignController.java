@@ -70,8 +70,10 @@ public class SignController {
 		try {
 			TokenPair tokens = signService.login(email, password);
 
-			CookieUtil.addHttpOnlyCookie(response, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
+			// RT는 HttpOnly 쿠키로만 저장
 			CookieUtil.addHttpOnlyCookie(response, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+			// AT는 쿠키로 저장하지 않는다.
+			// (화면 진입 후 JS가 /auth/refresh 를 호출해서 AT를 헤더/스토리지로 보관)
 
 			return "redirect:/";
 		} catch (Exception e) {
@@ -253,8 +255,8 @@ public class SignController {
 
 				// 가입과 동시에 로그인(토큰 발급 + 쿠키 세팅)
 				TokenPair tokens = signService.issueTokensByUserId(result.getUserId());
-				CookieUtil.addHttpOnlyCookie(response, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
 				CookieUtil.addHttpOnlyCookie(response, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+				// AT는 쿠키로 저장하지 않는다.
 
 				// 임시 데이터 정리
 				kakaoSignupStore.delete(kakaoSignupKey);

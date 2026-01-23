@@ -44,9 +44,6 @@ public class KakaoController {
 		this.signService = signService;
 		this.kakaoSignupStore = kakaoSignupStore;
 	}
-    // 선택: 이메일/프로필 등 동의항목을 추가로 강제하고 싶을 때
-    // (처음부터 콘솔에서 동의항목 설정해두면 scope 없이도 동작하지만,
-    //  추가동의 요청/명시가 필요하면 사용)
 
     @GetMapping("/login")
     public String kakaoLogin(HttpServletResponse response) {
@@ -113,7 +110,6 @@ public class KakaoController {
         Long userId = socialMapper.selectUserIdByKakaoId(kakaoId);
         if (userId != null) {
             var tokens = signService.issueTokensByUserId(userId);
-            CookieUtil.addHttpOnlyCookie(response, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
             CookieUtil.addHttpOnlyCookie(response, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
             return "redirect:/";
         }

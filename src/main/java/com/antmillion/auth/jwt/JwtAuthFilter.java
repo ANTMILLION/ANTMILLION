@@ -60,6 +60,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return auth.substring(7);
         }
         
-        return CookieUtil.getCookieValue(req, "AT");
+        return null;
     }
 }
