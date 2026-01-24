@@ -543,12 +543,12 @@ function updateStockRealtimePrice(stockCode, tradeData) {
         changeElement.textContent = tradeData.prdySign + tradeData.prdyCtrt + '%';
 
         // 색상 변경
-        changeElement.classList.remove('main-positive', 'main-negative');
+        changeElement.classList.remove('positive', 'negative');
 
         if (tradeData.prdySign === '+') {
-            changeElement.classList.add('main-positive');
+            changeElement.classList.add('positive');
         } else if (tradeData.prdySign === '-') {
-            changeElement.classList.add('main-negative');
+            changeElement.classList.add('negative');
         }
     }
 
