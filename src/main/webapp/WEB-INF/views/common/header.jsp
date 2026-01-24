@@ -91,8 +91,11 @@
                             <div class="header-profile-nickname">${userRank.nickName}</div>
                         </div>
                         <div class="header-profile-modal-footer">
+                            <a href="${cpath}/myinfo" class="header-dropdown-btn" style="text-decoration:none; display:block; text-align:center;">
+                                내 정보
+                            </a>
                             <form action="${cpath}/logout" method="post" onsubmit="return confirm('로그아웃 하시겠습니까?');">
-                                <button type="submit" class="header-logout-btn">로그아웃</button>
+                                <button type="submit" class="header-dropdown-btn">로그아웃</button>
                             </form>
                         </div>
                     </div>
