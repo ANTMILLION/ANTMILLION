@@ -108,8 +108,10 @@ function renderMainStocks() {
                     }
 
                     // 종목 리스트 렌더링 완료 후 웹소켓 구독
-                    const stockCodes = data.slice(0, 5).map(stock => stock.mksc_shrn_iscd);
-                    subscribeAllStocksToBackend(stockCodes);
+                    if (!isMockMode) {
+                        const stockCodes = data.slice(0, 5).map(stock => stock.mksc_shrn_iscd);
+                        subscribeAllStocksToBackend(stockCodes);
+                    }
                 });
         });
 }
@@ -629,3 +631,101 @@ function navigateToOtherPage(url) {
         window.location.href = url;
     }, 100);
 }
+
+// ========== Mock 데이터 제어 함수 (main.js 맨 아래 추가) ==========
+
+let isMockMode = false; // Mock 모드 플래그
+
+// Mock 모드로 전환 (한투 구독 건너뛰고 Mock만 사용)
+function enableMockMode() {
+    isMockMode = true;
+    console.log('Mock 모드 활성화');
+
+    // 현재 화면에 표시된 종목 리스트 가져오기
+    const stockItems = document.querySelectorAll('.main-stocklist-item');
+    const mockStocks = [];
+
+    stockItems.forEach(item => {
+        const stockCode = item.getAttribute('data-id');
+        const priceText = item.querySelector('.main-stocklist-price').textContent;
+        const basePrice = parseInt(priceText.replace(/[^0-9]/g, ''));
+
+        mockStocks.push({
+            stockCode: stockCode,
+            basePrice: basePrice
+        });
+    });
+
+    // Mock 종목 등록
+    fetch(contextPath + '/api/kis/mock/add-stocks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(mockStocks)
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 종목 등록:', response);
+
+            // Mock 데이터 전송 시작
+            return fetch(contextPath + '/api/kis/mock/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 데이터 시작:', response);
+
+            // STOMP 구독만 진행 (한투 백엔드 구독은 건너뜀)
+            const stockCodes = mockStocks.map(s => s.stockCode);
+            stockCodes.forEach(stockCode => {
+                subscribeStockTopic(stockCode);
+            });
+
+            alert('테스트 모드 시작! 한투 연결 없이 가짜 데이터로 테스트합니다.');
+        })
+        .catch(error => {
+            console.error('Mock 모드 활성화 실패:', error);
+        });
+}
+
+// Mock 모드 비활성화
+function disableMockMode() {
+    isMockMode = false;
+
+    // Mock 데이터 중지
+    fetch(contextPath + '/api/kis/mock/stop', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 데이터 중지:', response);
+
+            // Mock 종목 제거
+            return fetch(contextPath + '/api/kis/mock/clear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 종목 제거:', response);
+            alert('테스트 모드 종료! 실제 모드로 전환하려면 페이지를 새로고침하세요.');
+        })
+        .catch(error => {
+            console.error('Mock 모드 비활성화 실패:', error);
+        });
+}
+
+// 브라우저 콘솔에서 사용 가능하도록 전역으로 노출
+window.enableMockMode = enableMockMode;
+window.disableMockMode = disableMockMode;
