@@ -274,7 +274,7 @@ function showBiasAlert(biasType = 'RISK_AVERSION') {
         const textSpan = badge.querySelector('.bias-alert-text');
         
         // 모든 편향 클래스 제거
-        badge.classList.remove('risk-aversion', 'sunk-cost');
+        badge.classList.remove('risk-aversion', 'sunk-cost', 'fomo');
         
         // 편향 타입에 따라 텍스트 및 색상 변경
         if (biasType === 'SUNK_COST') {
@@ -283,6 +283,9 @@ function showBiasAlert(biasType = 'RISK_AVERSION') {
         } else if (biasType === 'LOSS_AVERSION') {
             textSpan.textContent = '손실회피 주의';
             // 주황색 (기본)
+        } else if (biasType === 'FOMO') {
+            textSpan.textContent = 'FOMO 주의';
+            badge.classList.add('fomo');  // 노란색
         } else {
             textSpan.textContent = '위험회피 주의';
             badge.classList.add('risk-aversion');  // 초록색

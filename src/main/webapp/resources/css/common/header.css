@@ -648,6 +648,25 @@ to {
     border-left-color: #a82315;
 }
 
+/* FOMO - 노란색 */
+.bias-alert-badge.fomo {
+    background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.45);
+}
+
+.bias-alert-badge.fomo::after {
+    border-left-color: #f1c40f;
+}
+
+.bias-alert-badge.fomo:hover {
+    background: linear-gradient(135deg, #e67e22 0%, #d4af37 100%);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.6);
+}
+
+.bias-alert-badge.fomo:hover::after {
+    border-left-color: #d4af37;
+}
+
 /* 말풍선 꼬리 */
 .bias-alert-badge::after {
     content: '';
