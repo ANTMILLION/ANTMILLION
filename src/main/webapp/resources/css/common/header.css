@@ -267,7 +267,6 @@ to {
     font-size: 18px;
     font-weight: 700;
     color: #1a1a1a;
-    margin-bottom: 20px;
 }
 
 /* 모달 푸터 */
@@ -276,7 +275,7 @@ to {
     border-top: 1px solid #f5f5f5;
 }
 
-.header-profile-modal .header-logout-btn {
+.header-profile-modal .header-dropdown-btn {
     width: 100%;
     padding: 10px;
     background: #f8f8f8;
@@ -287,9 +286,10 @@ to {
     cursor: pointer;
     transition: all 0.2s;
     font-weight: 600;
+    margin-bottom: 5px;
 }
 
-.header-profile-modal .header-logout-btn:hover {
+.header-profile-modal .header-dropdown-btn:hover {
     background: #e8e8e8;
     color: #333;
 }
