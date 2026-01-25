@@ -652,9 +652,6 @@ function renderExecutedOrders(filter) {
 /**
  * 계좌 정보 데이터를 서버에서 가져와 화면에 렌더링
  */
-/**
- * 계좌 정보 데이터를 서버에서 가져와 화면에 렌더링
- */
 function loadAccountInfo() {
     fetch(`${contextPath}/mypage/api/account-info`)
         .then(response => {
@@ -804,7 +801,7 @@ function loadHistoryData() {
                         <div class="mypage-warning-header">
                             <span class="warning-icon">⚠️</span>
                             <span class="warning-title">${biasInfo.title}</span>
-                            <span class="info-icon">ⓘ</span>
+                            <span class="info-icon" data-bias-type="${history.biasType}">ⓘ</span>
                         </div>
 
                         <div class="inner-trade-card">
@@ -837,11 +834,37 @@ function loadHistoryData() {
             });
             
             console.log("렌더링 완료");
+            
+            // 툴팁 설정
+            setupBiasTooltips();
         })
         .catch(error => {
             console.error("심리경고 데이터 로드 실패:", error);
             alertList.innerHTML = "<p class='no-data'>심리경고 데이터를 불러오지 못했습니다.</p>";
         });
+}
+
+/**
+ * 편향 설명 툴팁 설정
+ */
+function setupBiasTooltips() {
+    const biasDescriptions = {
+        'RISK_AVERSION': '위험회피란?\n전망이론에 따르면 투자자들은 이익 영역에서 확실한 작은 이익을 선호하는 경향이 있습니다.',
+        
+        'LOSS_AVERSION': '손실회피란?\n투자자들은 이익보다 손실을 약 2.25배 더 크게 느끼며, 손실을 확정짓지 않으려는 경향이 있습니다.',
+        
+        'SUNK_COST': '매몰비용오류란?\n이미 투자한 금액이 아깝다는 이유로 손실을 인정하지 못하는 심리 편향입니다.\n\n과거 비용은 회수할 수 없으므로 현재 시점에서 합리적 판단이 필요합니다.',
+        
+        'FOMO': 'FOMO란?\nFear Of Missing Out의 약자로, 급등 종목을 놓칠까봐 두려워 충분한 분석 없이 고점 매수하는 심리 편향입니다.'
+    };
+    
+    const infoIcons = document.querySelectorAll('.info-icon');
+    
+    infoIcons.forEach(icon => {
+        const biasType = icon.getAttribute('data-bias-type');
+        const description = biasDescriptions[biasType] || '심리 편향에 대한 설명입니다.';
+        icon.setAttribute('data-tooltip', description);
+    });
 }
 
 /**
