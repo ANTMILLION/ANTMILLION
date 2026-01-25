@@ -12,8 +12,8 @@ import java.util.concurrent.*;
 @Service
 public class MockDataService {
     private final SimpMessagingTemplate messagingTemplate;
-    private ScheduledExecutorService scheduler; // ✅ final 제거
-    private ScheduledFuture<?> scheduledTask; // ✅ 추가: 스케줄된 작업 참조
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> scheduledTask; //추가: 스케줄된 작업 참조
     private final Map<String, MockStockData> mockStocks = new ConcurrentHashMap<>();
     private final Random random = new Random();
     private boolean isRunning = false;
@@ -54,7 +54,7 @@ public class MockDataService {
             return;
         }
 
-        // ✅ 스케줄러 새로 생성 (기존 스케줄러가 없거나 종료된 경우)
+        // 스케줄러 새로 생성 (기존 스케줄러가 없거나 종료된 경우)
         if (scheduler == null || scheduler.isShutdown()) {
             scheduler = Executors.newScheduledThreadPool(1);
             System.out.println("새 스케줄러 생성");
@@ -63,7 +63,7 @@ public class MockDataService {
         isRunning = true;
         System.out.println("Mock 데이터 전송 시작 (종목 수: " + mockStocks.size() + ")");
 
-        // ✅ 1초마다 데이터 전송 (작업 참조 저장)
+        // 1초마다 데이터 전송 (작업 참조 저장)
         scheduledTask = scheduler.scheduleAtFixedRate(() -> {
             try {
                 mockStocks.forEach((stockCode, mockData) -> {
@@ -84,13 +84,13 @@ public class MockDataService {
 
         isRunning = false;
 
-        // ✅ 스케줄된 작업 취소
+        // 스케줄된 작업 취소
         if (scheduledTask != null && !scheduledTask.isCancelled()) {
             scheduledTask.cancel(false);
             System.out.println("Mock 스케줄 작업 취소");
         }
 
-        // ✅ 스케줄러 종료
+        // 스케줄러 종료
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdown();
             try {
@@ -113,7 +113,7 @@ public class MockDataService {
         int currentPrice = mockData.getCurrentPrice();
         int priceChange;
 
-        // ✅ 저가 주식 대응
+        // 저가 주식 대응
         if (currentPrice < 100) {
             priceChange = random.nextInt(7) - 3; // -3 ~ +3원
             if (priceChange == 0) {
@@ -135,7 +135,7 @@ public class MockDataService {
 
         int newPrice = currentPrice + priceChange;
 
-        // ✅ 최소 가격 보정
+        // 최소 가격 보정
         if (newPrice < 1) {
             newPrice = 1;
         }
