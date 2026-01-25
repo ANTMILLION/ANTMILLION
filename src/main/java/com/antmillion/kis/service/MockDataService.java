@@ -7,15 +7,13 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Service
 public class MockDataService {
     private final SimpMessagingTemplate messagingTemplate;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService scheduler; // ✅ final 제거
+    private ScheduledFuture<?> scheduledTask; // ✅ 추가: 스케줄된 작업 참조
     private final Map<String, MockStockData> mockStocks = new ConcurrentHashMap<>();
     private final Random random = new Random();
     private boolean isRunning = false;
@@ -56,11 +54,17 @@ public class MockDataService {
             return;
         }
 
+        // ✅ 스케줄러 새로 생성 (기존 스케줄러가 없거나 종료된 경우)
+        if (scheduler == null || scheduler.isShutdown()) {
+            scheduler = Executors.newScheduledThreadPool(1);
+            System.out.println("새 스케줄러 생성");
+        }
+
         isRunning = true;
         System.out.println("Mock 데이터 전송 시작 (종목 수: " + mockStocks.size() + ")");
 
-        // 1초마다 랜덤하게 종목 데이터 전송
-        scheduler.scheduleAtFixedRate(() -> {
+        // ✅ 1초마다 데이터 전송 (작업 참조 저장)
+        scheduledTask = scheduler.scheduleAtFixedRate(() -> {
             try {
                 mockStocks.forEach((stockCode, mockData) -> {
                     sendMockTradeData(stockCode, mockData);
@@ -79,15 +83,62 @@ public class MockDataService {
         }
 
         isRunning = false;
-        System.out.println("Mock 데이터 전송 중지");
+
+        // ✅ 스케줄된 작업 취소
+        if (scheduledTask != null && !scheduledTask.isCancelled()) {
+            scheduledTask.cancel(false);
+            System.out.println("Mock 스케줄 작업 취소");
+        }
+
+        // ✅ 스케줄러 종료
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdown();
+            try {
+                // 1초 대기 후 강제 종료
+                if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+                System.out.println("Mock 스케줄러 종료");
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        System.out.println("Mock 데이터 전송 중지 완료");
     }
 
     // 체결가 Mock 데이터 전송
     private void sendMockTradeData(String stockCode, MockStockData mockData) {
-        // 가격 변동 (-2% ~ +2%)
         int currentPrice = mockData.getCurrentPrice();
-        int priceChange = (int) (currentPrice * (random.nextDouble() * 0.04 - 0.02));
+        int priceChange;
+
+        // ✅ 저가 주식 대응
+        if (currentPrice < 100) {
+            priceChange = random.nextInt(7) - 3; // -3 ~ +3원
+            if (priceChange == 0) {
+                priceChange = random.nextBoolean() ? 1 : -1;
+            }
+        }
+        else if (currentPrice < 1000) {
+            priceChange = random.nextInt(11) - 5; // -5 ~ +5원
+            if (priceChange == 0) {
+                priceChange = random.nextBoolean() ? 1 : -1;
+            }
+        }
+        else {
+            priceChange = (int) (currentPrice * (random.nextDouble() * 0.04 - 0.02));
+            if (Math.abs(priceChange) < 10) {
+                priceChange = random.nextBoolean() ? 10 : -10;
+            }
+        }
+
         int newPrice = currentPrice + priceChange;
+
+        // ✅ 최소 가격 보정
+        if (newPrice < 1) {
+            newPrice = 1;
+        }
 
         // 이전 가격과 비교
         int prevPrice = mockData.getPreviousPrice();
