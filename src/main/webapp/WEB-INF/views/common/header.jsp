@@ -41,30 +41,9 @@
                 <span style="color: #ccc; cursor: pointer;" onclick="toggleNotif()">✕</span>
             </div>
 
-            <div class="header-notif-list-item">
-                <div class="header-stock-img-box">SAMSUNG</div>
-                <div>
-                    <div style="font-size: 13px; font-weight: bold;">(005930) 삼성전자</div>
-                    <div style="font-size: 13px; color: #e74c3c; font-weight: bold;">
-                        ⚠️ 매몰 비용 오류 경고
-                    </div>
-                    <div style="font-size: 11px; color: #999; margin-top: 5px;">
-                        2026/01/12 10:30:22
-                    </div>
-                </div>
-            </div>
-
-            <div class="header-notif-list-item">
-                <div class="header-stock-img-box" style="background:#444;">HYUNDAI</div>
-                <div>
-                    <div style="font-size: 13px; font-weight: bold;">(005380) 현대차</div>
-                    <div style="font-size: 13px; color: #333;">
-                        새로운 분석 리포트가 도착했습니다.
-                    </div>
-                    <div style="font-size: 11px; color: #999; margin-top: 5px;">
-                        2026/01/12 09:15:00
-                    </div>
-                </div>
+            <!-- 알림 목록 (JavaScript로 동적 생성) -->
+            <div id="notificationList" style="max-height: 400px; overflow-y: auto;">
+                <!-- loadNotifications()가 여기에 추가함 -->
             </div>
         </div>
 
@@ -274,7 +253,7 @@ function showBiasAlert(biasType = 'RISK_AVERSION') {
         const textSpan = badge.querySelector('.bias-alert-text');
         
         // 모든 편향 클래스 제거
-        badge.classList.remove('risk-aversion', 'sunk-cost', 'fomo');
+        badge.classList.remove('risk-aversion', 'sunk-cost');
         
         // 편향 타입에 따라 텍스트 및 색상 변경
         if (biasType === 'SUNK_COST') {
@@ -283,9 +262,6 @@ function showBiasAlert(biasType = 'RISK_AVERSION') {
         } else if (biasType === 'LOSS_AVERSION') {
             textSpan.textContent = '손실회피 주의';
             // 주황색 (기본)
-        } else if (biasType === 'FOMO') {
-            textSpan.textContent = 'FOMO 주의';
-            badge.classList.add('fomo');  // 노란색
         } else {
             textSpan.textContent = '위험회피 주의';
             badge.classList.add('risk-aversion');  // 초록색
@@ -373,6 +349,9 @@ function toggleNotifications(e) {
     if (!isVisible) {
         hideBiasAlert();
         
+        // 알림 목록 새로 로드 ⭐
+        loadNotifications();
+        
         // 빨간 점 제거
         const notifBtn = document.querySelector('.header-notification-btn');
         notifBtn.classList.remove('has-unread');
@@ -384,6 +363,85 @@ function toggleNotifications(e) {
 function toggleNotif() {
     document.getElementById('notifBox').style.display = 'none';
 }
+
+// 알림 목록 로드
+async function loadNotifications() {
+    try {
+        const response = await fetch('${cpath}/api/history/recent?userId=1&limit=5');
+        const notifications = await response.json();
+        
+        console.log('[알림] API 응답:', notifications);  // 디버깅
+        
+        const notificationList = document.getElementById('notificationList');
+        
+        if (!notifications || notifications.length === 0) {
+            notificationList.innerHTML = '<div style="padding: 40px; text-align: center; color: #999;">알림이 없습니다</div>';
+            return;
+        }
+        
+        // 편향 타입별 색상
+        const biasColors = {
+            'SUNK_COST': '#e74c3c',
+            'LOSS_AVERSION': '#ff6a3d',
+            'RISK_AVERSION': '#27ae60',
+            'FOMO': '#f39c12'
+        };
+        
+        // 편향 타입별 텍스트
+        const biasTexts = {
+            'SUNK_COST': '매몰비용 경고',
+            'LOSS_AVERSION': '손실회피 주의',
+            'RISK_AVERSION': '위험회피 주의',
+            'FOMO': 'FOMO 주의'
+        };
+        
+        notificationList.innerHTML = notifications.map((noti, index) => {
+            console.log('[알림 ' + index + ']', noti);
+            
+            const stockCode = noti.stockCode || 'UNKNOWN';
+            const biasType = noti.biasType || 'UNKNOWN';
+            const timeValue = noti.time || 0;
+            const stockName = noti.stockName || '알 수 없음';
+            
+            const color = biasColors[biasType] || '#333';
+            const biasText = biasTexts[biasType] || '심리 경고';
+            
+            const timeStr = timeValue ? new Date(timeValue).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).replace(/\. /g, '/').replace('.', '') : '';
+            
+            const timeISO = timeValue ? new Date(timeValue).toISOString() : '';
+            
+            return '<div class="header-notif-list-item" onclick="goToMyPageAlert(\'' + stockCode + '\', \'' + biasType + '\', \'' + timeISO + '\')" style="cursor: pointer;">' +
+                '<div class="header-stock-img-box">' + stockName.substring(0, 7) + '</div>' +
+                '<div>' +
+                    '<div style="font-size: 13px; font-weight: bold;">(' + stockCode + ') ' + stockName + '</div>' +
+                    '<div style="font-size: 13px; color: ' + color + '; font-weight: bold;">⚠️ ' + biasText + '</div>' +
+                    '<div style="font-size: 11px; color: #999; margin-top: 5px;">' + timeStr + '</div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+        
+    } catch (error) {
+        console.error('알림 로드 실패:', error);
+        document.getElementById('notificationList').innerHTML = '<div style="padding: 40px; text-align: center; color: #999;">알림을 불러올 수 없습니다</div>';
+    }
+}
+
+// 알림 클릭 시 마이페이지로 이동 (시간 포함)
+function goToMyPageAlert(stockCode, biasType, time) {
+    window.location.href = '${cpath}/mypage?stock=' + stockCode + '&bias=' + biasType + '&time=' + encodeURIComponent(time);
+}
+
+// 페이지 로드 시 알림 로드
+document.addEventListener('DOMContentLoaded', function() {
+    loadNotifications();
+});
 
 function logout() {
     if (confirm('로그아웃 하시겠습니까?')) {
