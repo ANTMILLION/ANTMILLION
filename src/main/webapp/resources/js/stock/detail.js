@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 buyBar.style.width = '78%';
                 sellBar.style.width = '22%';
                 
-                // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > FOMO)
+                // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > 손실회피 > FOMO)
                 const urlParams = new URLSearchParams(window.location.search);
                 const stockCode = urlParams.get('code');
                 console.log('[종목 코드]', stockCode);
@@ -483,6 +483,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                         // 우선순위 1: 매몰비용
                         const sunkCostData = await checkSunkCostAlert(stockCode);
                         
+                        // 우선순위 2: 손실회피
+                        const lossData = await checkLossAversionAlert(stockCode);
+                        
                         // 우선순위 4: FOMO
                         const fomoData = await checkFomoAlert(stockCode);
                         
@@ -491,6 +494,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                             
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('SUNK_COST');
+                                
+                                if (typeof checkUnreadAlerts === 'function') {
+                                    setTimeout(() => { checkUnreadAlerts(); }, 0);
+                                }
+                            }
+                        } else if (lossData && lossData.hasAlert) {
+                            console.log('[매수 탭] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
+                            
+                            if (typeof showBiasAlert === 'function') {
+                                showBiasAlert('LOSS_AVERSION');
                                 
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
