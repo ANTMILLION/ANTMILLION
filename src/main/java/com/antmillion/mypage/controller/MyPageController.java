@@ -29,24 +29,7 @@ public class MyPageController {
     public String mainPage() {
         return "mypage/mypage";
     }
-    
-    
-    
-    
-    @GetMapping("/api/realized-profit")
-    @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> getRealizedProfit(
-            @RequestParam(value = "startDate", required = false) String startDate,
-            @RequestParam(value = "endDate", required = false) String endDate,
-            HttpSession session) {
-        
-        Long accountId = (Long) session.getAttribute("accountId");
-        if (accountId == null) accountId = 1L;
-        
-        // 서비스로 날짜 데이터 전달
-        List<Map<String, Object>> result = myPageService.getRealizedProfit(accountId, startDate, endDate);
-        return ResponseEntity.ok(result);
-    }
+
 
     /**
      * 주식 잔고 데이터를 JSON으로 반환
@@ -68,4 +51,36 @@ public class MyPageController {
         
         return ResponseEntity.ok(holdings);
     }
+    
+    
+    @GetMapping("/api/realized-profit")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getRealizedProfit(
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate,
+            HttpSession session) {
+        
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) accountId = 1L;
+        
+        // 서비스로 날짜 데이터 전달
+        List<Map<String, Object>> result = myPageService.getRealizedProfit(accountId, startDate, endDate);
+        return ResponseEntity.ok(result);
+    }
+    
+    
+    
+    
+    
+    @GetMapping("/api/account-info")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getAccountInfo(HttpSession session) {
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) accountId = 1L; // 테스트용
+        
+        Map<String, Object> result = myPageService.getAccountInfo(accountId);
+        return ResponseEntity.ok(result);
+    }
+    
+    
 }

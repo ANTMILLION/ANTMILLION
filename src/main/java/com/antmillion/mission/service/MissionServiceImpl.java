@@ -96,15 +96,15 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     @Transactional
-    public boolean checkAndLogAnswer(QuizSubmissionRequestDTO requestDTO) {
+    public QuizSubmissionResponseDTO checkAndLogAnswer(QuizSubmissionRequestDTO requestDTO) {
         // 해당 퀴즈의 정답 조회
-        Integer realAnswer = missionMapper.selectAnswerByQuizId(requestDTO.getQuizId());
-        if (realAnswer == null) {
+        QuizResultDTO resultInfo = missionMapper.selectQuizResultByQuizId(requestDTO.getQuizId());
+        if (resultInfo == null || resultInfo.getAnswer() == null) {
             throw new IllegalArgumentException("존재하지 않는 퀴즈입니다.");
         }
 
         // 채점
-        boolean isCorrect = realAnswer.equals(requestDTO.getChoiceNo());
+        boolean isCorrect = resultInfo.getAnswer().equals(requestDTO.getChoiceNo());
         if(isCorrect) {
             try {
                 int count = missionMapper.countSolvedHistory(requestDTO.getUserId(), requestDTO.getQuizId());
@@ -115,24 +115,32 @@ public class MissionServiceImpl implements MissionService {
                             .build();
                     missionMapper.insertQuizLog(logDTO);
 
-                    // 포인트 조회
-                    int quizPoint = missionMapper.selectQuizPointByQuizId(requestDTO.getQuizId());
-
                     // 포인트 지급
-                    memberMapper.updateUserPoint(requestDTO.getUserId(), quizPoint);
+                    memberMapper.updateUserPoint(requestDTO.getUserId(), resultInfo.getPoint());
 
                     // 랭크 갱신
                     Long userId = requestDTO.getUserId();
                     int newPoint = memberMapper.selectUserPoint(userId);
                     antRankService.updateUserRank(userId, newPoint);
                 }
+                // 정답 응답
+                return QuizSubmissionResponseDTO.builder()
+                        .isCorrect(true)
+                        .point(resultInfo.getPoint())
+                        .message(resultInfo.getExplanation())
+                        .build();
             } catch (Exception e) {
                 System.err.println("퀴즈 로그 저장 중 오류: " + e.getMessage());
                 e.printStackTrace();
                 throw new RuntimeException("퀴즈 처리 중 오류가 발생했습니다.", e);
             }
         }
-        return isCorrect;
+        // 오답 응답
+        return QuizSubmissionResponseDTO.builder()
+                .isCorrect(false)
+                .point(0)
+                .message("다시 한번 생각해 보세요.")
+                .build();
     }
 
     @Override

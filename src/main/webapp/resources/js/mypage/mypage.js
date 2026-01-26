@@ -308,6 +308,8 @@ function setupEventListeners() {
                 loadStockHoldings();
             } else if (target === 'realized') {
                 loadRealizedProfit(); 
+            } else if (target === 'account') { // 👈 계좌정보 탭 추가
+                loadAccountInfo();
             }
         });
     });
@@ -647,39 +649,41 @@ function renderExecutedOrders(filter) {
     }).join('');
 }
 
-// ===========================
-// 매매내역 렌더링
-// ===========================
-function renderTradingHistory(filter) {
-    if (!tradingList) return;
-    
-    let history = sampleData.tradingHistory;
-    
-    // 필터 적용
-    if (filter === 'buy') {
-        history = history.filter(item => item.type === 'buy');
-    } else if (filter === 'sell') {
-        history = history.filter(item => item.type === 'sell');
-    }
-    
-    tradingList.innerHTML = history.map(item => {
-        const typeClass = item.type === 'buy' ? 'mypage-buy-badge' : 'mypage-sell-badge';
-        const typeText = item.type === 'buy' ? '매수' : '매도';
-        
-        return `
-            <div class="mypage-trading-item">
-                <div class="mypage-trading-date">${item.date}</div>
-                <div class="mypage-trading-stock-info">
-                    <div>
-                        <span class="mypage-trading-stock-name">${item.stock}</span>
-                        <span class="${typeClass}">${typeText} ${item.shares}주</span>
-                    </div>
-                    <div class="mypage-trading-amount">${item.amount.toLocaleString()}원</div>
-                </div>
-                <div class="mypage-trading-detail">${item.detail}</div>
-            </div>
-        `;
-    }).join('');
+/**
+ * 계좌 정보 데이터를 서버에서 가져와 화면에 렌더링
+ */
+/**
+ * 계좌 정보 데이터를 서버에서 가져와 화면에 렌더링
+ */
+function loadAccountInfo() {
+    fetch(`${contextPath}/mypage/api/account-info`)
+        .then(response => {
+            if (!response.ok) throw new Error("계좌 정보 로드 실패");
+            return response.json();
+        })
+        .then(data => {
+            if (data) {
+                document.getElementById("userNickname").innerText = data.nickname;
+                document.getElementById("accNumber").innerText = data.accountNumber || "정보 없음";
+                document.getElementById("accBalance").innerText = formatNumber(data.balance || 0);
+                
+                // ✅ 날짜 처리 로직 개선
+                const createDateEl = document.getElementById("accCreateDate");
+                if (data.createdAt) {
+                    // 서버 데이터가 [2026, 1, 22] 배열 형식이거나 문자열인 경우 모두 대응
+                    const date = Array.isArray(data.createdAt) 
+                        ? new Date(data.createdAt[0], data.createdAt[1] - 1, data.createdAt[2])
+                        : new Date(data.createdAt);
+
+                    if (!isNaN(date.getTime())) {
+                        createDateEl.innerText = date.toLocaleDateString('ko-KR');
+                    } else {
+                        createDateEl.innerText = data.createdAt; // 변환 실패 시 원본 표시
+                    }
+                }
+            }
+        })
+        .catch(error => console.error("Error:", error));
 }
 
 
