@@ -3,6 +3,7 @@ package com.antmillion.mission.service;
 import com.antmillion.mission.dto.QuizQuestionResponseDTO;
 import com.antmillion.mission.dto.QuizSubmissionRequestDTO;
 import com.antmillion.mission.dto.QuizSubmissionResponseDTO;
+import com.antmillion.naver.dto.NewsSearchResponseDTO;
 import com.antmillion.user.dto.UserRankResponseDTO;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface MissionService {
     Long getCurrentUserId();
     boolean isTodayMissionCompleted(Long userId);
     int getTodaySolvedCount(Long userId);
+    NewsSearchResponseDTO getTodayNewsMission();
 }
