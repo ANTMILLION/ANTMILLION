@@ -1003,11 +1003,11 @@ function loadHistoryData() {
 
                 // 수정된 HTML 구조
                 const html = `
-                    <div class="mypage-warning-container">
+                    <div class="mypage-warning-container" data-stock-code="${history.stockCode}" data-bias-type="${history.biasType}" data-time="${history.time}">
                         <div class="mypage-warning-header">
                             <span class="warning-icon">⚠️</span>
                             <span class="warning-title">${biasInfo.title}</span>
-                            <span class="info-icon">ⓘ</span>
+                            <span class="info-icon" data-bias-type="${history.biasType}">ⓘ</span>
                         </div>
 
                         <div class="inner-trade-card">
@@ -1040,11 +1040,37 @@ function loadHistoryData() {
             });
             
             console.log("렌더링 완료");
+            
+            // 툴팁 설정
+            setupBiasTooltips();
         })
         .catch(error => {
             console.error("심리경고 데이터 로드 실패:", error);
             alertList.innerHTML = "<p class='no-data'>심리경고 데이터를 불러오지 못했습니다.</p>";
         });
+}
+
+/**
+ * 편향 설명 툴팁 설정
+ */
+function setupBiasTooltips() {
+    const biasDescriptions = {
+        'RISK_AVERSION': '위험회피란? 전망이론에 따르면 투자자들은 이익 영역에서 확실한 작은 이익을 선호하는 경향이 있습니다.\n 주의: 성급한 매도를 경계하세요',
+        
+        'LOSS_AVERSION': '손실회피란? 투자자들은 이익보다 손실을 약 2.25배 더 크게 느끼며, 손실을 확정짓지 않으려는 경향이 있습니다.\n 주의: 손실 확정을 미루고 있지 않은지 확인하세요',
+        
+        'SUNK_COST': '매몰비용오류란? 이미 투자한 금액이 아깝다는 이유로 손실을 인정하지 못하는 심리 편향입니다. \n과거 비용은 회수할 수 없으므로 현재 시점에서 합리적 판단이 필요합니다',
+        
+        'FOMO': 'FOMO란? Fear Of Missing Out의 약자로, 급등 종목을 놓칠까봐 두려워 충분한 분석 없이 고점 매수하는 심리 편향입니다.\n 주의: 이미 상승한 종목은 조정 가능성이 높습니다'
+    };
+    
+    const infoIcons = document.querySelectorAll('.info-icon');
+    
+    infoIcons.forEach(icon => {
+        const biasType = icon.getAttribute('data-bias-type');
+        const description = biasDescriptions[biasType] || '심리 편향에 대한 설명입니다.';
+        icon.setAttribute('data-tooltip', description);
+    });
 }
 
 /**
@@ -1084,6 +1110,83 @@ function formatPercent(num) {
     const sign = num >= 0 ? '+' : '';
     return `${sign}${num}%`;
 }
+// ===== 알림에서 이동 시 스크롤 + 강조 =====
+
+// URL 파라미터 읽기
+function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        stock: params.get('stock'),
+        bias: params.get('bias'),
+        time: params.get('time')  // 시간 추가
+    };
+}
+
+// 특정 경고로 스크롤 + 강조 (시간으로 정확히 매칭)
+function scrollToAlert(stockCode, biasType, time) {
+    console.log('[스크롤] 대상 찾기:', stockCode, biasType, time);
+    
+    // 모든 경고 카드 찾기
+    const alerts = document.querySelectorAll('.mypage-warning-container');
+    
+    alerts.forEach(alert => {
+        // data 속성에서 직접 가져오기
+        const dataStockCode = alert.getAttribute('data-stock-code');
+        const dataBiasType = alert.getAttribute('data-bias-type');
+        const dataTime = alert.getAttribute('data-time');
+        
+        console.log('[스크롤] 검사 중:', dataStockCode, dataBiasType, dataTime);
+        
+        // 시간 비교 (둘 다 밀리초로 변환)
+        const targetTime = new Date(time).getTime();
+        const alertTime = parseInt(dataTime);  // 문자열 → 숫자 변환!
+        
+        console.log('[스크롤] 시간 비교:', targetTime, '===', alertTime, '?', targetTime === alertTime);
+        
+        // 정확히 일치하는 경고 찾기
+        if (dataStockCode === stockCode && 
+            dataBiasType === biasType && 
+            targetTime === alertTime) {
+            
+            console.log('[스크롤] ✅ 정확한 대상 발견!', dataStockCode, dataBiasType, dataTime);
+            
+            // 스크롤
+            setTimeout(() => {
+                alert.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                
+                // 강조 효과
+                alert.classList.add('highlight');
+                
+                // 3초 후 제거
+                setTimeout(() => {
+                    alert.classList.remove('highlight');
+                }, 3000);
+                
+                // URL 파라미터 제거 (새로고침 시 정상 동작)
+                window.history.replaceState({}, document.title, '/antmillion/mypage');
+                console.log('[스크롤] URL 파라미터 제거 완료');
+                
+            }, 500);
+        }
+    });
+}
+
+// 페이지 로드 시 확인
+window.addEventListener('load', function() {
+    const params = getUrlParams();
+    
+    if (params.stock && params.bias && params.time) {
+        console.log('[알림 이동] 파라미터 감지:', params);
+        
+        // 0.1초 대기 후 스크롤 (데이터 로딩 대기)
+        setTimeout(() => {
+            scrollToAlert(params.stock, params.bias, params.time);
+        }, 100);
+    }
+});
 
 // ===========================
 // 페이지 떠날 때 구독 해제

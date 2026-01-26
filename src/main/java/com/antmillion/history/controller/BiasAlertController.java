@@ -92,5 +92,27 @@ public class BiasAlertController {
         System.out.println("결과: " + result);
         return ResponseEntity.ok(result);
     }
+    /**
+     * FOMO 편향 체크
+     * 조건: 당일 등락률 +20% 이상
+     */
+    @GetMapping("/check-fomo")
+    public ResponseEntity<BiasAlertDTO> checkFomo(
+            @RequestParam(required = false, defaultValue = "1") Long accountId,
+            @RequestParam(required = false, defaultValue = "1") Long userId,
+            @RequestParam String stockCode) {
+
+        System.out.println("BiasAlertController: FOMO 체크 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode);
+
+        BiasAlertDTO result = biasAlertService.checkFomoBias(accountId, stockCode, userId);
+
+        if (result == null) {
+            System.out.println("결과: 조회 실패 (204 No Content)");
+            return ResponseEntity.noContent().build();
+        }
+
+        System.out.println("결과: " + result);
+        return ResponseEntity.ok(result);
+    }
 
 }

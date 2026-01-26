@@ -39,4 +39,11 @@ public interface BiasAlertMapper {
         @Param("userId") Long userId,
         @Param("stockCode") String stockCode
     );
+    
+    /**
+     * 당일 등락률 조회 (FOMO 편향용, 임시 하드코딩)
+     * @param stockCode 종목 코드
+     * @return 당일 등락률 (%)
+     */
+    BigDecimal selectDailyChangeRate(@Param("stockCode") String stockCode);
 }

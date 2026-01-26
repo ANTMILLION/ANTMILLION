@@ -95,6 +95,36 @@ async function checkSunkCostAlert(stockCode) {
     }
 }
 
+// FOMO 체크 함수
+async function checkFomoAlert(stockCode) {
+    console.log('[FOMO API 호출] stockCode:', stockCode);
+    
+    try {
+        const url = contextPath + '/api/bias-alert/check-fomo?stockCode=' + stockCode;
+        console.log('[FOMO API URL]', url);
+        
+        const response = await fetch(url);
+        console.log('[FOMO API 응답 상태]', response.status);
+        
+        if (response.status === 204) {
+            console.log('[결과] 조회 실패');
+            return null;
+        }
+        
+        if (!response.ok) {
+            throw new Error('FOMO API 호출 실패: ' + response.status);
+        }
+        
+        const data = await response.json();
+        console.log('[FOMO API 결과]', data);
+        return data;
+        
+    } catch (error) {
+        console.error('[FOMO API 에러]', error);
+        return null;
+    }
+}
+
 // 일별 분봉 조회 - 차트
 let stockChart = null;
 let candleSeries = null;
@@ -345,7 +375,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             // 우선순위 2: 손실회피
             const lossData = await checkLossAversionAlert(stockCode);
             
-            // 우선순위에 따라 표시 (매몰비용 > 손실회피)
+            // 우선순위 4: FOMO
+            const fomoData = await checkFomoAlert(stockCode);
+            
+            // 우선순위에 따라 표시 (매몰비용 > 손실회피 > FOMO)
             if (sunkCostData && sunkCostData.hasAlert) {
                 console.log('[우선순위 1] 매몰비용오류 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
                 
@@ -361,6 +394,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 if (typeof showBiasAlert === 'function') {
                     showBiasAlert('LOSS_AVERSION');
+                    
+                    if (typeof checkUnreadAlerts === 'function') {
+                        setTimeout(() => { checkUnreadAlerts(); }, 0);
+                    }
+                }
+            } else if (fomoData && fomoData.hasAlert) {
+                console.log('[우선순위 4] FOMO 경고: ' + fomoData.stockName + ' +' + fomoData.profitRate + '% 급등');
+                
+                if (typeof showBiasAlert === 'function') {
+                    showBiasAlert('FOMO');
                     
                     if (typeof checkUnreadAlerts === 'function') {
                         setTimeout(() => { checkUnreadAlerts(); }, 0);
@@ -430,14 +473,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 buyBar.style.width = '78%';
                 sellBar.style.width = '22%';
                 
-                // 매수 탭 클릭 시 매몰비용 체크
+                // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > 손실회피 > FOMO)
                 const urlParams = new URLSearchParams(window.location.search);
                 const stockCode = urlParams.get('code');
                 console.log('[종목 코드]', stockCode);
                 
                 if (stockCode) {
                     try {
+                        // 우선순위 1: 매몰비용
                         const sunkCostData = await checkSunkCostAlert(stockCode);
+                        
+                        // 우선순위 2: 손실회피
+                        const lossData = await checkLossAversionAlert(stockCode);
+                        
+                        // 우선순위 4: FOMO
+                        const fomoData = await checkFomoAlert(stockCode);
                         
                         if (sunkCostData && sunkCostData.hasAlert) {
                             console.log('[매수 탭] 매몰비용 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
@@ -449,11 +499,31 @@ document.addEventListener('DOMContentLoaded', async function() {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
                             }
+                        } else if (lossData && lossData.hasAlert) {
+                            console.log('[매수 탭] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
+                            
+                            if (typeof showBiasAlert === 'function') {
+                                showBiasAlert('LOSS_AVERSION');
+                                
+                                if (typeof checkUnreadAlerts === 'function') {
+                                    setTimeout(() => { checkUnreadAlerts(); }, 0);
+                                }
+                            }
+                        } else if (fomoData && fomoData.hasAlert) {
+                            console.log('[매수 탭] FOMO 경고: ' + fomoData.stockName + ' +' + fomoData.profitRate + '% 급등');
+                            
+                            if (typeof showBiasAlert === 'function') {
+                                showBiasAlert('FOMO');
+                                
+                                if (typeof checkUnreadAlerts === 'function') {
+                                    setTimeout(() => { checkUnreadAlerts(); }, 0);
+                                }
+                            }
                         } else {
-                            console.log('[매수 탭] 매몰비용 조건 미달');
+                            console.log('[매수 탭] 편향 조건 미달');
                         }
                     } catch (error) {
-                        console.error('[매수 탭] 매몰비용 체크 에러:', error);
+                        console.error('[매수 탭] 편향 체크 에러:', error);
                     }
                 } else {
                     console.warn('URL에 종목 코드(code) 없음');
