@@ -32,6 +32,7 @@ public class NaverNewsService {
     public NewsSearchResponseDTO getNews() {
         if (cachedNews == null || lastFetchTime == null || lastFetchTime.isBefore(LocalDateTime.now().minusHours(24))) {
             cachedNews = fetchFromNaverNewsApi(FIXED_KEYWORD);
+            lastFetchTime = LocalDateTime.now();
         }
         return cachedNews;
     }
