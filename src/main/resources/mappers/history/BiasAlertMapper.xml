@@ -35,6 +35,7 @@
             CASE 
                 WHEN #{stockCode} = '005930' THEN 72100.00
                 WHEN #{stockCode} = '000660' THEN 47430.00
+                WHEN #{stockCode} = '035720' THEN 47430.00
                 ELSE 50000.00
             END AS currentPrice
     </select>

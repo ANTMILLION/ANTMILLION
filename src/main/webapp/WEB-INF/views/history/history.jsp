@@ -17,14 +17,14 @@
     <%@ include file="../common/sidebar.jsp" %>
     <%@ include file="../common/header.jsp" %>
 
-	<main class="history-main-content">
+    <main class="history-main-content">
         <div class="history-container">
             <section class="history-filter-box">
                 <div class="history-filter-group-header">카테고리 별 조회</div>
                 <div class="history-filter-controls">
                     <select class="history-select-custom">
                         <option value="all">전체</option>
-                        <option value="sunk-cost" selected>매몰비용 오류</option>
+                        <option value="sunk-cost" selected>매몰비용 경고</option>
                         <option value="loss-aversion">손실회피</option>
                     </select>
                     <div class="history-search-wrapper">
@@ -35,7 +35,7 @@
 
             <section class="history-content-card">
                 <div class="history-card-header">
-                    <h2 class="history-title">매몰비용 오류 내역</h2>
+                    <h2 class="history-title">매몰비용 경고 내역</h2>
                     <p class="history-text">
                         신한지주 종목의 추세가 하향(이동평균선 역배열 등)인데, 계속해서 추가 매수를 진행하여 비중이 지나치게 커지고 있음.<br>
                         단순히 매입 단가를 낮추기 위한 매몰 비용 오류에 빠진 것은 아닌가요?

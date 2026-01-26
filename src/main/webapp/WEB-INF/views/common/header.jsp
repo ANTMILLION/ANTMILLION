@@ -25,7 +25,7 @@
     <!-- ⭐ 매매 편향 경고 뱃지 -->
     <div class="bias-alert-badge" id="biasAlertBadge" style="display:none;">
         <span class="bias-alert-icon">⚠️</span>
-        <span class="bias-alert-text">위험회피 주의</span>
+        <span class="bias-alert-text">위험회피 주의 경고</span>
     </div>
 
     <div class="header-user-info">
@@ -273,13 +273,19 @@ function showBiasAlert(biasType = 'RISK_AVERSION') {
     if (badge) {
         const textSpan = badge.querySelector('.bias-alert-text');
         
+        // 모든 편향 클래스 제거
+        badge.classList.remove('risk-aversion', 'sunk-cost');
+        
         // 편향 타입에 따라 텍스트 및 색상 변경
-        if (biasType === 'LOSS_AVERSION') {
+        if (biasType === 'SUNK_COST') {
+            textSpan.textContent = '매몰비용 경고';
+            badge.classList.add('sunk-cost');  // 빨간색
+        } else if (biasType === 'LOSS_AVERSION') {
             textSpan.textContent = '손실회피 주의';
-            badge.classList.remove('risk-aversion');  // 초록색 제거
+            // 주황색 (기본)
         } else {
             textSpan.textContent = '위험회피 주의';
-            badge.classList.add('risk-aversion');  // 초록색 추가
+            badge.classList.add('risk-aversion');  // 초록색
         }
         
         badge.style.display = 'flex';
