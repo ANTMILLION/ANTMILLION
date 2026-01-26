@@ -33,6 +33,8 @@ public class SignController {
 
 	private static final String SIGNUP_SESSION_KEY = "signupForm";
 	private static final String KAKAO_SIGNUP_KEY = "KAKAO_SIGNUP_KEY";
+	private static final String EMAIL_VERIFIED_SESSION_KEY = "EMAIL_VERIFIED_EMAIL";
+	private static final String EMAIL_VERIFIED_AT_SESSION_KEY = "EMAIL_VERIFIED_AT";
 
 	private final TermsProvider termsProvider;
 	private final SignService signService;
@@ -89,7 +91,8 @@ public class SignController {
 	// 회원가입 1단계 화면
 	@GetMapping("/signup")
 	public String signupForm(Model model, HttpSession session) {
-		// 로컬 회원가입 화면 들어오면 카카오 가입 시도는 취소로 간주하고 정리
+		session.removeAttribute(EMAIL_VERIFIED_SESSION_KEY);
+		session.removeAttribute(EMAIL_VERIFIED_AT_SESSION_KEY);
 		String kakaoKey = (String) session.getAttribute(KAKAO_SIGNUP_KEY);
 		if (kakaoKey != null) {
 			kakaoSignupStore.delete(kakaoKey);
@@ -157,7 +160,8 @@ public class SignController {
 				throw new IllegalStateException("이미 사용 중인 이메일입니다.");
 			}
 			
-			if (!emailVerificationService.isVerified(email)) {
+			String verifiedEmail = (String) session.getAttribute(EMAIL_VERIFIED_SESSION_KEY);
+			if (verifiedEmail == null || !verifiedEmail.equalsIgnoreCase(email)) {
 			    throw new IllegalStateException("이메일 인증을 완료해 주세요.");
 			}
 
@@ -269,6 +273,8 @@ public class SignController {
 				kakaoSignupStore.delete(kakaoSignupKey);
 				session.removeAttribute(KAKAO_SIGNUP_KEY);
 				session.removeAttribute(SIGNUP_SESSION_KEY);
+				session.removeAttribute(EMAIL_VERIFIED_SESSION_KEY);
+				session.removeAttribute(EMAIL_VERIFIED_AT_SESSION_KEY);
 
 				ra.addFlashAttribute("signupType", "KAKAO");
 				ra.addFlashAttribute("accountNumber", result.getAccountNumber());
@@ -294,7 +300,9 @@ public class SignController {
 
 			// step 완료 후 세션 제거
 			session.removeAttribute(SIGNUP_SESSION_KEY);
-
+			session.removeAttribute(EMAIL_VERIFIED_SESSION_KEY);
+		    session.removeAttribute(EMAIL_VERIFIED_AT_SESSION_KEY);
+		    
 			ra.addFlashAttribute("signupType", "LOCAL");
 			ra.addFlashAttribute("accountNumber", result.getAccountNumber());
 			ra.addFlashAttribute("balance", result.getBalance());
