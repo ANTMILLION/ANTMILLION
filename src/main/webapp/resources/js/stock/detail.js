@@ -30,8 +30,8 @@ function connectStomp() {
     });
 }
 
-// ======= 현재 상세 화면 종목 구독  =======
-function subscribeCurrentStocks() {
+// ======= 현재 상세 화면 종목 및 호가 구독 (시간차 적용 버전) =======
+async function subscribeCurrentStocks() {
     // 기존 구독 모두 해제
     unsubscribeAllStocks();
 
@@ -39,33 +39,46 @@ function subscribeCurrentStocks() {
 
     // ✅ Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
     if (isMockMode) {
-        console.log('Mock 모드 - STOMP 구독만 진행');
+        console.log('Mock 모드 - STOMP 구독 진행');
         currentStockCodes.forEach(stockCode => {
             subscribeStockTopic(stockCode);
+            subscribeStockHoga(stockCode);
         });
         return;
     }
 
-    // 백엔드에 구독 요청(tr_id: 국내주식 실시간체결가 (KRX))
-    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0STCNT0', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(currentStockCodes)
-    })
-        .then(res => res.json())
-        .then(response => {
-            console.log('백엔드 구독 완료:', response);
-
-            // 프론트엔드 STOMP 토픽 구독
-            currentStockCodes.forEach(stockCode => {
-                subscribeStockTopic(stockCode);
-            });
-        })
-        .catch(error => {
-            console.error('백엔드 구독 실패:', error);
+    try {
+        // 1. 백엔드에 현재가 구독 요청 (H0UNCNT0)
+        const presentRes = await fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNCNT0', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentStockCodes)
         });
+        console.log('현재가 백엔드 요청 완료');
+
+        // ★ 핵심: 백엔드에서 웹소켓 세션이 안정화될 때까지 대기
+        // .get()으로 블로킹되는 시간을 고려해 1.5초 정도 여유를 줌
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // 2. 백엔드에 호가 구독 요청 추가 (H0UNASP0)
+        const hogaRes = await fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNASP0', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentStockCodes)
+        });
+        console.log('호가 백엔드 요청 완료');
+
+        // 3. 프론트엔드 STOMP 실제 구독 진행
+        currentStockCodes.forEach(stockCode => {
+            subscribeStockTopic(stockCode); // /topic/kis-trade/present{stockCode}
+            subscribeStockHoga(stockCode);  // /topic/kis-trade/ask-bid{stockCode}
+        });
+
+        console.log('최종 STOMP 구독 프로세스 완료');
+
+    } catch (error) {
+        console.error('구독 프로세스 중 에러 발생:', error);
+    }
 }
 
 // ========== 개별 종목 STOMP 토픽 구독 ==========
@@ -91,27 +104,23 @@ function subscribeStockTopic(stockCode) {
 let isMarketOrder = false; 
 let lastRealtimePrice = "";
 
-// ========== 실시간 가격 화면 업데이트 ==========
+// ========== 현재가 업데이트 함수 (확인용) ==========
 function updateStockRealtimePrice(stockCode, tradeData) {
     const rawPrice = tradeData.stckPrpr;
     if (!rawPrice) return;
     
-    lastRealtimePrice = rawPrice; // 최신 가격 저장
-
+    lastRealtimePrice = rawPrice;
     const formattedPrice = Number(rawPrice).toLocaleString('ko-KR') + '원';
 
-    // 1. 상단 현재가 업데이트
     const currentPriceH3 = document.getElementById('detail-current-price-h3');
     if (currentPriceH3) {
         currentPriceH3.textContent = formattedPrice;
+        console.log("현재가 업데이트 성공:", formattedPrice);
     }
 
-    // 2. 주문 영역 가격 업데이트 (시장가)
     if (isMarketOrder) {
-        const bigPriceElement = document.querySelector('.detail-big-price');
-        if (bigPriceElement) {
-            bigPriceElement.textContent = formattedPrice;
-        }
+        const orderPriceElem = document.getElementById('order-display-price');
+        if (orderPriceElem) orderPriceElem.textContent = formattedPrice;
     }
 }
 
@@ -166,7 +175,7 @@ function unsubscribeAllStocks() {
 
     // 백엔드 구독 해제
     if (currentStockCodes.length > 0) {
-        fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0STCNT0', {
+        fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0UNCNT0', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -182,6 +191,77 @@ function unsubscribeAllStocks() {
             });
     }
 }
+
+// ========== 호가 데이터 수신 및 UI 업데이트 ==========
+function updateHogaUI(hogaData) {
+    // 1. 호가 전용 컨테이너를 찾거나 생성함
+    let hogaBox = document.querySelector('.detail-hoga-box');
+    if (!hogaBox) return;
+
+    let hogaList = hogaBox.querySelector('.hoga-container');
+    if (!hogaList) {
+        hogaBox.innerHTML = ''; // 처음 한 번만 비움
+        hogaList = document.createElement('div');
+        hogaList.className = 'hoga-container';
+        hogaList.style.height = '100%';
+        hogaBox.appendChild(hogaList);
+    }
+
+    hogaList.innerHTML = ''; // 호가 리스트만 초기화 (상단 현재가는 보존)
+
+    // 2. 매도/매수 행 생성
+    for (let i = 5; i >= 1; i--) {
+        hogaList.appendChild(createHogaRow(hogaData[`askP${i}`], hogaData[`askPrsqn${i}`], 'ask'));
+    }
+    for (let i = 1; i <= 5; i++) {
+        hogaList.appendChild(createHogaRow(hogaData[`bidP${i}`], hogaData[`bidPrsqn${i}`], 'bid'));
+    }
+}
+
+// ========== 호가 행(Row) 생성 함수 (3분할 레이아웃) ==========
+function createHogaRow(price, qty, type) {
+    const row = document.createElement('div');
+    row.className = `hoga-row ${type}-row`;
+    
+    // 클릭 시 가격 입력창 업데이트
+    row.onclick = function() {
+        if (!isMarketOrder) {
+            const displayPrice = document.getElementById('order-display-price');
+            if (displayPrice) displayPrice.textContent = Number(price).toLocaleString() + '원';
+        }
+    };
+
+    // 3분할 구조: [왼쪽 칸] [가운데 칸] [오른쪽 칸]
+    if (type === 'ask') {
+        // 매도: [잔량] [가격] [공백]
+        row.innerHTML = `
+            <span class="hoga-col qty-col">${Number(qty).toLocaleString()}</span>
+            <span class="hoga-col price-col">${Number(price).toLocaleString()}</span>
+            <span class="hoga-col empty-col"></span>
+        `;
+    } else {
+        // 매수: [공백] [가격] [잔량]
+        row.innerHTML = `
+            <span class="hoga-col empty-col"></span>
+            <span class="hoga-col price-col">${Number(price).toLocaleString()}</span>
+            <span class="hoga-col qty-col">${Number(qty).toLocaleString()}</span>
+        `;
+    }
+    return row;
+}
+
+// 호가
+function subscribeStockHoga(stockCode) {
+    // 백엔드와 일치하는 경로: /topic/kis-trade/ask-bid005930 형태
+    const topic = '/topic/kis-trade/ask-bid' + stockCode;
+
+    stompClient.subscribe(topic, function(message) {
+        const askBidData = JSON.parse(message.body);
+        console.log('[호가 실시간 데이터 수신]', askBidData);
+        updateHogaUI(askBidData);
+    });
+}
+
 
 // ===== API 호출 함수 =====
 async function checkBiasAlert(stockCode) {

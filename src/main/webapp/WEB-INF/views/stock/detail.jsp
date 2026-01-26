@@ -48,9 +48,6 @@
 					</section>
                     <section class="detail-bottom-split">
                         <section class="detail-hoga-box">
-                            <div class="detail-strong">
-                                <h3>호가</h3>
-                            </div>
                         </section>
                         <section class="detail-community-box">
                             <div class="detail-strong">
