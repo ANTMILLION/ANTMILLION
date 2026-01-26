@@ -52,7 +52,7 @@ async function checkLossAversionAlert(stockCode) {
         }
         
         if (!response.ok) {
-            throw new Error('손실회피 API 호출 실패: ' + response.status);
+            throw new Error('API 호출 실패: ' + response.status);
         }
         
         const data = await response.json();
@@ -61,6 +61,36 @@ async function checkLossAversionAlert(stockCode) {
         
     } catch (error) {
         console.error('[손실회피 API 에러]', error);
+        return null;
+    }
+}
+
+// 매몰비용오류 체크 함수
+async function checkSunkCostAlert(stockCode) {
+    console.log('[매몰비용오류 API 호출] stockCode:', stockCode);
+    
+    try {
+        const url = contextPath + '/api/bias-alert/check-sunk-cost?stockCode=' + stockCode;
+        console.log('[매몰비용오류 API URL]', url);
+        
+        const response = await fetch(url);
+        console.log('[매몰비용오류 API 응답 상태]', response.status);
+        
+        if (response.status === 204) {
+            console.log('[결과] 보유하지 않은 종목');
+            return null;
+        }
+        
+        if (!response.ok) {
+            throw new Error('매몰비용오류 API 호출 실패: ' + response.status);
+        }
+        
+        const data = await response.json();
+        console.log('[매몰비용오류 API 결과]', data);
+        return data;
+        
+    } catch (error) {
+        console.error('[매몰비용오류 API 에러]', error);
         return null;
     }
 }
@@ -301,27 +331,47 @@ document.addEventListener('DOMContentLoaded', async function() {
     checkFavoriteStatus();
     console.log('=== 매매 편향 체크 시스템 로드 완료 (API 연동) ===');
     
-    // ===== 페이지 진입 시 손실회피 체크 (상시) =====
-    const urlParams = new URLSearchParams(window.location.search);
-    const stockCode = urlParams.get('code');
-    
-    if (stockCode) {
-        console.log('[페이지 로드] 손실회피 체크 시작 - stockCode:', stockCode);
-        const lossData = await checkLossAversionAlert(stockCode);
+    // ===== 페이지 진입 시 편향 체크 (우선순위: 매몰비용 > 손실회피) =====
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const stockCode = urlParams.get('code');
         
-        if (lossData && lossData.hasAlert) {
-            console.log('[페이지 로드] 손실회피 경고 발생: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
+        if (stockCode) {
+            console.log('[페이지 로드] 편향 체크 시작 - stockCode:', stockCode);
             
-            if (typeof showBiasAlert === 'function') {
-                showBiasAlert('LOSS_AVERSION');
+            // 우선순위 1: 매몰비용오류
+            const sunkCostData = await checkSunkCostAlert(stockCode);
+            
+            // 우선순위 2: 손실회피
+            const lossData = await checkLossAversionAlert(stockCode);
+            
+            // 우선순위에 따라 표시 (매몰비용 > 손실회피)
+            if (sunkCostData && sunkCostData.hasAlert) {
+                console.log('[우선순위 1] 매몰비용오류 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
                 
-                if (typeof checkUnreadAlerts === 'function') {
-                    setTimeout(() => { checkUnreadAlerts(); }, 0);
+                if (typeof showBiasAlert === 'function') {
+                    showBiasAlert('SUNK_COST');
+                    
+                    if (typeof checkUnreadAlerts === 'function') {
+                        setTimeout(() => { checkUnreadAlerts(); }, 0);
+                    }
                 }
+            } else if (lossData && lossData.hasAlert) {
+                console.log('[우선순위 2] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
+                
+                if (typeof showBiasAlert === 'function') {
+                    showBiasAlert('LOSS_AVERSION');
+                    
+                    if (typeof checkUnreadAlerts === 'function') {
+                        setTimeout(() => { checkUnreadAlerts(); }, 0);
+                    }
+                }
+            } else {
+                console.log('[페이지 로드] 편향 조건 미달');
             }
-        } else {
-            console.log('[페이지 로드] 손실회피 조건 미달');
         }
+    } catch (error) {
+        console.error('[페이지 로드] 편향 체크 에러:', error);
     }
     
     // 탭 요소 확인
@@ -380,8 +430,34 @@ document.addEventListener('DOMContentLoaded', async function() {
                 buyBar.style.width = '78%';
                 sellBar.style.width = '22%';
                 
-                // 매수 탭에서는 경고 체크 안 함
-                console.log('[경고] 매수 탭 - 경고 체크 없음');
+                // 매수 탭 클릭 시 매몰비용 체크
+                const urlParams = new URLSearchParams(window.location.search);
+                const stockCode = urlParams.get('code');
+                console.log('[종목 코드]', stockCode);
+                
+                if (stockCode) {
+                    try {
+                        const sunkCostData = await checkSunkCostAlert(stockCode);
+                        
+                        if (sunkCostData && sunkCostData.hasAlert) {
+                            console.log('[매수 탭] 매몰비용 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
+                            
+                            if (typeof showBiasAlert === 'function') {
+                                showBiasAlert('SUNK_COST');
+                                
+                                if (typeof checkUnreadAlerts === 'function') {
+                                    setTimeout(() => { checkUnreadAlerts(); }, 0);
+                                }
+                            }
+                        } else {
+                            console.log('[매수 탭] 매몰비용 조건 미달');
+                        }
+                    } catch (error) {
+                        console.error('[매수 탭] 매몰비용 체크 에러:', error);
+                    }
+                } else {
+                    console.warn('URL에 종목 코드(code) 없음');
+                }
                    
             } else if (type === 'sell') {
                 console.log('[UI 변경] 매도 모드');
@@ -400,30 +476,34 @@ document.addEventListener('DOMContentLoaded', async function() {
                 sellBar.style.width = '78%';
                 
                 // 매도 탭 클릭 시 위험회피 체크
-                const urlParams = new URLSearchParams(window.location.search);
-                const stockCode = urlParams.get('code');
-                console.log('[종목 코드]', stockCode);
+                const urlParams2 = new URLSearchParams(window.location.search);
+                const stockCode2 = urlParams2.get('code');
+                console.log('[종목 코드]', stockCode2);
                 
-                if (stockCode) {
-                    const riskData = await checkBiasAlert(stockCode);
-                    
-                    if (riskData && riskData.hasAlert) {
-                        console.log('위험회피 경고: ' + riskData.stockName + ' +' + riskData.profitRate + '% 수익 중 (' + riskData.holdingDays + '일 보유)');
+                if (stockCode2) {
+                    try {
+                        const riskData = await checkBiasAlert(stockCode2);
                         
-                        if (typeof showBiasAlert === 'function') {
-                            showBiasAlert('RISK_AVERSION');
+                        if (riskData && riskData.hasAlert) {
+                            console.log('위험회피 경고: ' + riskData.stockName + ' +' + riskData.profitRate + '% 수익 중 (' + riskData.holdingDays + '일 보유)');
                             
-                            if (typeof checkUnreadAlerts === 'function') {
-                                setTimeout(() => { checkUnreadAlerts(); }, 0);
+                            if (typeof showBiasAlert === 'function') {
+                                showBiasAlert('RISK_AVERSION');
+                                
+                                if (typeof checkUnreadAlerts === 'function') {
+                                    setTimeout(() => { checkUnreadAlerts(); }, 0);
+                                }
                             }
+                        } else {
+                            // 위험회피 조건 미달
+                            if (riskData) {
+                                console.log('위험회피 조건 미달 - 수익률: ' + riskData.profitRate + '%, 보유일수: ' + riskData.holdingDays + '일');
+                            }
+                            // 손실회피 경고는 유지하므로 hideBiasAlert() 호출 안 함
+                            console.log('[경고] 기존 경고 유지 (손실회피 경고가 있을 수 있음)');
                         }
-                    } else {
-                        // 위험회피 조건 미달
-                        if (riskData) {
-                            console.log('위험회피 조건 미달 - 수익률: ' + riskData.profitRate + '%, 보유일수: ' + riskData.holdingDays + '일');
-                        }
-                        // 손실회피 경고는 유지하므로 hideBiasAlert() 호출 안 함
-                        console.log('[경고] 기존 경고 유지 (손실회피 경고가 있을 수 있음)');
+                    } catch (error) {
+                        console.error('[매도 탭] 위험회피 체크 에러:', error);
                     }
                 } else {
                     console.warn('URL에 종목 코드(code) 없음');
