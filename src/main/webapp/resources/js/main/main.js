@@ -51,7 +51,7 @@ function createMainStockItemHTML(stock, index) {
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
             <div class="main-stocklist-price">${currentPrice}</div>
-            <div class="main-stocklist-change">-</div>
+            <div class="main-stocklist-change">0.00%</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
                     <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
