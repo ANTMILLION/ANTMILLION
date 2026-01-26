@@ -514,7 +514,7 @@ function subscribeStockTopic(stockCode) {
     const topic = '/topic/kis-trade/present' + stockCode;
     const subscription = stompClient.subscribe(topic, function(message) {
         const tradeData = JSON.parse(message.body);
-        console.log('실시간 데이터 수신:', tradeData);
+        // console.log('실시간 데이터 수신:', tradeData);
 
         // 화면 업데이트
         updateStockRealtimePrice(stockCode, tradeData);
