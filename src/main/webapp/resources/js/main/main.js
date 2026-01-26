@@ -483,7 +483,7 @@ window.addEventListener('resize', () => {
 
 // 모든 종목 백엔드 구독 요청
 function subscribeAllStocksToBackend(stockCodes) {
-    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0STCNT0', {
+    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNCNT0', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -600,7 +600,7 @@ function unsubscribeAllStocks() {
     subscribedTopics = {};
 
     // 백엔드 구독 해제
-    fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0STCNT0', {
+    fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0UNCNT0', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

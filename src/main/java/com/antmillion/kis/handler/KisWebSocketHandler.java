@@ -69,7 +69,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         // 3. 실시간 실무 데이터 처리 (문자열 파싱)
         try {
             String[] parts = payload.split("\\|");
-            if ("H0STCNT0".equals(parts[1])) {
+            if ("H0UNCNT0".equals(parts[1])) {
             	String[] data = parts[3].split("\\^");
             	// [0], [2], [4], [5], [22]
                 Map<String, String> tradeData = new HashMap<>();
@@ -84,7 +84,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
                 // STOMP 전송
                 messagingTemplate.convertAndSend("/topic/kis-trade/present" + stockCode, tradeData); // 실시간 체결가
                 System.out.println("체결가 수신: " + tradeData);
-            } else if ("H0STASP0".equals(parts[1])) {
+            } else if ("H0UNASP0".equals(parts[1])) {
                 String[] data = parts[3].split("\\^");
                 Map<String, String> askBidData = new HashMap<>();
                 askBidData.put("mkscShrnIscd", data[0]); // 종목코드

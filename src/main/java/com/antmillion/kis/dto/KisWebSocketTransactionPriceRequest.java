@@ -30,7 +30,7 @@ public class KisWebSocketTransactionPriceRequest {
         @Getter @NoArgsConstructor @AllArgsConstructor @Builder
         public static class Input {
             @JsonProperty("tr_id")
-            private String trId;       // 예: H0STCNT0, H0STASP0
+            private String trId;
             @JsonProperty("tr_key")
             private String trKey;      // 종목코드 (005930 등)
         }

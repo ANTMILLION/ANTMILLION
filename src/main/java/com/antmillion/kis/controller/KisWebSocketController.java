@@ -28,7 +28,7 @@ public class KisWebSocketController {
         try {
             kisWebSocketManager.subscribe(stockCode, trId);
             Set<String> stocks;
-            if (trId.equals("H0STCNT0")) {
+            if (trId.equals("H0UNCNT0")) {
                 stocks = kisWebSocketManager.getPresentSubscribedStocks();
             } else {
                 stocks = kisWebSocketManager.getAskBidSubscribedStocks();
@@ -59,7 +59,7 @@ public class KisWebSocketController {
                 kisWebSocketManager.subscribe(stockCode, trId);
             }
             Set<String> stocks;
-            if (trId.equals("H0STCNT0")) {
+            if (trId.equals("H0UNCNT0")) {
                 stocks = kisWebSocketManager.getPresentSubscribedStocks();
             } else {
                 stocks = kisWebSocketManager.getAskBidSubscribedStocks();
@@ -87,7 +87,7 @@ public class KisWebSocketController {
         try {
             kisWebSocketManager.unsubscribe(stockCode, trId);
             Set<String> stocks;
-            if (trId.equals("H0STCNT0")) {
+            if (trId.equals("H0UNCNT0")) {
                 stocks = kisWebSocketManager.getPresentSubscribedStocks();
             } else {
                 stocks = kisWebSocketManager.getAskBidSubscribedStocks();
@@ -112,7 +112,7 @@ public class KisWebSocketController {
         try {
             kisWebSocketManager.unsubscribeAll(trId);
             Set<String> stocks;
-            if (trId.equals("H0STCNT0")) {
+            if (trId.equals("H0UNCNT0")) {
                 stocks = kisWebSocketManager.getPresentSubscribedStocks();
             } else {
                 stocks = kisWebSocketManager.getAskBidSubscribedStocks();
@@ -136,7 +136,7 @@ public class KisWebSocketController {
             @RequestParam("trId") String trId
     ) {
         Map<String, Object> response = new HashMap<>();
-        Set<String> subscribed = trId.equals("H0STCNT0") ?
+        Set<String> subscribed = trId.equals("H0UNCNT0") ?
                 kisWebSocketManager.getPresentSubscribedStocks()
                 : kisWebSocketManager.getAskBidSubscribedStocks();
         response.put("count", subscribed.size());
