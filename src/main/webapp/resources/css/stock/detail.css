@@ -372,6 +372,82 @@ body {
 	transform: translateY(-1px);
 }
 
+/* 매수매도비율 */
+.detail-fill-buy, .detail-fill-sell {
+    transition: width 0.3s ease;
+}
+
+
+/* 호가 */
+.detail-hoga-box {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* 호가 리스트 컨테이너 */
+.hoga-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.hoga-row {
+    display: flex;
+    width: 100%;
+    flex: 1;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+}
+
+.hoga-row:last-child {
+    border-bottom: none;
+}
+
+/* 각 컬럼 공통 */
+.hoga-col {
+    flex: 1;
+    padding: 0 8px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* 가격 컬럼 */
+.price-col {
+    justify-content: center;
+    font-weight: bold;
+    background-color: #fafafa;
+}
+
+/* 매도 잔량 */
+.ask-row .qty-col {
+    justify-content: flex-start;
+    color: #2563eb;
+    background-color: #f0f7ff;
+}
+
+/* 매수 잔량 */
+.bid-row .qty-col {
+    justify-content: flex-end;
+    color: #e11d48;
+    background-color: #fff1f2;
+}
+
+/* 공백 컬럼 */
+.empty-col {
+    background-color: #fff;
+}
+
+.ask-row .price-col { color: #2563eb; border-left: 1px solid #e5e7eb; }
+.bid-row .price-col { color: #e11d48; border-right: 1px solid #e5e7eb; }
+
+
 /* =========================================
    5. 반응형 미디어 쿼리 (Mission.css 기준)
    ========================================= */
