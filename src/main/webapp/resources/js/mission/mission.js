@@ -106,40 +106,23 @@ function selectOption(optionId, ignore, buttonElement) {
 }
 
 // 정답 처리
-function handleCorrectAnswer(buttonElement, optionId) {
+function handleCorrectAnswer(buttonElement, optionId, response) {
     buttonElement.classList.add('correct');
     correctAnswers++;
 
-    // 포인트 메시지 표시
-    showPointsMessage();
+    // 정답 모달 표시
+    showCorrectModal(response.point, response.message);
 
     // 진행률 업데이트
     updateProgress();
-
-    // 화면 클릭 시 즉시 다음 문제로
-    const skipHandler = function () {
-        clearTimeout(autoNextTimeout);
-        document.removeEventListener('click', skipHandler);
-        goToNextQuiz();
-    };
-
-    // 1초 후 자동으로 다음 문제로 이동
-    let autoNextTimeout = setTimeout(() => {
-        document.removeEventListener('click', skipHandler); // 2초가 지나면 클릭 리스너도 제거
-        goToNextQuiz();
-    }, 1000);
-
-    setTimeout(() => {
-        document.addEventListener('click', skipHandler);
-    }, 100); // 현재 클릭 이벤트와 분리
 }
 
 // 오답 처리
-function handleWrongAnswer(buttonElement) {
+function handleWrongAnswer(buttonElement, message) {
     buttonElement.classList.add('wrong');
 
     // 오답 모달 표시
-    showWrongModal();
+    showWrongModal(message);
 
     // 1초 후 원래 상태로
     setTimeout(() => {
@@ -154,16 +137,6 @@ function goToNextQuiz() {
     loadQuiz(currentQuizIndex);
 }
 
-// 포인트 메시지 표시
-function showPointsMessage() {
-    const message = document.getElementById('mission-pointsMessage');
-    message.style.display = 'block';
-
-    setTimeout(() => {
-        message.style.display = 'none';
-    }, 1000);
-}
-
 // 진행률 업데이트
 function updateProgress() {
     const progress = Math.round((correctAnswers / totalQuizCount) * 100);
@@ -171,14 +144,51 @@ function updateProgress() {
     document.getElementById('mission-progressStatus').textContent = progress + '% 달성!';
 }
 
+// 정답 모달 표시
+function showCorrectModal(point, explanation) {
+    const modal = document.getElementById('mission-result-Modal');
+    const pointsMessage = document.getElementById('mission-pointsMessage');
+    const modalTitle = modal.querySelector('.mission-modal-title');
+    const modalMessage = modal.querySelector('.mission-modal-message');
+
+    // 포인트 메시지 표시
+    pointsMessage.textContent = point + ' 포인트 획득하였습니다.';
+    pointsMessage.style.display = 'block';
+
+    modalTitle.textContent = '짝짝짝👏👏👏 정답입니다~';
+    modalMessage.textContent = explanation;
+
+    // 정답 스타일 추가
+    modal.classList.add('correct');
+    modal.classList.add('active');
+}
+
 // 오답 모달 표시
-function showWrongModal() {
-    document.getElementById('mission-wrongModal').classList.add('active');
+function showWrongModal(message) {
+    const modal = document.getElementById('mission-result-Modal');
+    const pointsMessage = document.getElementById('mission-pointsMessage');
+    const modalTitle = modal.querySelector('.mission-modal-title');
+    const modalMessage = modal.querySelector('.mission-modal-message');
+
+    pointsMessage.style.display = 'none';
+    modalTitle.textContent = message; // "다시 한번 생각해 보세요."
+    modalMessage.textContent = '퀴즈를 맞히고 나의 개미 랭크를 높여보세요!';
+
+    // 정답 스타일 제거
+    modal.classList.remove('correct');
+    modal.classList.add('active');
 }
 
 // 모달 닫기
 function closeModal() {
-    document.getElementById('mission-wrongModal').classList.remove('active');
+    const modal = document.getElementById('mission-result-Modal');
+    // 정답 모달인 경우 다음 문제로
+    if (modal.classList.contains('correct')) {
+        closeModalAndNext();
+    } else {
+        // 오답 모달은 그냥 닫기만
+        modal.classList.remove('active');
+    }
 }
 
 // 완료 화면 표시
@@ -227,9 +237,6 @@ function showCompletion() {
             $('#mission-reward-message').text('랭크 정보를 불러오는 데 실패했습니다.');
         }
     });
-
-    // 서버에 완료 전송
-    submitCompletion();
 }
 
 // 헤더(상단바)의 정보 업데이트
@@ -308,11 +315,11 @@ function submitAnswer(quizId, optionId, buttonElement) {
         contentType: 'application/json',
         data: JSON.stringify(requestData),
         dataType: 'json',
-        success: function (isCorrect) {
-            if (isCorrect){
-                handleCorrectAnswer(buttonElement, optionId);
+        success: function (response) {
+            if (response.isCorrect){
+                handleCorrectAnswer(buttonElement, optionId, response);
             } else {
-                handleWrongAnswer(buttonElement);
+                handleWrongAnswer(buttonElement, response.message);
             }
         },
         error: function(xhr, status, error) {
@@ -323,19 +330,18 @@ function submitAnswer(quizId, optionId, buttonElement) {
     })
 }
 
-// 퀴즈 완료 제출
-function submitCompletion() {
-    console.log('Quiz completed:', {
-        totalQuestions: quizData.length,
-        correctAnswers: correctAnswers,
-        score: Math.round((correctAnswers / quizData.length) * 100)
-    });
-}
-
 // 모달 외부 클릭 시 닫기
 window.onclick = function (event) {
-    const modal = document.getElementById('mission-wrongModal');
+    const modal = document.getElementById('mission-result-Modal');
     if (event.target === modal) {
         closeModal();
     }
+}
+
+// 모달 닫고 다음 문제로 이동
+function closeModalAndNext() {
+    const modal = document.getElementById('mission-result-Modal');
+    modal.classList.remove('active');
+    modal.classList.remove('correct');
+    goToNextQuiz();
 }
