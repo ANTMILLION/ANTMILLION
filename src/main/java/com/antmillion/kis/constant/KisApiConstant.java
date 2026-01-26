@@ -6,6 +6,7 @@ public class KisApiConstant {
     public static final String VIRTUAL_BASE_URL = "https://openapivts.koreainvestment.com:29443";
 
     public static final String OAUTH_TOKEN_PATH = "/oauth2/tokenP";
+    public static final String WEB_SOCKET_PATH = "/oauth2/Approval";
     public static final String PERIOD_PRICE_PATH = "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice";
     public static final String MARKET_INDEX_PATH = "/uapi/domestic-stock/v1/quotations/inquire-index-daily-price";
     public static final String STREAM_MINUTE_PATH = "/uapi/domestic-stock/v1/quotations/inquire-time-dailychartprice";
