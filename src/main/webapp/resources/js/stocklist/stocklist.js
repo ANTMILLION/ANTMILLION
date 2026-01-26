@@ -116,7 +116,7 @@ function updateStockRealtimePrice(stockCode, tradeData) {
             sign = '+';
             signClass = 'positive';
         } else if (tradeData.prdySign === '4' || tradeData.prdySign === '5') {
-            sign = '-';
+            sign = '';
             signClass = 'negative';
         } else {
             sign = '';
