@@ -1,9 +1,14 @@
 package com.antmillion.kis.controller;
 
 import com.antmillion.kis.dto.*;
+import com.antmillion.kis.manager.KisWebSocketManager;
 import com.antmillion.kis.service.KisApiService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,11 +21,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@RestController
+//@RestController 
+@Controller // 테스트를 위해서 @Controller 활성화 했습니다.
 @RequestMapping("/api/kis")
 public class KisController {
 
     private final KisApiService kisApiService;
+    private final KisWebSocketManager kisWebSocketManager;
 
     /**
      * 한국투자증권 api의 응답을 확인하기위한 컨트롤러
@@ -30,6 +37,14 @@ public class KisController {
     @GetMapping("/auth")
     public String auth() {
         return kisApiService.getKisAccessToken();
+    }
+    
+    /**
+     * 한국투자증권 실시간 웹소켓 사용을 위한 컨트롤러
+     */
+    @GetMapping("/approval")
+    public String approval() {
+    	return kisApiService.getKisApprovalKey();
     }
 
     /**
