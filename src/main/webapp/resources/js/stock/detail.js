@@ -109,6 +109,7 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     const rawPrice = tradeData.stckPrpr;
     if (!rawPrice) return;
     
+    // 현재가 업데이트
     lastRealtimePrice = rawPrice;
     const formattedPrice = Number(rawPrice).toLocaleString('ko-KR') + '원';
 
@@ -121,6 +122,45 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     if (isMarketOrder) {
         const orderPriceElem = document.getElementById('order-display-price');
         if (orderPriceElem) orderPriceElem.textContent = formattedPrice;
+    }
+    
+    // 매수/매도 비율 및 텍스트 업데이트
+    const rawBuyRate = tradeData.shnuRate;
+    
+    if (rawBuyRate !== undefined && rawBuyRate !== null) {
+        // 1. 비율 계산 (소수점이면 100 곱하기)
+        let buyRate = rawBuyRate < 1 ? (rawBuyRate * 100) : rawBuyRate;
+        buyRate = Math.round(buyRate);
+        const sellRate = 100 - buyRate;
+    
+        // 2. 바(Bar) 업데이트
+        const buyBar = document.getElementById('buy-bar');
+        const sellBar = document.getElementById('sell-bar');
+        if (buyBar && sellBar) {
+            buyBar.style.width = buyRate + '%';
+            sellBar.style.width = sellRate + '%';
+        }
+    
+        const sentimentPercent = document.getElementById('sentiment-percent');
+        const sentimentDir = document.getElementById('sentiment-direction');
+    
+        if (sentimentPercent && sentimentDir) {
+            // 매수가 50% 이상이면 '매수', 아니면 '매도' 표시
+            if (buyRate >= 50) {
+                sentimentPercent.textContent = buyRate;
+                sentimentDir.textContent = '매수';
+                sentimentDir.className = 'detail-red-text'; // 빨간색
+            } else {
+                sentimentPercent.textContent = sellRate;
+                sentimentDir.textContent = '매도';
+                sentimentDir.className = 'detail-blue-text'; // 파란색
+            }
+        }
+        
+        const buyText = document.getElementById('buy-percent');
+        const sellText = document.getElementById('sell-percent');
+        if (buyText) buyText.textContent = buyRate + '%';
+        if (sellText) sellText.textContent = sellRate + '%';
     }
 }
 

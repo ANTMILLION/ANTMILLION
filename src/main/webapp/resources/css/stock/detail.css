@@ -372,6 +372,11 @@ body {
 	transform: translateY(-1px);
 }
 
+/* 매수매도비율 */
+.detail-fill-buy, .detail-fill-sell {
+    transition: width 0.3s ease;
+}
+
 
 /* 호가 */
 .detail-hoga-box {

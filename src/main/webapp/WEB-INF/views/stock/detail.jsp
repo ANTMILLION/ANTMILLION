@@ -99,11 +99,11 @@
                     </div>
                     <div class="detail-sentiment-section">
                         <div class="detail-sentiment-text">
-                            🔥 현재 투자자 <span id="sentiment-percent">78</span>%가 <span class="detail-red-text" id="sentiment-direction">매수</span>쪽으로 몰려요!
+                            🔥 현재 투자자 <span id="sentiment-percent"></span>%가 <span class="detail-red-text" id="sentiment-direction"></span>쪽으로 몰려요!
                         </div>
                         <div class="detail-percent-labels">
-                            <div style="width: 78%;" id="buy-percent">78%</div>
-                            <div style="width: 22%;" id="sell-percent">22%</div>
+                            <div style="width: 50%;" id="buy-percent"></div>
+                            <div style="width: 50%;" id="sell-percent"></div>
                         </div>
                         <div>
                             <div class="detail-progress-bar">
