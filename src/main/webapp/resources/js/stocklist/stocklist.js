@@ -52,7 +52,7 @@ function subscribeCurrentStocks() {
     }
 
     // 백엔드에 구독 요청
-    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNCNT0', {
+    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0STCNT0', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -157,7 +157,7 @@ function unsubscribeAllStocks() {
 
     // 백엔드 구독 해제
     if (currentStockCodes.length > 0) {
-        fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0UNCNT0', {
+        fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0STCNT0', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
