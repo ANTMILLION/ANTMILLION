@@ -51,7 +51,7 @@ function createMainStockItemHTML(stock, index) {
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
             <div class="main-stocklist-price">${currentPrice}</div>
-            <div class="main-stocklist-change">-</div>
+            <div class="main-stocklist-change">0.00%</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
                     <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
@@ -514,7 +514,7 @@ function subscribeStockTopic(stockCode) {
     const topic = '/topic/kis-trade/present' + stockCode;
     const subscription = stompClient.subscribe(topic, function(message) {
         const tradeData = JSON.parse(message.body);
-        console.log('실시간 데이터 수신:', tradeData);
+        // console.log('실시간 데이터 수신:', tradeData);
 
         // 화면 업데이트
         updateStockRealtimePrice(stockCode, tradeData);
