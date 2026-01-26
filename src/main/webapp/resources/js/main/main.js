@@ -2,6 +2,27 @@
    메인 페이지 JavaScript (com.antmillion.main.js)
    =========================== */
 
+var subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
+
+// STOMP 연결 (수정 버전)
+function connectStomp() {
+    var url = contextPath + '/ws-stomp';
+    var socket = new SockJS(url);
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+        console.log('STOMP 연결 성공: ' + frame);
+
+        // ✅ 수정: 연결 성공 후 종목 리스트 가져오기
+        // (종목 리스트 렌더링 안에서 구독이 자동으로 이뤄짐)
+        renderMainStocks();
+    }, function(error) {
+        console.error('STOMP 연결 실패: ' + error);
+        // 5초 후 재연결 시도
+        setTimeout(connectStomp, 5000);
+    });
+}
+
 // 날짜 포멧 변경
 function formatDate(yyyymmdd) {
     return {
@@ -30,7 +51,7 @@ function createMainStockItemHTML(stock, index) {
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
             <div class="main-stocklist-price">${currentPrice}</div>
-            <div class="main-stocklist-change">${stock.acml_vol}</div>
+            <div class="main-stocklist-change">-</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
                     <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
@@ -84,6 +105,12 @@ function renderMainStocks() {
 
                         //1번 항목의 차트 그리기
                         drawStockMinuteChart(firstStock.mksc_shrn_iscd);
+                    }
+
+                    // 종목 리스트 렌더링 완료 후 웹소켓 구독
+                    if (!isMockMode) {
+                        const stockCodes = data.slice(0, 5).map(stock => stock.mksc_shrn_iscd);
+                        subscribeAllStocksToBackend(stockCodes);
                     }
                 });
         });
@@ -179,8 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeMainPage() {
-    // 종목 리스트 렌더링
-    renderMainStocks();
+    connectStomp();
 
     // ✅ 레이아웃 완전 확정 후 차트 초기화
     requestAnimationFrame(() => {
@@ -453,3 +479,265 @@ window.addEventListener('resize', () => {
         stockChart.resize(container.clientWidth, container.clientHeight);
     }
 });
+
+
+// 모든 종목 백엔드 구독 요청
+function subscribeAllStocksToBackend(stockCodes) {
+    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0STCNT0', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(stockCodes)
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('백엔드 구독 완료:', response);
+
+            // 백엔드 구독 성공 후, 프론트엔드에서 각 종목 STOMP 토픽 구독
+            stockCodes.forEach(stockCode => {
+                subscribeStockTopic(stockCode);
+            });
+        })
+        .catch(error => {
+            console.error('백엔드 구독 실패:', error);
+        });
+}
+
+// 개별 종목 STOMP 토픽 구독
+function subscribeStockTopic(stockCode) {
+    if (subscribedTopics[stockCode]) {
+        console.log('이미 구독 중:', stockCode);
+        return;
+    }
+
+    const topic = '/topic/kis-trade/present' + stockCode;
+    const subscription = stompClient.subscribe(topic, function(message) {
+        const tradeData = JSON.parse(message.body);
+        console.log('실시간 데이터 수신:', tradeData);
+
+        // 화면 업데이트
+        updateStockRealtimePrice(stockCode, tradeData);
+    });
+
+    subscribedTopics[stockCode] = subscription;
+    console.log('토픽 구독 완료:', topic);
+}
+
+// 실시간 가격 화면 업데이트
+function updateStockRealtimePrice(stockCode, tradeData) {
+    // 해당 종목의 DOM 요소 찾기
+    const stockItem = document.querySelector(`.main-stocklist-item[data-id="${stockCode}"]`);
+    if (!stockItem) return;
+
+    // 현재가 업데이트
+    const priceElement = stockItem.querySelector('.main-stocklist-price');
+    if (priceElement) {
+        const price = Number(tradeData.stckPrpr).toLocaleString('ko-KR') + '원';
+        priceElement.textContent = price;
+    }
+
+    // 등락률 업데이트 (main-stocklist-change가 등락률을 표시한다고 가정)
+    const changeElement = stockItem.querySelector('.main-stocklist-change');
+    if (changeElement) {
+        // 1,2: 상승(+), 3: 보합(0), 4,5: 하락(-)
+        let sign = '';
+        let signClass = '';
+
+        if (tradeData.prdySign === '1' || tradeData.prdySign === '2') {
+            sign = '+';
+            signClass = 'positive';
+        } else if (tradeData.prdySign === '4' || tradeData.prdySign === '5') {
+            sign = '';
+            signClass = 'negative';
+        } else {
+            sign = '';
+            signClass = '';
+        }
+
+        changeElement.textContent = sign + tradeData.prdyCtrt + '%';
+
+        // 색상 변경
+        changeElement.classList.remove('positive', 'negative');
+        if (signClass) {
+            changeElement.classList.add(signClass);
+        }
+    }
+
+    // 거래 비율 업데이트 (매수 비율 있으면)
+    if (tradeData.shnuRate) {
+        const buyRate = parseFloat(tradeData.shnuRate) * 100;
+        const sellRate = 100 - buyRate;
+
+        const buyBar = stockItem.querySelector('.main-stocklist-sentiment-buy');
+        const sellBar = stockItem.querySelector('.main-stocklist-sentiment-sell');
+        const buyLabel = stockItem.querySelector('.main-stocklist-sentiment-buy-label');
+        const sellLabel = stockItem.querySelector('.main-stocklist-sentiment-sell-label');
+
+        if (buyBar && sellBar) {
+            buyBar.style.width = buyRate + '%';
+            sellBar.style.width = sellRate + '%';
+        }
+
+        if (buyLabel && sellLabel) {
+            buyLabel.textContent = Math.round(buyRate);
+            sellLabel.textContent = Math.round(sellRate);
+        }
+    }
+}
+
+// 페이지 떠날 때 전체 구독 해제
+function unsubscribeAllStocks() {
+    console.log('구독 해제 시작...');
+
+    // 프론트엔드 STOMP 구독 해제
+    for (let stockCode in subscribedTopics) {
+        if (subscribedTopics[stockCode]) {
+            subscribedTopics[stockCode].unsubscribe();
+            console.log('토픽 구독 해제:', stockCode);
+        }
+    }
+    subscribedTopics = {};
+
+    // 백엔드 구독 해제
+    fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0STCNT0', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        // keepalive: true는 페이지 종료 시에도 요청이 완료되도록 보장
+        keepalive: true
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('백엔드 구독 해제 완료:', response);
+        })
+        .catch(error => {
+            console.error('백엔드 구독 해제 실패:', error);
+        });
+
+    // STOMP 연결 종료
+    if (stompClient !== null && stompClient.connected) {
+        stompClient.disconnect(function() {
+            console.log('STOMP 연결 종료');
+        });
+    }
+}
+
+// beforeunload: 브라우저 닫기, 새로고침, 다른 페이지 이동
+window.addEventListener('beforeunload', function(e) {
+    unsubscribeAllStocks();
+});
+
+// pagehide: 모바일 환경에서도 작동
+window.addEventListener('pagehide', function(e) {
+    unsubscribeAllStocks();
+});
+
+// SPA 환경에서 다른 화면으로 이동하는 경우 사용할 함수
+function navigateToOtherPage(url) {
+    unsubscribeAllStocks();
+
+    // 구독 해제 후 페이지 이동
+    setTimeout(() => {
+        window.location.href = url;
+    }, 100);
+}
+
+// ========== Mock 데이터 제어 함수 (main.js 맨 아래 추가) ==========
+
+let isMockMode = false; // Mock 모드 플래그
+
+// Mock 모드로 전환 (한투 구독 건너뛰고 Mock만 사용)
+function enableMockMode() {
+    isMockMode = true;
+    console.log('Mock 모드 활성화');
+
+    // 현재 화면에 표시된 종목 리스트 가져오기
+    const stockItems = document.querySelectorAll('.main-stocklist-item');
+    const mockStocks = [];
+
+    stockItems.forEach(item => {
+        const stockCode = item.getAttribute('data-id');
+        const priceText = item.querySelector('.main-stocklist-price').textContent;
+        const basePrice = parseInt(priceText.replace(/[^0-9]/g, ''));
+
+        mockStocks.push({
+            stockCode: stockCode,
+            basePrice: basePrice
+        });
+    });
+
+    // Mock 종목 등록
+    fetch(contextPath + '/api/kis/mock/add-stocks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(mockStocks)
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 종목 등록:', response);
+
+            // Mock 데이터 전송 시작
+            return fetch(contextPath + '/api/kis/mock/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 데이터 시작:', response);
+
+            // STOMP 구독만 진행 (한투 백엔드 구독은 건너뜀)
+            const stockCodes = mockStocks.map(s => s.stockCode);
+            stockCodes.forEach(stockCode => {
+                subscribeStockTopic(stockCode);
+            });
+
+            alert('테스트 모드 시작! 한투 연결 없이 가짜 데이터로 테스트합니다.');
+        })
+        .catch(error => {
+            console.error('Mock 모드 활성화 실패:', error);
+        });
+}
+
+// Mock 모드 비활성화
+function disableMockMode() {
+    isMockMode = false;
+
+    // Mock 데이터 중지
+    fetch(contextPath + '/api/kis/mock/stop', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 데이터 중지:', response);
+
+            // Mock 종목 제거
+            return fetch(contextPath + '/api/kis/mock/clear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 종목 제거:', response);
+            alert('테스트 모드 종료! 실제 모드로 전환하려면 페이지를 새로고침하세요.');
+        })
+        .catch(error => {
+            console.error('Mock 모드 비활성화 실패:', error);
+        });
+}
+
+// 브라우저 콘솔에서 사용 가능하도록 전역으로 노출
+window.enableMockMode = enableMockMode;
+window.disableMockMode = disableMockMode;
