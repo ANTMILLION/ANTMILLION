@@ -75,9 +75,11 @@
                     </div>
                     <div class="detail-input-card">
                         <div class="detail-row">
-                            <span class="detail-card-label"> <span
-                                class="detail-active-type">지정가</span> | <span>시장가</span>
-                            </span> <span class="detail-big-price">129,300원</span>
+                            <span class="detail-card-label"> 
+                                <span id="tab-limit" class="detail-price-type detail-active-type" style="cursor:pointer;">지정가</span> | 
+                                <span id="tab-market" class="detail-price-type" style="cursor:pointer; color:#6B7280;">시장가</span>
+                            </span> 
+                            <span id="order-display-price" class="detail-big-price">129,300원</span>
                         </div>
                         <div class="detail-row">
                             <span>수량</span> <span class="detail-big-price">10주</span>
@@ -118,6 +120,12 @@
             </div>
         </main>
     </div>
+    
+<!-- SockJS 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+
+<!-- STOMP 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <!-- Adding the standalone version of Lightweight charts -->
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script src="${cpath}/resources/js/stock/detail.js"></script>

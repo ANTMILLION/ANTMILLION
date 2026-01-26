@@ -5,6 +5,184 @@ if (typeof contextPath === 'undefined') {
     console.log('[contextPath 설정]', contextPath);
 }
 
+// STOMP 관련 변수
+let stompClient = null;
+let subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
+let currentStockCodes = []; // 현재 화면에 표시된 종목 코드들
+
+// ======= STOMP 연결 =======
+function connectStomp() {
+    const url = contextPath + '/ws-stomp';
+    const socket = new SockJS(url);
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+        console.log('STOMP 연결 성공: ' + frame);
+
+        // 연결 성공 후 현재 화면의 종목들 구독
+        if (currentStockCodes.length > 0) {
+            subscribeCurrentStocks();
+        }
+    }, function(error) {
+        console.error('STOMP 연결 실패: ' + error);
+        // 5초 후 재연결 시도
+        setTimeout(connectStomp, 5000);
+    });
+}
+
+// ======= 현재 상세 화면 종목 구독  =======
+function subscribeCurrentStocks() {
+    // 기존 구독 모두 해제
+    unsubscribeAllStocks();
+
+    if (currentStockCodes.length === 0) return;
+
+    // ✅ Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
+    if (isMockMode) {
+        console.log('Mock 모드 - STOMP 구독만 진행');
+        currentStockCodes.forEach(stockCode => {
+            subscribeStockTopic(stockCode);
+        });
+        return;
+    }
+
+    // 백엔드에 구독 요청(tr_id: 국내주식 실시간체결가 (KRX))
+    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0STCNT0', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(currentStockCodes)
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('백엔드 구독 완료:', response);
+
+            // 프론트엔드 STOMP 토픽 구독
+            currentStockCodes.forEach(stockCode => {
+                subscribeStockTopic(stockCode);
+            });
+        })
+        .catch(error => {
+            console.error('백엔드 구독 실패:', error);
+        });
+}
+
+// ========== 개별 종목 STOMP 토픽 구독 ==========
+function subscribeStockTopic(stockCode) {
+    if (subscribedTopics[stockCode]) {
+        console.log('이미 구독 중:', stockCode);
+        return;
+    }
+
+    const topic = '/topic/kis-trade/present' + stockCode;
+    const subscription = stompClient.subscribe(topic, function(message) {
+        const tradeData = JSON.parse(message.body);
+        console.log('실시간 데이터 수신:', tradeData);
+
+        // 화면 업데이트
+        updateStockRealtimePrice(stockCode, tradeData);
+    });
+
+    subscribedTopics[stockCode] = subscription;
+    console.log('토픽 구독 완료:', topic);
+}
+
+let isMarketOrder = false; 
+let lastRealtimePrice = "";
+
+// ========== 실시간 가격 화면 업데이트 ==========
+function updateStockRealtimePrice(stockCode, tradeData) {
+    const rawPrice = tradeData.stckPrpr;
+    if (!rawPrice) return;
+    
+    lastRealtimePrice = rawPrice; // 최신 가격 저장
+
+    const formattedPrice = Number(rawPrice).toLocaleString('ko-KR') + '원';
+
+    // 1. 상단 현재가 업데이트
+    const currentPriceH3 = document.getElementById('detail-current-price-h3');
+    if (currentPriceH3) {
+        currentPriceH3.textContent = formattedPrice;
+    }
+
+    // 2. 주문 영역 가격 업데이트 (시장가)
+    if (isMarketOrder) {
+        const bigPriceElement = document.querySelector('.detail-big-price');
+        if (bigPriceElement) {
+            bigPriceElement.textContent = formattedPrice;
+        }
+    }
+}
+
+// ======= 시장가/지정가 선택 로직 =======
+function initPriceTypeEvents() {
+    const tabLimit = document.querySelector('.detail-card-label span:first-child'); // 지정가
+    const tabMarket = document.querySelector('.detail-card-label span:last-child');  // 시장가
+    const bigPriceElement = document.querySelector('.detail-big-price');
+
+    if (!tabLimit || !tabMarket || !bigPriceElement) return;
+
+    // 시장가 클릭
+    tabMarket.addEventListener('click', function() {
+        isMarketOrder = true;
+        tabMarket.style.color = '#1F2937';
+        tabMarket.classList.add('detail-active-type');
+        tabLimit.style.color = '#6B7280';
+        tabLimit.classList.remove('detail-active-type');
+
+        // 즉시 현재가로 변경
+        if (lastRealtimePrice) {
+            bigPriceElement.textContent = Number(lastRealtimePrice).toLocaleString() + '원';
+        }
+    });
+
+    // 지정가 클릭
+    tabLimit.addEventListener('click', function() {
+        isMarketOrder = false;
+
+        tabLimit.style.color = '#1F2937';
+        tabLimit.classList.add('detail-active-type');
+        tabMarket.style.color = '#6B7280';
+        tabMarket.classList.remove('detail-active-type');
+        
+        // 지정가는 보통 초기값이나 사용자가 입력할 수 있는 상태로 둠 (원하는 값으로 세팅 가능)
+        // bigPriceElement.textContent = "원래 지정가 값"; 
+    });
+}
+    
+// ========== 모든 구독 해제 ==========
+function unsubscribeAllStocks() {
+    console.log('구독 해제 시작...');
+
+    // 프론트엔드 STOMP 구독 해제
+    for (let stockCode in subscribedTopics) {
+        if (subscribedTopics[stockCode]) {
+            subscribedTopics[stockCode].unsubscribe();
+            console.log('토픽 구독 해제:', stockCode);
+        }
+    }
+    subscribedTopics = {};
+
+    // 백엔드 구독 해제
+    if (currentStockCodes.length > 0) {
+        fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0STCNT0', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            keepalive: true
+        })
+            .then(res => res.json())
+            .then(response => {
+                console.log('백엔드 구독 해제 완료:', response);
+            })
+            .catch(error => {
+                console.error('백엔드 구독 해제 실패:', error);
+            });
+    }
+}
+
 // ===== API 호출 함수 =====
 async function checkBiasAlert(stockCode) {
     console.log('[API 호출] stockCode:', stockCode);
@@ -289,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code'); // ?code=005930 에서 005930 추출
 
+    initPriceTypeEvents();
     if (stockCode) {
         drawDetailChart(stockCode);
 
@@ -328,6 +507,19 @@ window.addEventListener('resize', () => {
 
 // ===== DOM 로드 후 실행 =====
 document.addEventListener('DOMContentLoaded', async function() {
+// 1. URL에서 종목 코드 추출
+    const urlParams = new URLSearchParams(window.location.search);
+    const stockCode = urlParams.get('code');
+    
+    if (stockCode) {
+        // 전역 변수에 현재 종목 코드를 배열로 저장
+        currentStockCodes = [stockCode]; 
+        console.log('[실시간 설정] 구독 리스트 등록:', currentStockCodes);
+
+        // 2. STOMP 연결 시도 
+        connectStomp();
+    }
+    
     checkFavoriteStatus();
     console.log('=== 매매 편향 체크 시스템 로드 완료 (API 연동) ===');
     
@@ -552,3 +744,116 @@ document.querySelector('.detail-favorite-btn').addEventListener('click', functio
             console.error('관심종목 토글 실패:', error);
         });
 });
+
+// ========== Mock 데이터 제어 함수 ==========
+
+let isMockMode = false; // Mock 모드 플래그
+
+// Mock 모드로 전환 (한투 구독 건너뛰고 Mock만 사용)
+function enableMockMode() {
+    isMockMode = true;
+    console.log('Mock 모드 활성화');
+
+    // 현재 화면에 표시된 종목 리스트 가져오기
+    const stockItems = document.querySelectorAll('.stocklist-item');
+    const mockStocks = [];
+
+    stockItems.forEach(item => {
+        const stockCode = item.getAttribute('data-code');
+        const priceText = item.querySelector('.stocklist-price').textContent;
+        const basePrice = parseInt(priceText.replace(/[^0-9]/g, ''));
+
+        mockStocks.push({
+            stockCode: stockCode,
+            basePrice: basePrice
+        });
+    });
+
+    // Mock 종목 등록
+    fetch(contextPath + '/api/kis/mock/add-stocks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(mockStocks)
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 종목 등록:', response);
+
+            // Mock 데이터 전송 시작
+            return fetch(contextPath + '/api/kis/mock/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 데이터 시작:', response);
+
+            // STOMP 구독만 진행 (한투 백엔드 구독은 건너뜀)
+            const stockCodes = mockStocks.map(s => s.stockCode);
+            stockCodes.forEach(stockCode => {
+                subscribeStockTopic(stockCode);
+            });
+
+            alert('테스트 모드 시작! 한투 연결 없이 가짜 데이터로 테스트합니다.');
+        })
+        .catch(error => {
+            console.error('Mock 모드 활성화 실패:', error);
+        });
+}
+
+// Mock 모드 비활성화
+function disableMockMode() {
+    isMockMode = false;
+
+    // Mock 데이터 중지
+    fetch(contextPath + '/api/kis/mock/stop', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 데이터 중지:', response);
+
+            // Mock 종목 제거
+            return fetch(contextPath + '/api/kis/mock/clear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 종목 제거:', response);
+            alert('테스트 모드 종료! 실제 모드로 전환하려면 페이지를 새로고침하세요.');
+        })
+        .catch(error => {
+            console.error('Mock 모드 비활성화 실패:', error);
+        });
+}
+
+// Mock 상태 확인
+function checkMockStatus() {
+    fetch(contextPath + '/api/kis/mock/status')
+        .then(res => res.json())
+        .then(response => {
+            console.log('Mock 상태:', response.isRunning ? '실행 중' : '중지됨');
+            console.log('Mock 종목 수:', response.stockCount);
+            alert('테스트 데이터 상태: ' + (response.isRunning ? '실행 중' : '중지됨') + '\n종목 수: ' + response.stockCount);
+        })
+        .catch(error => {
+            console.error('Mock 상태 확인 실패:', error);
+        });
+}
+
+// 브라우저 콘솔에서 사용 가능하도록 전역으로 노출
+window.enableMockMode = enableMockMode;
+window.disableMockMode = disableMockMode;
+window.checkMockStatus = checkMockStatus;
