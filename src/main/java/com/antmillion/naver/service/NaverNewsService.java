@@ -70,7 +70,8 @@ public class NaverNewsService {
                 naverNewsResponse.getItems().stream()
                         .filter(item ->
                                 item.getLink() != null &&
-                                        item.getLink().startsWith("https://n.news.naver.com")
+                                        item.getLink().startsWith("https://n.news.naver.com") &&
+                                        item.getLink().contains("sid=101")
                         )
                         .limit(5)
                         .collect(Collectors.toList());
