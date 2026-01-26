@@ -66,15 +66,13 @@ public class SecurityConfig {
 //                        new AntPathRequestMatcher("/signup/**")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
-<<<<<<< HEAD
+//                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll() <<<<<<< HEAD
 //                .requestMatchers(new AntPathRequestMatcher("/error"), new AntPathRequestMatcher("/404"), new AntPathRequestMatcher("/500")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/" )).permitAll()
 //
 //                // 로그인 필요 (JSP는 RT 쿠키로 인증, API는 AT 헤더로 인증)
 //                .requestMatchers(new AntPathRequestMatcher("/mypage"), new AntPathRequestMatcher("/mypage/**")).authenticated()
-//                .requestMatchers(new AntPathRequestMatcher("/trade"), new AntPathRequestMatcher("/trade/**")).authenticated()
-=======
+//                .requestMatchers(new AntPathRequestMatcher("/trade"), new AntPathRequestMatcher("/trade/**")).authenticated() =======
 //                .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
@@ -82,8 +80,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/ws-stomp/**")).permitAll()
 //                // 여기는 “로그인 필요”
 //                .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
-//                .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
->>>>>>> refs/heads/develop
+//                .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated() >>>>>>> refs/heads/develop
 //                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
 
                 // 이외에는 오픈

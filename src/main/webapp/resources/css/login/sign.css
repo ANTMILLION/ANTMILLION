@@ -195,6 +195,20 @@ input[type="text"], input[type="password"]{
   }
 }
 
+/* 버튼 disabled 상태를 눈에 띄게 */
+button:disabled,
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(60%);
+}
+
+/* hover 효과도 막기 */
+button:disabled:hover,
+.btn:disabled:hover {
+  transform: none;
+}
+
 /* step2 버튼 중복확인 안할시 비활성화된것처럼 보이게 */
 .btn-disabled { opacity: .6; filter: grayscale(0.2); }
 

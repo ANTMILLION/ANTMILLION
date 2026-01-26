@@ -25,6 +25,7 @@ import com.antmillion.auth.service.SignService.TokenPair;
 import com.antmillion.auth.terms.TermsProvider;
 import com.antmillion.auth.token.RefreshTokenStore;
 import com.antmillion.kakao.token.KakaoSignupStore;
+import com.antmillion.mail.service.EmailVerificationService;
 
 @Controller
 @RequestMapping
@@ -36,14 +37,16 @@ public class SignController {
 	private final TermsProvider termsProvider;
 	private final SignService signService;
 	private final KakaoSignupStore kakaoSignupStore;
+	private final EmailVerificationService emailVerificationService;
 	private static final Pattern EMAIL_RULE = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 	private static final Pattern PW_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
 
 	public SignController(SignService signService, JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore,
-			TermsProvider termsProvider, KakaoSignupStore kakaoSignupStore) {
+			TermsProvider termsProvider, KakaoSignupStore kakaoSignupStore, EmailVerificationService emailVerificationService) {
 		this.termsProvider = termsProvider;
 		this.signService = signService;
 		this.kakaoSignupStore = kakaoSignupStore;
+		this.emailVerificationService = emailVerificationService;
 	}
 
 	// 로그인 화면
@@ -152,6 +155,10 @@ public class SignController {
 
 			if (!signService.isEmailAvailable(email)) {
 				throw new IllegalStateException("이미 사용 중인 이메일입니다.");
+			}
+			
+			if (!emailVerificationService.isVerified(email)) {
+			    throw new IllegalStateException("이메일 인증을 완료해 주세요.");
 			}
 
 			// (기존 유지) 세션에 step1 정보 저장
@@ -272,6 +279,12 @@ public class SignController {
 
 			SignUpResult result = signService.signUpLocal(sessionForm);
 
+			// 가입 완료되면 이메일 인증 상태/코드 키 정리
+			String email = sessionForm.getEmail();
+			if (email != null && !email.trim().isEmpty()) {
+			    emailVerificationService.clear(email.trim());
+			}
+			
 			// 혹시 남아있는 카카오 진행 흔적이 있으면 정리
 			String kakaoKeyLeft = (String) session.getAttribute(KAKAO_SIGNUP_KEY);
 			if (kakaoKeyLeft != null) {
