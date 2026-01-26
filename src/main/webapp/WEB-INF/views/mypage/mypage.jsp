@@ -173,10 +173,10 @@
                     <!-- 총 자산 카드 -->
                     <div class="mypage-asset-card">
                         <h3 class="mypage-asset-title">내 자산 총액</h3>
-                        <div class="mypage-asset-amount" id="totalAsset">2,833,000원</div>
+                        <div class="mypage-asset-amount" id="totalAsset"></div>
                         <div class="mypage-asset-profit">
                             <span class="mypage-profit-label">총 평가 손익</span> <span
-                                class="mypage-profit-amount positive" id="totalProfit">276,000원(+27.14%)</span>
+                                class="mypage-profit-amount positive" id="totalProfit"></span>
                         </div>
                     </div>
 
@@ -231,7 +231,11 @@
     <script>
 	    const contextPath = "${cpath}";
 	</script>
+    <!-- SockJS 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 
+    <!-- STOMP 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="${cpath}/resources/js/mypage/mypage.js"></script>
 </body>
 </html>
