@@ -680,26 +680,31 @@ function renderExecutedOrders(filter) {
     }
 
     // 2. 2줄 구조 HTML 생성
-    tbody.innerHTML = filtered.map(o => {
-        const typeClass = o.type === 'BUY' ? 'positive' : 'negative';
-        const typeText = o.type === 'BUY' ? '매수' : '매도';
+    // map 함수의 두 번째 인자인 i(인덱스)를 사용하여 짝수 세트를 판별합니다.
+    tbody.innerHTML = filtered.map((o, i) => {
+        const isBuy = o.type === 'BUY' || o.type === '매수';
+        const typeClass = isBuy ? 'mypage-buy-badge' : 'mypage-sell-badge';
+        const typeText = isBuy ? '매수' : '매도';
+        
+        // 💡 홀수인덱스인 경우 'bg-light' 클래스를 추가하여 배경색을 줍니다.
+        const rowBgClass = i % 2 === 1 ? 'bg-light' : '';
         
         return `
-            <tr class="mypage-main-row">
-                <td class="stock-name" style="font-weight: bold;">${o.stockName}</td>
+            <tr class="mypage-main-row ${rowBgClass}">
+                <td class="mypage-stock-name-cell">${o.stockName}</td>
                 <td>${formatNumber(o.orderQty)}</td>
                 <td>${formatNumber(o.executedQty)}</td>
                 <td>${formatNumber(o.unexecutedQty)}</td>
                 <td>${formatNumber(o.unexecutedAmount)}</td>
-                <td class="time-col" style="color: #999;">${o.orderTime}</td>
+                <td class="time-col">${o.orderTime}</td>
             </tr>
-            <tr class="mypage-sub-row" style="color: #888; font-size: 0.9em; border-bottom: 1px solid #f4f4f4;">
-                <td><span class="mypage-badge ${typeClass}" style="font-weight: bold;">${typeText}</span></td>
+            <tr class="mypage-sub-row ${rowBgClass}" style="border-bottom: 1px solid #eee;">
+                <td><span class="${typeClass}">${typeText}</span></td>
                 <td>${formatNumber(o.orderPrice)}</td>
                 <td>${o.executedPrice ? formatNumber(Math.floor(o.executedPrice)) : '-'}</td>
                 <td>${formatNumber(o.orderAmount)}</td>
                 <td class="stock-code">${o.stockCode}</td>
-                <td class="time-col" style="color: #bbb;">${o.executedTime || '-'}</td>
+                <td class="time-col">${o.executedTime || '-'}</td>
             </tr>
         `;
     }).join('');
