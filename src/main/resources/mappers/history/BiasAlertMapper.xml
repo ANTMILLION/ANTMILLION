@@ -35,6 +35,7 @@
             CASE 
                 WHEN #{stockCode} = '005930' THEN 72100.00
                 WHEN #{stockCode} = '000660' THEN 47430.00
+                WHEN #{stockCode} = '035720' THEN 47430.00
                 ELSE 50000.00
             END AS currentPrice
     </select>
@@ -53,6 +54,16 @@
           AND status = 'COMPLETED'
           AND created_at >= DATE_SUB(NOW(), INTERVAL 5 DAY)
     </select>
-
-    
+       <!-- 당일 등락률 조회 (FOMO용) -->
+    <select id="selectDailyChangeRate" resultType="java.math.BigDecimal">
+        SELECT 
+            CASE 
+                WHEN #{stockCode} = '005930' THEN 2.5
+                WHEN #{stockCode} = '000660' THEN -3.2
+                WHEN #{stockCode} = '035720' THEN -5.1
+                WHEN #{stockCode} = '005380' THEN 25.5
+                ELSE 0.0
+            END AS changeRate
+    </select>
+        
 </mapper>

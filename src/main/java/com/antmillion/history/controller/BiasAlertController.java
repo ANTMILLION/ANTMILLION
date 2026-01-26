@@ -1,6 +1,5 @@
 package com.antmillion.history.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,4 +69,50 @@ public class BiasAlertController {
         System.out.println("결과: " + result);
         return ResponseEntity.ok(result);
     }
+    
+    /**
+     * 매몰비용오류 편향 체크
+     * 조건: 수익률 -10% 이하 && 보유기간 21일 이상
+     */
+    @GetMapping("/check-sunk-cost")
+    public ResponseEntity<BiasAlertDTO> checkSunkCost(
+            @RequestParam(required = false, defaultValue = "1") Long accountId,
+            @RequestParam(required = false, defaultValue = "1") Long userId,
+            @RequestParam String stockCode) {
+
+        System.out.println("BiasAlertController: 매몰비용오류 체크 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode);
+
+        BiasAlertDTO result = biasAlertService.checkSunkCostBias(accountId, stockCode, userId);
+
+        if (result == null) {
+            System.out.println("결과: 보유하지 않은 종목 (204 No Content)");
+            return ResponseEntity.noContent().build();
+        }
+
+        System.out.println("결과: " + result);
+        return ResponseEntity.ok(result);
+    }
+    /**
+     * FOMO 편향 체크
+     * 조건: 당일 등락률 +20% 이상
+     */
+    @GetMapping("/check-fomo")
+    public ResponseEntity<BiasAlertDTO> checkFomo(
+            @RequestParam(required = false, defaultValue = "1") Long accountId,
+            @RequestParam(required = false, defaultValue = "1") Long userId,
+            @RequestParam String stockCode) {
+
+        System.out.println("BiasAlertController: FOMO 체크 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode);
+
+        BiasAlertDTO result = biasAlertService.checkFomoBias(accountId, stockCode, userId);
+
+        if (result == null) {
+            System.out.println("결과: 조회 실패 (204 No Content)");
+            return ResponseEntity.noContent().build();
+        }
+
+        System.out.println("결과: " + result);
+        return ResponseEntity.ok(result);
+    }
+
 }

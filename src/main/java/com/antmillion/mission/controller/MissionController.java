@@ -2,11 +2,10 @@ package com.antmillion.mission.controller;
 
 import com.antmillion.mission.dto.QuizQuestionResponseDTO;
 import com.antmillion.mission.dto.QuizSubmissionRequestDTO;
+import com.antmillion.mission.dto.QuizSubmissionResponseDTO;
 import com.antmillion.mission.service.MissionService;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,13 +41,17 @@ public class MissionController {
 
     @PostMapping("/check")
     @ResponseBody
-    public boolean checkAnswer(@RequestBody QuizSubmissionRequestDTO requestDTO) {
+    public QuizSubmissionResponseDTO checkAnswer(@RequestBody QuizSubmissionRequestDTO requestDTO) {
         try {
             return missionService.checkAndLogAnswer(requestDTO);
         } catch (Exception e) {
             System.err.println("퀴즈 채점 중 오류: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            return QuizSubmissionResponseDTO.builder()
+                    .isCorrect(false)
+                    .point(0)
+                    .message("오류가 발생했습니다. 다시 시도해주세요.")
+                    .build();
         }
     }
 

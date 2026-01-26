@@ -1,0 +1,522 @@
+:root {
+    --primary-bg: #F5F7FB;
+    --secondary-bg: #FFFFFF;
+    --border-color: #E5E7EB;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --color-positive: #10B981;
+    --color-negative: #EF4444;
+    --accent-blue: #2970ff;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-korean: 'Noto Sans KR', 'Pretendard', sans-serif;
+    --font-english: 'Poppins', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--primary-bg);
+    overflow-x: hidden;
+}
+
+/* 레이아웃 */
+.myinfo-app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--primary-bg);
+}
+
+.myinfo-main-content {
+    flex: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+    padding: 80px 50px;
+}
+
+/* 내 정보 카드 */
+.myinfo-card {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.myinfo-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* 헤더 */
+.myinfo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.myinfo-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.myinfo-date {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+/* 프로필 섹션 */
+.myinfo-content {
+    margin-bottom: 40px;
+}
+
+.myinfo-profile-section {
+    display: flex;
+    gap: 50px;
+    align-items: flex-start;
+    padding: 0 80px;
+}
+
+.myinfo-ant-image {
+    flex-shrink: 0;
+}
+
+.myinfo-ant-image img {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+}
+
+.myinfo-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding-top: 20px;
+}
+
+.myinfo-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.myinfo-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: -0.2px;
+}
+
+.myinfo-value {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    padding: 12px 0;
+}
+
+.myinfo-password-btn {
+    align-self: flex-start;
+    background-color: var(--accent-blue);
+    color: white;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(41, 112, 255, 0.2);
+}
+
+.myinfo-password-btn:hover {
+    background-color: #1e5dd8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(41, 112, 255, 0.3);
+}
+
+/* 회원탈퇴 버튼 */
+.myinfo-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.myinfo-delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.myinfo-delete-btn:hover {
+    color: var(--color-negative);
+}
+
+/* 모달 */
+.myinfo-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.myinfo-modal.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.myinfo-modal-content {
+    background: var(--secondary-bg);
+    border-radius: 24px;
+    padding: 40px;
+    position: relative;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: var(--shadow-md);
+    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.myinfo-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    background: var(--primary-bg);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.myinfo-modal-close:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.myinfo-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.myinfo-modal-message {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 24px;
+    word-break: keep-all;
+}
+
+/* 비밀번호 폼 */
+.myinfo-password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.myinfo-input-group {
+    width: 100%;
+}
+
+.myinfo-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    color: var(--text-primary);
+    background-color: var(--primary-bg);
+    transition: all 0.2s ease;
+}
+
+.myinfo-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.myinfo-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(41, 112, 255, 0.1);
+}
+
+.myinfo-submit-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(41, 112, 255, 0.2);
+}
+
+.myinfo-submit-btn:hover {
+    background-color: #1e5dd8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(41, 112, 255, 0.3);
+}
+
+/* 모달 버튼 */
+.myinfo-modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.myinfo-cancel-btn,
+.myinfo-confirm-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.myinfo-cancel-btn {
+    background-color: var(--primary-bg);
+    color: var(--text-primary);
+}
+
+.myinfo-cancel-btn:hover {
+    background-color: var(--border-color);
+}
+
+.myinfo-confirm-btn {
+    background-color: var(--color-negative);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.myinfo-confirm-btn:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* 애니메이션 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalPop {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 1400px) {
+    .myinfo-main-content {
+        padding: 80px 32px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .myinfo-main-content {
+        padding: 80px 24px;
+    }
+}
+
+@media (max-width: 992px) {
+    .myinfo-profile-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .myinfo-ant-image img {
+        width: 160px;
+        height: 160px;
+    }
+
+    .myinfo-details {
+        width: 100%;
+        max-width: 500px;
+        padding-top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .myinfo-main-content {
+        margin-left: 50px;
+        padding: 20px;
+        padding-top: 80px;
+    }
+
+    .myinfo-card {
+        padding: 24px;
+    }
+
+    .myinfo-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 30px;
+    }
+
+    .myinfo-title {
+        font-size: 24px;
+    }
+
+    .myinfo-ant-image img {
+        width: 140px;
+        height: 140px;
+    }
+
+    .myinfo-details {
+        gap: 20px;
+    }
+
+    .myinfo-value {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .myinfo-main-content {
+        margin-left: 0;
+        padding: 15px;
+        padding-top: 50px;
+    }
+
+    .myinfo-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .myinfo-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+    }
+
+    .myinfo-title {
+        font-size: 20px;
+    }
+
+    .myinfo-date {
+        font-size: 13px;
+    }
+
+    .myinfo-profile-section {
+        gap: 24px;
+    }
+
+    .myinfo-ant-image img {
+        width: 120px;
+        height: 120px;
+    }
+
+    .myinfo-details {
+        gap: 18px;
+    }
+
+    .myinfo-label {
+        font-size: 13px;
+    }
+
+    .myinfo-value {
+        font-size: 15px;
+        padding: 10px 0;
+    }
+
+    .myinfo-password-btn {
+        padding: 10px 24px;
+        font-size: 14px;
+    }
+
+    .myinfo-modal-content {
+        padding: 30px 20px;
+        max-width: 320px;
+    }
+
+    .myinfo-modal-title {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .myinfo-modal-message {
+        font-size: 14px;
+    }
+
+    .myinfo-input {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .myinfo-submit-btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .myinfo-modal-buttons {
+        flex-direction: column;
+    }
+
+    .myinfo-cancel-btn,
+    .myinfo-confirm-btn {
+        width: 100%;
+    }
+}

@@ -204,6 +204,11 @@
 <!-- Adding the standalone version of Lightweight charts -->
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script> const contextPath = '${cpath}'; </script>
+<!-- SockJS 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+
+<!-- STOMP 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="${cpath}/resources/js/main/main.js"></script>
 </body>
 </html>

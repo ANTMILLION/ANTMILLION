@@ -47,5 +47,13 @@ public class HistoryController {
     public void markAsRead(@PathVariable Long historyId) {
         historyService.markAsRead(historyId);
     }
+    // 최신 알림 조회 (알림창용, 최대 5개)
+    @GetMapping("/recent")
+    public List<HistoryDTO> getRecentNotifications(
+            @RequestParam(required = false, defaultValue = "1") Long userId,
+            @RequestParam(required = false, defaultValue = "5") int limit
+    ) {
+        return historyService.getRecentNotifications(userId, limit);
+    }
 }
     

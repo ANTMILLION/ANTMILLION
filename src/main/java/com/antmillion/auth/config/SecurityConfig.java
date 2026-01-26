@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -27,6 +28,15 @@ public class SecurityConfig {
     public SecurityConfig(JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore) {
         this.jwtProvider = jwtProvider;
 		this.refreshTokenStore = refreshTokenStore;
+    }
+    
+	 // 정적 리소스나 웹소켓 엔드포인트를 시큐리티 검사에서 완전히 제외
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+            .requestMatchers(new AntPathRequestMatcher("/ws-stomp/**"))
+            .requestMatchers(new AntPathRequestMatcher("/resources/**"))
+            .requestMatchers(new AntPathRequestMatcher("/favicon.ico"));
     }
 
     @Bean
@@ -52,6 +62,7 @@ public class SecurityConfig {
 //                .requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/ws-stomp/**")).permitAll()
 //                // 여기는 “로그인 필요”
 //                .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
 //                .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()

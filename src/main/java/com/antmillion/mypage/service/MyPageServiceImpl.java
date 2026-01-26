@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.antmillion.kis.dto.CurrentPriceRequest;
+import com.antmillion.kis.service.KisApiService;
 import org.springframework.stereotype.Service;
 
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class MyPageServiceImpl implements MyPageService {
 
     private final MyPageMapper myPageMapper;
+    private final KisApiService kisApiService;
     
     //1. 주식잔고
     @Override
@@ -24,10 +27,15 @@ public class MyPageServiceImpl implements MyPageService {
         
         // 2. 각 종목별로 현재가(고정값) 및 계산 데이터 주입
         for (Map<String, Object> stock : holdings) {
+            String stockCode = stock.get("code").toString();
             long shares = ((Number) stock.get("shares")).longValue();
             long buyPrice = ((Number) stock.get("buyPrice")).longValue();
-            
-            long currentPrice = 80000L; // ✅ 고정값 설정
+            //한투에서 현재가 조회
+            CurrentPriceRequest request = CurrentPriceRequest.builder()
+                    .marketCode("J")
+                    .stockCode(stockCode)
+                    .build();
+            long currentPrice = kisApiService.getCurrentPrice(request);
             long totalValue = currentPrice * shares;
             long profit = totalValue - buyPrice;
             

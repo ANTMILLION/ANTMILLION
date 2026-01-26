@@ -1,6 +1,7 @@
 package com.antmillion.kis.service;
 
 import com.antmillion.kis.config.KisConfig;
+import com.antmillion.kis.config.KisWebSocketConfig;
 import com.antmillion.kis.constant.KisApiConstant;
 import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -32,6 +34,7 @@ import java.util.Map;
 public class KisApiService {
 
     private final KisConfig config;
+    private final KisWebSocketConfig kisWebSocketConfig;
     private final RestTemplate restTemplate;
     private final KisAccessTokenRedisRepository kisAccessTokenRedisRepository;
     private final KisChartRedisRepository kisChartRedisRepository;
@@ -81,7 +84,33 @@ public class KisApiService {
         ResponseEntity<KisAccessTokenResponse> response = restTemplate.postForEntity(url, request, KisAccessTokenResponse.class);
         return response.getBody();
     }
-
+    
+    /**
+     * KIS 웹소켓 키 발급 요청
+     */
+    public String getKisApprovalKey() {
+    	KisWebSocketResponse response = issueWebSocketAPI();
+    	return response.getApprovalKey();
+    }
+    
+    /**
+     * KIS 웹소켓 키 발급
+     * 24시간 유효, 세션 연결 시 초기 1회만 사용하기 때문에
+     * 접속키 인증 후에는 세션 종료되지 않는 이상 접속키 신규 발급받지 않아도 365일 내내 웹소켓 데이터 수신 가능
+     */
+    private KisWebSocketResponse issueWebSocketAPI() {
+    	String url = kisWebSocketConfig.getBaseUrl() + KisApiConstant.WEB_SOCKET_PATH;
+    	KisWebSocketRequest body = new KisWebSocketRequest();
+    	body.setAppkey(kisWebSocketConfig.appKey);
+    	body.setSecretkey(kisWebSocketConfig.secretKey);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON); // application/json; utf-8
+        HttpEntity<KisWebSocketRequest> request =
+                new HttpEntity<>(body, headers);
+        ResponseEntity<KisWebSocketResponse> response = restTemplate.postForEntity(url, request, KisWebSocketResponse.class);
+        return response.getBody();
+    }
+    
     /**
      * 국내주식 기간별 시세 조회
      * @param request  조회 조건 (종목코드, 기간, 날짜 등)
@@ -382,4 +411,22 @@ public class KisApiService {
 				.build().toUriString();
 
     }
+
+    public Integer getCurrentPrice(CurrentPriceRequest request) {
+        String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHKST01010100");
+        URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PRESENT_PRICE);
+        String url = UriComponentsBuilder.fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                .queryParam("FID_INPUT_ISCD", request.getStockCode())
+                .build().toUriString();
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisCurrentPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisCurrentPriceResponse.class);
+        KisCurrentPriceResponse responseBody = response.getBody();
+        if(responseBody != null && responseBody.getOutput() != null) {
+            return Integer.parseInt(responseBody.getOutput().getCurrentPrice());
+        }
+        throw new RuntimeException("현재가 조회 실패");
+    }
+
 }
