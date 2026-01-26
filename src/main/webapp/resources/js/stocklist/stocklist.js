@@ -108,21 +108,33 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     // 등락률 업데이트
     const changeElement = stockItem.querySelector('.stocklist-change');
     if (changeElement) {
-        changeElement.textContent = tradeData.prdySign + tradeData.prdyCtrt + '%';
+        // 1,2: 상승(+), 3: 보합(0), 4,5: 하락(-)
+        let sign = '';
+        let signClass = '';
+
+        if (tradeData.prdySign === '1' || tradeData.prdySign === '2') {
+            sign = '+';
+            signClass = 'positive';
+        } else if (tradeData.prdySign === '4' || tradeData.prdySign === '5') {
+            sign = '-';
+            signClass = 'negative';
+        } else {
+            sign = '';
+            signClass = '';
+        }
+
+        changeElement.textContent = sign + tradeData.prdyCtrt + '%';
 
         // 색상 변경
         changeElement.classList.remove('positive', 'negative');
-
-        if (tradeData.prdySign === '+') {
-            changeElement.classList.add('positive');
-        } else if (tradeData.prdySign === '-') {
-            changeElement.classList.add('negative');
+        if (signClass) {
+            changeElement.classList.add(signClass);
         }
     }
 
     // 거래 비율 업데이트
     if (tradeData.shnuRate) {
-        const buyRate = parseFloat(tradeData.shnuRate);
+        const buyRate = parseFloat(tradeData.shnuRate) * 100;
         const sellRate = 100 - buyRate;
 
         const buyBar = stockItem.querySelector('.stocklist-sentiment-buy');
