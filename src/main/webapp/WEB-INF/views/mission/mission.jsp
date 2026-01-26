@@ -33,9 +33,6 @@
 			<div class="mission-quiz-card" id="mission-quizCard">
 				<div class="mission-quiz-header">
 					<h3 class="mission-quiz-date"></h3>
-					<!-- 포인트 메시지 -->
-					<div class="mission-points-message" id="mission-pointsMessage"
-						style="display: none;">100 포인트 획득하였습니다.</div>
 				</div>
 				<div id="mission-quizContent">
 					<div class="mission-quiz-question" id="mission-quizQuestion"></div>
@@ -80,12 +77,18 @@
 			</div>
 		</main>
 
-		<!-- 오답 모달 -->
-		<div class="mission-modal" id="mission-wrongModal">
+		<!-- 결과(정답/오답) 모달 -->
+		<div class="mission-modal" id="mission-result-Modal">
 			<div class="mission-modal-content">
-				<button class="mission-modal-close" onclick="closeModal()">✕</button>
-				<h2 class="mission-modal-title">다시 한번 생각해보세요.</h2>
-				<p class="mission-modal-message">퀴즈를 맞히고 똑똑한개미 랭크를 높여보세요!</p>
+				<div class="mission-modal-header">
+					<button class="mission-modal-close" onclick="closeModal()">✕</button>
+				</div>
+				<div class="mission-modal-body">
+					<!-- 포인트 메시지 -->
+					<div class="mission-points-message" id="mission-pointsMessage" style="display: none;"></div>
+					<h2 class="mission-modal-title"></h2>
+					<p class="mission-modal-message"></p>
+				</div>
 			</div>
 		</div>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -3,6 +3,7 @@ package com.antmillion.mission.mapper;
 import com.antmillion.mission.dto.QuizChoiceDTO;
 import com.antmillion.mission.dto.QuizLogDTO;
 import com.antmillion.mission.dto.QuizQuestionDTO;
+import com.antmillion.mission.dto.QuizResultDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,15 +23,12 @@ public interface MissionMapper {
     // 퀴즈 풀이 이력 저장
     void insertQuizLog(QuizLogDTO quizLog);
 
-    // 정답 번호 조회
-    Integer selectAnswerByQuizId(@Param("quizId") Long quizId);
-
     // 어떤 문제를 풀었는지 확인
     List<Long> selectTodaySolvedQuizIds(@Param("userId") Long userId);
 
-    // 퀴즈 포인트 조회
-    int selectQuizPointByQuizId(@Param("quizId") Long quizId);
-
     // 오늘 미션 완료 여부 조회
     int countTodaySolvedQuiz(@Param("userId") Long userId);
+
+    // 퀴즈 정답, 포인트, 설명 조회
+    QuizResultDTO selectQuizResultByQuizId(@Param("quizId") Long quizId);
 }
