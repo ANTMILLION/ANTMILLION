@@ -50,4 +50,10 @@ public class HistoryServiceImpl implements HistoryService {
     public void markAsRead(Long historyId) {
         historyMapper.markAsRead(historyId);
     }
-}
+    @Override
+    public List<HistoryDTO> getRecentNotifications(Long userId, int limit) {
+        System.out.println("HistoryService: 최신 알림 " + limit + "개 조회");
+        return historyMapper.selectRecentNotifications(userId, limit);
+    }
+}   
+    

@@ -35,6 +35,9 @@ public class BiasAlertService {
     // 매몰비용오류 편향 기준
     private static final BigDecimal SUNK_COST_LOSS_THRESHOLD = new BigDecimal("-10.0");
     private static final int SUNK_COST_HOLDING_DAYS = 21;
+    
+    // FOMO 편향 기준
+    private static final BigDecimal FOMO_SURGE_THRESHOLD = new BigDecimal("20.0");
 
     /**
      * 위험회피 편향 체크
@@ -64,7 +67,7 @@ public class BiasAlertService {
         log.info("위험회피 체크 결과 - 수익률: {}%, 보유일수: {}일, 경고: {}",
                 profitRate, asset.getHoldingDays(), hasAlert);
 
-        // 5. 결과 DTO 만들기 (★ userId 반드시 세팅)
+        // 5. 결과 DTO 만들기 (userId 반드시 세팅)
         BiasAlertDTO result = BiasAlertDTO.builder()
                 .userId(userId)
                 .stockCode(asset.getStockCode())
@@ -182,6 +185,49 @@ public class BiasAlertService {
                 .purchaseDate(asset.getPurchaseDate())
                 .holdingDays(asset.getHoldingDays())
                 .biasType(BiasType.SUNK_COST)
+                .hasAlert(hasAlert)
+                .build();
+
+        // 6. 경고가 뜨는 순간 자동 저장
+        if (hasAlert) {
+            saveBiasAlert(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * FOMO 편향 체크
+     * 조건: 당일 등락률 +20% 이상
+     * 타이밍: 페이지 로드(상시) + 매수 탭 전환 시
+     */
+    public BiasAlertDTO checkFomoBias(Long accountId, String stockCode, Long userId) {
+        log.info("FOMO 체크 시작 - accountId={}, stockCode={}, userId={}", accountId, stockCode, userId);
+
+        // 1. 당일 등락률 조회
+        BigDecimal changeRate = biasAlertMapper.selectDailyChangeRate(stockCode);
+        log.info("당일 등락률: {}%", changeRate);
+
+        // 2. 현재가 조회 (종목명 표시용)
+        BigDecimal currentPrice = biasAlertMapper.selectCurrentPrice(stockCode);
+
+        // 3. 편향 조건 체크: 등락률 +20% 이상
+        boolean hasAlert = changeRate.compareTo(FOMO_SURGE_THRESHOLD) >= 0;
+
+        log.info("FOMO 체크 결과 - 등락률: {}%, 경고: {}", changeRate, hasAlert);
+
+        // 4. 종목 정보 (종목명 표시용)
+        BiasAlertDTO asset = biasAlertMapper.selectAssetForBiasCheck(accountId, stockCode);
+        String stockName = (asset != null) ? asset.getStockName() : "알 수 없는 종목";
+
+        // 5. 결과 DTO 만들기
+        BiasAlertDTO result = BiasAlertDTO.builder()
+                .userId(userId)
+                .stockCode(stockCode)
+                .stockName(stockName)
+                .currentPrice(currentPrice)
+                .profitRate(changeRate)  // 등락률을 profitRate에 저장
+                .biasType(BiasType.FOMO)
                 .hasAlert(hasAlert)
                 .build();
 
