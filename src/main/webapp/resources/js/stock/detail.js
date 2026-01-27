@@ -5,6 +5,11 @@ if (typeof contextPath === 'undefined') {
     console.log('[contextPath 설정]', contextPath);
 }
 
+// ==== 차트 관련 전역 변수 ====
+let currentCandleData = null; // 현재 진행 중인 캔들 데이터
+let lastCandleUpdateTime = null; // 마지막 캔들 업데이트 시간
+let currentChartPeriod = 'minute';
+
 // STOMP 관련 변수
 let stompClient = null;
 let subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
@@ -111,7 +116,8 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     
     // 현재가 업데이트
     lastRealtimePrice = rawPrice;
-    const formattedPrice = Number(rawPrice).toLocaleString('ko-KR') + '원';
+    const currentPrice = Number(rawPrice);
+    const formattedPrice = currentPrice.toLocaleString('ko-KR') + '원';
 
     const currentPriceH3 = document.getElementById('detail-current-price-h3');
     if (currentPriceH3) {
@@ -123,6 +129,9 @@ function updateStockRealtimePrice(stockCode, tradeData) {
         const orderPriceElem = document.getElementById('order-display-price');
         if (orderPriceElem) orderPriceElem.textContent = formattedPrice;
     }
+
+    // 차트에 실시간 현재가 반영
+    updateChartRealtime(currentPrice);
     
     // 매수/매도 비율 및 텍스트 업데이트
     const rawBuyRate = tradeData.shnuRate;
@@ -518,6 +527,8 @@ function drawDetailChart(stockCode) {
         wickDownColor: '#3498db'
     });
 
+    currentChartPeriod = 'minute';
+
     // API 호출
     fetch(`/antmillion/api/kis/stream/${stockCode}`)
     .then(res => res.json())
@@ -556,10 +567,126 @@ function drawDetailChart(stockCode) {
         
         if (chartData.length > 0) {
             candleSeries.setData(chartData);
+
+            // 마지막 캔들을 현재 진행 중인 캔들로 설정
+            currentCandleData = chartData[chartData.length - 1];
+            lastCandleUpdateTime = currentCandleData.time;
+
             stockChart.timeScale().fitContent();
         }
     })
     .catch(err => console.error("API 호출 에러:", err));
+}
+
+// ========== 실시간 현재가로 차트 캔들 업데이트 ==========
+function updateChartRealtime(currentPrice) {
+    if (!candleSeries || !currentCandleData) return;
+
+    let currentTime;
+
+    // 기간별로 현재 시간 계산
+    if (currentChartPeriod === 'minute') {
+        currentTime = getCurrentMinuteTimestamp();
+    } else {
+        currentTime = getCurrentPeriodTime(currentChartPeriod);
+    }
+
+    // 새로운 기간이 시작되면 새 캔들 생성
+    const lastTime = getCanonicalTime(lastCandleUpdateTime, currentChartPeriod);
+    const nowTime = getCanonicalTime(currentTime, currentChartPeriod);
+
+    // 새로운 분이 시작되면 새 캔들 생성
+    if (nowTime !== lastTime) {
+        console.log('새로운 분 시작 - 새 캔들 생성');
+
+        currentCandleData = {
+            time: currentTime,
+            open: currentPrice,
+            high: currentPrice,
+            low: currentPrice,
+            close: currentPrice
+        };
+        lastCandleUpdateTime = currentTime;
+
+        // 새 캔들 추가
+        candleSeries.update(currentCandleData);
+    }
+    // 같은 분 내에서는 기존 캔들 업데이트
+    else {
+        currentCandleData.close = currentPrice;
+        currentCandleData.high = Math.max(currentCandleData.high, currentPrice);
+        currentCandleData.low = Math.min(currentCandleData.low, currentPrice);
+
+        // 기존 캔들 업데이트
+        candleSeries.update(currentCandleData);
+        console.log('캔들 업데이트:', currentCandleData);
+    }
+}
+
+// ========== 현재 분의 timestamp 계산 (초는 0으로) ==========
+function getCurrentMinuteTimestamp() {
+    const now = new Date();
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    const offsetInSeconds = now.getTimezoneOffset() * 60;
+    return Math.floor(now.getTime() / 1000) - offsetInSeconds;
+}
+
+// ========== 일/주/월/년봉용: 현재 기간의 시간 계산 ==========
+function getCurrentPeriodTime(period) {
+    const now = new Date();
+
+    if (period === 'D') {
+        // 일봉: 오늘 날짜
+        return {
+            year: now.getFullYear(),
+            month: now.getMonth() + 1,
+            day: now.getDate()
+        };
+    } else if (period === 'W') {
+        // 주봉: 이번 주 월요일 날짜
+        const monday = new Date(now);
+        const day = now.getDay();
+        const diff = day === 0 ? -6 : 1 - day; // 일요일이면 -6, 아니면 월요일까지 차이
+        monday.setDate(now.getDate() + diff);
+
+        return {
+            year: monday.getFullYear(),
+            month: monday.getMonth() + 1,
+            day: monday.getDate()
+        };
+    } else if (period === 'M') {
+        // 월봉: 이번 달 1일
+        return {
+            year: now.getFullYear(),
+            month: now.getMonth() + 1,
+            day: 1
+        };
+    } else if (period === 'Y') {
+        // 연봉: 올해 1월 1일
+        return {
+            year: now.getFullYear(),
+            month: 1,
+            day: 1
+        };
+    }
+
+    return null;
+}
+
+// ========== 기간별 정규화된 시간 반환 (비교용) ==========
+function getCanonicalTime(time, period) {
+    if (period === 'minute') {
+        // 분봉은 timestamp를 그대로 사용
+        return time;
+    } else {
+        // 일/주/월/년봉은 {year, month, day} 객체를 문자열로 변환
+        if (typeof time === 'object') {
+            return `${time.year}-${String(time.month).padStart(2, '0')}-${String(time.day).padStart(2, '0')}`;
+        }
+        return time;
+    }
 }
 
 // 날짜 포맷 변경 (main.js의 formatDate 함수와 동일)
@@ -611,6 +738,8 @@ function drawPeriodChart(stockCode, period) {
         wickDownColor: '#3498db'
     });
 
+    currentChartPeriod = period;
+
     // API 호출
     fetch(`/antmillion/api/kis/periodChart/${stockCode}?period=${period}`)
         .then(res => res.json())
@@ -634,6 +763,11 @@ function drawPeriodChart(stockCode, period) {
 
             if (chartData.length > 0) {
                 candleSeries.setData(chartData);
+
+                // 마지막 캔들 저장
+                currentCandleData = chartData[chartData.length - 1];
+                lastCandleUpdateTime = getCanonicalTime(currentCandleData.time, period);
+
                 stockChart.timeScale().fitContent();
             }
         })
@@ -660,6 +794,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.classList.add('detail-period-active');
 
                 const period = this.getAttribute('data-period');
+
+                // 차트 전환 시 currentCandleData 초기화
+                currentCandleData = null;
+                lastCandleUpdateTime = null;
 
                 if (period === 'minute') {
                     // 분봉 차트
