@@ -146,24 +146,19 @@ function updateStockRealtimePrice(stockCode, tradeData) {
         const buyBar = document.getElementById('buy-bar');
         const sellBar = document.getElementById('sell-bar');
         if (buyBar && sellBar) {
+            buyBar.classList.remove('detail-sentiment-inactive');
+            sellBar.classList.remove('detail-sentiment-inactive');
+
             buyBar.style.width = buyRate + '%';
             sellBar.style.width = sellRate + '%';
         }
-    
-        const sentimentPercent = document.getElementById('sentiment-percent');
-        const sentimentDir = document.getElementById('sentiment-direction');
-    
-        if (sentimentPercent && sentimentDir) {
-            // 매수가 50% 이상이면 '매수', 아니면 '매도' 표시
-            if (buyRate >= 50) {
-                sentimentPercent.textContent = buyRate;
-                sentimentDir.textContent = '매수';
-                sentimentDir.className = 'detail-red-text'; // 빨간색
-            } else {
-                sentimentPercent.textContent = sellRate;
-                sentimentDir.textContent = '매도';
-                sentimentDir.className = 'detail-blue-text'; // 파란색
-            }
+
+        const sentimentText = document.querySelector('.detail-sentiment-text');
+        // 매수가 50% 이상이면 '매수', 아니면 '매도' 표시
+        if (buyRate >= 50) {
+            sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${buyRate}</span>%가 <span class="detail-red-text" id="sentiment-direction">매수</span>쪽으로 몰려요!`;
+        } else {
+            sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${sellRate}</span>%가 <span class="detail-blue-text" id="sentiment-direction">매도</span>쪽으로 몰려요!`;
         }
         
         const buyText = document.getElementById('buy-percent');
