@@ -120,7 +120,7 @@ public class SecurityConfig {
         http.addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         
         // RT 쿠키로 화면 요청 인증
-        http.addFilterBefore(rtCookieAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(rtCookieAuthFilter(), JwtAuthFilter.class);
           return http.build();
     }
 }
