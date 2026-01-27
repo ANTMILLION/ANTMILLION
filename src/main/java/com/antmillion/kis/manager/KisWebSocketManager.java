@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
 
+import static com.antmillion.kis.constant.KisWebSocketTrId.isPresentPriceTrId;
+
 /**
  * 웹소켓 Connection 처리
  * 
@@ -40,10 +42,8 @@ public class KisWebSocketManager {
     private boolean isConnected = false; // 연결 상태 저장
     private String approvalKey;
 
-    @Getter
     private final Set<String> presentSubscribedStocks = ConcurrentHashMap.newKeySet();
 
-    @Getter
     private final Set<String> askBidSubscribedStocks = ConcurrentHashMap.newKeySet();
 
     public KisWebSocketManager(KisApiService kisApiService, SimpMessagingTemplate messagingTemplate) {
@@ -100,18 +100,11 @@ public class KisWebSocketManager {
     
     // 세션 관리용
     public synchronized void subscribe(String stockCode, String trId) {
+        Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
         // 중복 구독 방지
-        if (trId.equals("H0UNCNT0")) {
-            if (presentSubscribedStocks.contains(stockCode)) {
-                System.out.println("이미 체결가 구독 중인 종목: " + stockCode);
-                return;
-            }
-
-        } else {
-            if (askBidSubscribedStocks.contains(stockCode)) {
-                System.out.println("이미 호가 구독 중인 종목: " + stockCode);
-                return;
-            }
+        if (targetSet.contains(stockCode)) {
+            System.out.println("이미 " + trId + " 구독 중인 종목: " + stockCode);
+            return;
         }
 
         if (session == null || !session.isOpen()) {
@@ -120,60 +113,38 @@ public class KisWebSocketManager {
         }
         
         this.sendSubscribeMessage(this.session, stockCode, "1", trId);  // 실제 구독 메시지 전송
-
-        if (trId.equals("H0UNCNT0")) {
-            presentSubscribedStocks.add(stockCode);
-        } else {
-            askBidSubscribedStocks.add(stockCode);
-        }
+        targetSet.add(stockCode);
 
         System.out.println("구독 완료: " + stockCode + " trId: " + trId);
     }
 
     // 🆕 구독 해제 메소드
     public synchronized void unsubscribe(String stockCode, String trId) {
-        if (trId.equals("H0UNCNT0")) {
-            if (!presentSubscribedStocks.contains(stockCode)) {
-                System.out.println("체결가 구독 중이 아닌 종목: " + stockCode);
-                return;
-            }
-        } else {
-            if (!askBidSubscribedStocks.contains(stockCode)) {
-                System.out.println("호가 구독 중이 아닌 종목: " + stockCode);
-                return;
-            }
+        Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
+        if (!targetSet.contains(stockCode)) {
+            System.out.println(trId + " 구독 중이 아닌 종목: " + stockCode);
+            return;
         }
 
         if (this.session != null && this.session.isOpen()) {
             sendSubscribeMessage(this.session, stockCode, "2", trId);  // "2" = 구독 해제
-            if (trId.equals("H0UNCNT0")) {
-                presentSubscribedStocks.remove(stockCode);
-            } else {
-                askBidSubscribedStocks.remove(stockCode);
-            }
+            targetSet.remove(stockCode);
             System.out.println("구독 해제: " + stockCode + " trId: " + trId);
         }
     }
 
     // 🆕 전체 구독 해제
     public synchronized void unsubscribeAll(String trId) {
-        if (trId.equals("H0UNCNT0")) {
-            if (presentSubscribedStocks.isEmpty()) {
-                System.out.println("체결가 구독 중인 종목이 없습니다.");
-                return;
-            }
-        } else {
-            if (askBidSubscribedStocks.isEmpty()) {
-                System.out.println("호가 구독 중인 종목이 없습니다.");
-                return;
-            }
+        Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
+        if (targetSet.isEmpty()) {
+            System.out.println(trId + " 구독 중인 종목이 없습니다.");
+            return;
         }
 
         System.out.println(trId + " 전체 구독 해제 시작");
-        Set<String> subscribedStocks = trId.equals("H0UNCNT0") ? presentSubscribedStocks : askBidSubscribedStocks;
         // 복사본으로 반복 (ConcurrentModificationException 방지)
         Set<String> stocksToUnsubscribe = ConcurrentHashMap.newKeySet();
-        stocksToUnsubscribe.addAll(subscribedStocks);
+        stocksToUnsubscribe.addAll(targetSet);
 
         for (String stockCode : stocksToUnsubscribe) {
             unsubscribe(stockCode, trId);
@@ -202,7 +173,9 @@ public class KisWebSocketManager {
         try {
             String json = objectMapper.writeValueAsString(request);
             session.sendMessage(new TextMessage(json));
-            System.out.println((trId.equals("H0UNCNT0") ? "현재가 " : "호가 ") + (trType.equals("1") ? "구독" : "해제") + " 요청 전송: " + stockCode);
+
+            String dataType = isPresentPriceTrId(trId) ? "체결가" : "호가";
+            System.out.println(dataType + (trType.equals("1") ? "구독" : "해제") + " 요청 전송: " + stockCode);
         } catch (IOException e) {
             System.err.println("메시지 전송 실패: " + e.getMessage());
         }
