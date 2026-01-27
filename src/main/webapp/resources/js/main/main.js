@@ -2,6 +2,8 @@
    메인 페이지 JavaScript (com.antmillion.main.js)
    =========================== */
 
+
+
 var subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
 
 // STOMP 연결 (수정 버전)
@@ -340,6 +342,9 @@ function initializeMissionButton() {
 // 일별 분봉 조회 - 차트
 let stockChart = null;
 let candleSeries = null;
+let currentCandleData = null; // 추가: 현재 진행 중인 캔들
+let lastCandleUpdateTime = null; // 추가: 마지막 캔들 업데이트 시간
+let currentChartStockCode = null; // 추가: 현재 차트에 표시 중인 종목 코드
 
 // 시간 포맷 변환 함수
 function formatToTimestamp(dateStr, timeStr) {
@@ -360,6 +365,11 @@ function drawStockMinuteChart(stockCode) {
     const chartContainer = document.getElementById('main-stockChart');
     if (!chartContainer) return;
     chartContainer.innerHTML = ''; // 기존 차트가 있다면 삭제
+
+    currentChartStockCode = stockCode;
+
+    currentCandleData = null;
+    lastCandleUpdateTime = null;
 
     stockChart = LightweightCharts.createChart(chartContainer, {
         width: chartContainer.clientWidth,
@@ -432,10 +442,58 @@ function drawStockMinuteChart(stockCode) {
         
         if (chartData.length > 0) {
             candleSeries.setData(chartData);
+
+            currentCandleData = chartData[chartData.length - 1];
+            lastCandleUpdateTime = currentCandleData.time;
+
             stockChart.timeScale().fitContent();
         }
     })
     .catch(err => console.error("API 호출 에러:", err));
+}
+
+// ========== 실시간 현재가로 차트 캔들 업데이트 ==========
+function updateMainChartRealtime(currentPrice) {
+    // 차트가 없거나, 초기 캔들 데이터가 없으면 종료
+    if (!candleSeries || !currentCandleData) return;
+
+    const currentTimestamp = getCurrentMinuteTimestamp();
+
+    // 새로운 분이 시작되면 새 캔들 생성
+    if (currentTimestamp !== lastCandleUpdateTime) {
+        console.log('새로운 분 시작 - 새 캔들 생성');
+
+        currentCandleData = {
+            time: currentTimestamp,
+            open: currentPrice,
+            high: currentPrice,
+            low: currentPrice,
+            close: currentPrice
+        };
+        lastCandleUpdateTime = currentTimestamp;
+
+        // 새 캔들 추가
+        candleSeries.update(currentCandleData);
+    }
+    // 같은 분 내에서는 기존 캔들 업데이트
+    else {
+        currentCandleData.close = currentPrice;
+        currentCandleData.high = Math.max(currentCandleData.high, currentPrice);
+        currentCandleData.low = Math.min(currentCandleData.low, currentPrice);
+
+        // 기존 캔들 업데이트
+        candleSeries.update(currentCandleData);
+    }
+}
+
+// ========== 현재 분의 timestamp 계산 ==========
+function getCurrentMinuteTimestamp() {
+    const now = new Date();
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    const offsetInSeconds = now.getTimezoneOffset() * 60;
+    return Math.floor(now.getTime() / 1000) - offsetInSeconds;
 }
 
 // 마우스 오버 이벤트
@@ -453,6 +511,11 @@ document.addEventListener('mouseover', (e) => {
             if (codeEl.textContent !== stockCode) {
                 nameEl.textContent = stockName;
                 codeEl.textContent = stockCode;
+
+                // 차트 전환 시 캔들 데이터 초기화
+                currentCandleData = null;
+                lastCandleUpdateTime = null;
+
                 drawStockMinuteChart(stockCode);
             }
         }
@@ -531,10 +594,15 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     if (!stockItem) return;
 
     // 현재가 업데이트
+    const currentPrice = Number(tradeData.stckPrpr);
     const priceElement = stockItem.querySelector('.main-stocklist-price');
     if (priceElement) {
-        const price = Number(tradeData.stckPrpr).toLocaleString('ko-KR') + '원';
+        const price = currentPrice.toLocaleString('ko-KR') + '원';
         priceElement.textContent = price;
+    }
+
+    if (currentChartStockCode === stockCode) {
+        updateMainChartRealtime(currentPrice);
     }
 
     // 등락률 업데이트 (main-stocklist-change가 등락률을 표시한다고 가정)

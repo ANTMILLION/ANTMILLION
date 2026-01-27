@@ -19,7 +19,7 @@
             <div class="detail-stock-container">
                 <div class="detail-left-panel">
                     <section class="detail-stock-header">
-                        <img src="" alt="삼성전자">
+                        <img src="" alt="">
                         <div class="detail-text-col">
                             <div>
                                 <h2 class="detail-stock-name">
