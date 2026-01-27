@@ -143,6 +143,9 @@ function updateStockRealtimePrice(stockCode, tradeData) {
         const sellLabel = stockItem.querySelector('.stocklist-sentiment-sell-label');
 
         if (buyBar && sellBar) {
+            buyBar.classList.remove('stocklist-sentiment-inactive');
+            sellBar.classList.remove('stocklist-sentiment-inactive');
+
             buyBar.style.width = buyRate + '%';
             sellBar.style.width = sellRate + '%';
         }
@@ -195,10 +198,21 @@ function createStockItemHTML(stock, index, isFavorite) {
     const currentPrice = Number(stock.stck_prpr || 0).toLocaleString('ko-KR') + '원';
 
     // 등락률 계산
-    const priceChange = Number(stock.prdy_vrss || 0);
-    const changeRate = Number(stock.prdy_ctrt || 0);
-    const changeSign = priceChange > 0 ? '+' : (priceChange < 0 ? '-' : '');
-    const changeClass = priceChange > 0 ? 'positive' : (priceChange < 0 ? 'negative' : '');
+    let changeText = '0.00%';
+    let changeClass = '';
+
+    if (stock.prdy_ctrt) {
+        const changeValue = parseFloat(stock.prdy_ctrt);
+        if (changeValue > 0) {
+            changeText = '+' + changeValue + '%';
+            changeClass = 'positive';
+        } else if (changeValue < 0) {
+            changeText = changeValue + '%';
+            changeClass = 'negative';
+        } else {
+            changeText = changeValue + '%';
+        }
+    }
 
     return `
         <div class="stocklist-item" data-code="${stock.mksc_shrn_iscd}">
@@ -214,15 +228,15 @@ function createStockItemHTML(stock, index, isFavorite) {
                 <span class="stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
             <div class="stocklist-price">${currentPrice}</div>
-            <div class="stocklist-change ${changeClass}">${changeSign}${Math.abs(changeRate).toFixed(2)}%</div>
+            <div class="stocklist-change ${changeClass}">${changeText}</div>
             <div class="stocklist-sentiment">
                 <div class="stocklist-sentiment-bar">
-                    <div class="stocklist-sentiment-buy" style="width: 50%;"></div>
-                    <div class="stocklist-sentiment-sell" style="width: 50%;"></div>
+                    <div class="stocklist-sentiment-buy stocklist-sentiment-inactive" style="width: 50%;"></div>
+                    <div class="stocklist-sentiment-sell stocklist-sentiment-inactive" style="width: 50%;"></div>
                 </div>
                 <div class="stocklist-sentiment-labels">
-                    <span class="stocklist-sentiment-buy-label">50</span>
-                    <span class="stocklist-sentiment-sell-label">50</span>
+                    <span class="stocklist-sentiment-buy-label"></span>
+                    <span class="stocklist-sentiment-sell-label"></span>
                 </div>
             </div>
         </div>
