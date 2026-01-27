@@ -774,6 +774,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code'); // ?code=005930 에서 005930 추출
 
+    scheduleMarketClose();
+
     initPriceTypeEvents();
     if (stockCode) {
         drawDetailChart(stockCode);
@@ -1771,3 +1773,63 @@ window.checkMockStatus = checkMockStatus;
     
     console.log('=== 주문 UI 초기화 완료 ===');
 })();
+
+// ========== 거래 비율 초기 상태로 복원 ==========
+function resetSentimentToDefault() {
+    console.log('거래 비율을 초기 상태로 복원');
+
+    const sentimentText = document.querySelector('.detail-sentiment-text');
+    const buyBar = document.getElementById('buy-bar');
+    const sellBar = document.getElementById('sell-bar');
+    const buyPercent = document.getElementById('buy-percent');
+    const sellPercent = document.getElementById('sell-percent');
+
+    if (sentimentText) {
+        sentimentText.innerHTML = '<span>장 시간에 확인할 수 있어요</span>';
+    }
+
+    if (buyBar && sellBar) {
+        buyBar.classList.add('detail-sentiment-inactive');
+        sellBar.classList.add('detail-sentiment-inactive');
+        buyBar.style.width = '50%';
+        sellBar.style.width = '50%';
+    }
+
+    if (buyPercent) buyPercent.textContent = '';
+    if (sellPercent) sellPercent.textContent = '';
+}
+
+// ========== 특정 시간에 자동 실행 예약 ==========
+function scheduleMarketClose() {
+    const now = new Date();
+
+    // ✅ 15:30 예약
+    const today1530 = new Date(now);
+    today1530.setHours(15, 30, 0, 0);
+    const msUntil1530 = today1530 - now;
+
+    if (msUntil1530 > 0) {
+        console.log(`15:30까지 ${Math.floor(msUntil1530 / 1000 / 60)}분 남음`);
+        setTimeout(() => {
+            console.log('15:30 정규장 마감 - 기본값으로 전환');
+            resetSentimentToDefault();
+        }, msUntil1530);
+    } else {
+        console.log('오늘 15:30은 이미 지났습니다.');
+    }
+
+    // ✅ 20:00 예약
+    const today2000 = new Date(now);
+    today2000.setHours(20, 0, 0, 0);
+    const msUntil2000 = today2000 - now;
+
+    if (msUntil2000 > 0) {
+        console.log(`20:00까지 ${Math.floor(msUntil2000 / 1000 / 60)}분 남음`);
+        setTimeout(() => {
+            console.log('20:00 시간외 마감 - 기본값으로 전환');
+            resetSentimentToDefault();
+        }, msUntil2000);
+    } else {
+        console.log('오늘 20:00은 이미 지났습니다.');
+    }
+}

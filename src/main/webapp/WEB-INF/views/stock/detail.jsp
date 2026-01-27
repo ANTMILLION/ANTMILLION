@@ -109,7 +109,7 @@
                         </div>
                     </div>
                     <div class="detail-sentiment-section">
-                        <div class="detail-sentiment-text"><span>정규 장 시간(09:00~15:30)에 확인할 수 있어요</span></div>
+                        <div class="detail-sentiment-text"><span>장 시간에 확인할 수 있어요</span></div>
                         <div class="detail-percent-labels">
                             <div style="width: 50%;" id="buy-percent"></div>
                             <div style="width: 50%;" id="sell-percent"></div>
