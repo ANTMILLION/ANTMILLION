@@ -5,8 +5,9 @@ import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Update;
 
 import com.antmillion.stock.dto.StockOrderDTO;
 
@@ -29,4 +30,11 @@ public interface StockOrderMapper {
             "WHERE account_id = #{accountId} AND status = 'WAIT' " +
             "ORDER BY created_at DESC")
     List<StockOrderDTO> selectWaitOrders(@Param("accountId") Long accountId);
+    
+    /**
+     * 주문 취소
+     */
+    @Update("UPDATE stock_order SET status = 'CANCEL', updated_at = NOW() " +
+            "WHERE order_id = #{orderId} AND status = 'WAIT' AND account_id = #{accountId}")
+    int cancelOrder(@Param("orderId") Long orderId, @Param("accountId") Long accountId);
 }

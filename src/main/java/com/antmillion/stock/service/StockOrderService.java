@@ -25,6 +25,7 @@ public class StockOrderService {
 	private final AccountMapper accountMapper;
 	private final AssetMapper assetMapper;
 
+	// 주문 생성
 	@Transactional
 	public boolean createOrder(Long accountId, String stockCode, String transactionType, String orderType,
 			Integer quantity, Integer orderPrice) {
@@ -115,5 +116,12 @@ public class StockOrderService {
 	// 주문 대기 조회
 	public List<StockOrderDTO> getWaitOrders(Long accountId) {
 		return stockOrderMapper.selectWaitOrders(accountId);
+	}
+	
+	// 주문 취소
+	@Transactional
+	public boolean cancelOrder(Long orderId, Long accountId) {
+	    int result = stockOrderMapper.cancelOrder(orderId, accountId);
+	    return result > 0;
 	}
 }

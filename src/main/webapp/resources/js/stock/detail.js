@@ -1121,6 +1121,30 @@ function loadPendingOrders() {
     });
 }
 
+// 주문 취소 함수
+function cancelOrder(orderId) {
+    if (!confirm('정말 이 주문을 취소하시겠습니까?')) return;
+
+    $.ajax({
+        url: contextPath + '/api/stock/cancel',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ orderId: orderId }),
+        success: function(res) {
+            if (res.success) {
+                alert(res.message);
+                loadPendingOrders(); // 리스트 새로고침
+            } else {
+                alert(res.message);
+            }
+        },
+        error: function() {
+            alert('취소 처리 중 오류가 발생했습니다.');
+        }
+    });
+}
+
+
 // 페이지 로드 시 관심종목 상태 확인
 function checkFavoriteStatus() {
     const stockCode = document.querySelector('.detail-favorite-btn').getAttribute('data-code');

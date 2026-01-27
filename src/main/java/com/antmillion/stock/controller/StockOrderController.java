@@ -79,7 +79,9 @@ public class StockOrderController {
         return ResponseEntity.ok(response);
     }
     
-    // 주문 대기
+    /**
+     * 주문 대기 API
+     */
     @GetMapping("/pending-list")
     public ResponseEntity<List<StockOrderDTO>> getPendingList(HttpSession session) {
         AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
@@ -89,5 +91,22 @@ public class StockOrderController {
         return ResponseEntity.ok(list);
     }
     
+    /**
+     * 주문 취소 API
+     */
+    @PostMapping("/cancel")
+    public ResponseEntity<Map<String, Object>> cancelOrder(@RequestBody Map<String, Long> request, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
+        Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
+        Long orderId = request.get("orderId");
+
+        boolean success = stockOrderService.cancelOrder(orderId, accountId);
+        
+        response.put("success", success);
+        response.put("message", success ? "주문이 취소되었습니다." : "취소 가능한 상태가 아닙니다.");
+        return ResponseEntity.ok(response);
+    }
     
 }
