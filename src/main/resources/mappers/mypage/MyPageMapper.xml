@@ -3,7 +3,7 @@
 <mapper namespace="com.antmillion.mypage.mapper.MyPageMapper">
 
 	
-	<select id="selectStockHoldings" resultType="map">
+	<select id="selectStockHoldings" resultType="com.antmillion.mypage.dto.StockHoldingsDTO">
 	    SELECT
 	        s.stock_name AS "name", 
 	        s.stock_code AS "code",
@@ -17,7 +17,7 @@
 	        a.account_id = #{accountId}
     </select>
     
-    <select id="selectRealizedProfit" resultType="map">
+    <select id="selectRealizedProfit" resultType="com.antmillion.mypage.dto.RealizedProfitDTO">
 	    SELECT 
 	        s.stock_name AS "name",
 	        so.quantity AS "shares",
@@ -78,7 +78,7 @@
 	
     
 
-	<select id="selectAccountInfo" resultType="map">
+	<select id="selectAccountInfo" resultType="com.antmillion.mypage.dto.AccountInfoDTO">
 	    SELECT 
 	        m.nickname AS "nickname",
 	        a.account_number AS "accountNumber",
