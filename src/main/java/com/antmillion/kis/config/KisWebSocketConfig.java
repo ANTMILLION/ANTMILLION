@@ -9,6 +9,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import com.antmillion.kis.constant.KisApiConstant;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 @EnableWebSocketMessageBroker
 @PropertySource("classpath:kisApi.properties")
@@ -46,5 +47,12 @@ public class KisWebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-stomp")
                 .setAllowedOriginPatterns("*") // CORS 허용 (테스트용)
                 .withSockJS(); // SockJS 지원
+    }
+
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
+        registry
+                .setMessageSizeLimit(5 * 1024 * 1024)
+                .setSendBufferSizeLimit(5 * 1024 * 1024);
     }
 }

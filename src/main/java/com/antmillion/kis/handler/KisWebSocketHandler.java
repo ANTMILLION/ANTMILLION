@@ -13,6 +13,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.antmillion.kis.manager.KisWebSocketManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static com.antmillion.kis.constant.KisWebSocketTrId.isAskBidTrId;
+import static com.antmillion.kis.constant.KisWebSocketTrId.isPresentPriceTrId;
+
 /**
  * 웹소켓 통로를 통해 데이터(메시지) 처리
  * 
@@ -69,9 +72,10 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         // 3. 실시간 실무 데이터 처리 (문자열 파싱)
         try {
             String[] parts = payload.split("\\|");
-            if ("H0UNCNT0".equals(parts[1])) {
-            	String[] data = parts[3].split("\\^");
-            	// [0], [2], [4], [5], [22]
+            String trId = parts[1];
+            if (isPresentPriceTrId(trId)) {
+                String[] data = parts[3].split("\\^");
+                // [0], [2], [4], [5], [22]
                 Map<String, String> tradeData = new HashMap<>();
                 tradeData.put("mkscShrnIscd", data[0]); // 종목코드
                 tradeData.put("stckPrpr", data[2]);     // 현재가
@@ -79,12 +83,12 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
                 tradeData.put("prdyVrss", data[4]);	// 전일 대비
                 tradeData.put("prdyCtrt", data[5]);     // 대비율
                 tradeData.put("shnuRate", data[22]);     // 매수 비율
-                
+
                 String stockCode = data[0];
                 // STOMP 전송
                 messagingTemplate.convertAndSend("/topic/kis-trade/present" + stockCode, tradeData); // 실시간 체결가
                 System.out.println("체결가 수신: " + tradeData);
-            } else if ("H0UNASP0".equals(parts[1])) {
+            } else if (isAskBidTrId(trId)) {
                 String[] data = parts[3].split("\\^");
                 Map<String, String> askBidData = new HashMap<>();
                 askBidData.put("mkscShrnIscd", data[0]); // 종목코드

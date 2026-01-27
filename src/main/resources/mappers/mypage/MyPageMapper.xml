@@ -43,6 +43,39 @@
 	    ORDER BY so.updated_at DESC
 	</select>
 	
+	
+	<select id="selectExecutedOrders" resultType="com.antmillion.mypage.dto.ExecutedOrdersDTO">
+	    SELECT 
+	        s.stock_name AS "stockName",
+	        s.stock_code AS "stockCode",
+	        o.quantity AS "orderQty",
+	        o.order_price AS "orderPrice",
+	        o.transaction_type AS "type",
+	        (o.quantity * o.order_price) AS "orderAmount",
+	        /* MySQL: DATE_FORMAT 사용 (시:분:초) */
+	        DATE_FORMAT(o.created_at, '%H:%i:%s') AS "orderTime",
+	        COALESCE(t.total_qty, 0) AS "executedQty",
+	        (o.quantity - COALESCE(t.total_qty, 0)) AS "unexecutedQty",
+	        ((o.quantity - COALESCE(t.total_qty, 0)) * o.order_price) AS "unexecutedAmount",
+	        t.avg_price AS "executedPrice",
+	        /* MySQL: DATE_FORMAT 사용 */
+	        DATE_FORMAT(o.updated_at, '%H:%i:%s') AS "executedTime"
+	    FROM stock_order o
+	    JOIN stock s ON o.stock_code = s.stock_code
+	    LEFT JOIN (
+	        SELECT order_id, 
+	               SUM(trade_quantity) as total_qty, 
+	               AVG(trade_price) as avg_price 
+	        FROM trade_log 
+	        GROUP BY order_id
+	    ) t ON o.order_id = t.order_id
+	    WHERE o.account_id = #{accountId}
+	      /* MySQL: STR_TO_DATE 사용 및 날짜 비교 */
+	      AND o.created_at >= STR_TO_DATE(#{startDate}, '%Y-%m-%d')
+	      AND o.created_at &lt; DATE_ADD(STR_TO_DATE(#{endDate}, '%Y-%m-%d'), INTERVAL 1 DAY)
+	    ORDER BY o.created_at DESC
+	</select>
+	
     
 
 	<select id="selectAccountInfo" resultType="map">
