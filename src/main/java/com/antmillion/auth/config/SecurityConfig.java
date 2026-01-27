@@ -66,7 +66,7 @@ public class SecurityConfig {
 //                        new AntPathRequestMatcher("/signup/**")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll() <<<<<<< HEAD
+//                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/error"), new AntPathRequestMatcher("/404"), new AntPathRequestMatcher("/500")).permitAll()
 //                .requestMatchers(new AntPathRequestMatcher("/" )).permitAll()
 //
