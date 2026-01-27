@@ -910,11 +910,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             const type = this.dataset.type;
             console.log('[탭 클릭]', type);
             
-            if (type === 'pending') { 
-                alert('대기 주문 기능은 준비 중입니다.'); 
-                return; 
-            }
-            
             // 모든 탭에서 active 클래스 제거
             document.querySelectorAll('.detail-tab, .detail-tab-active').forEach(function(t) {
                 t.classList.remove('detail-tab-active');
@@ -926,15 +921,47 @@ document.addEventListener('DOMContentLoaded', async function() {
             this.classList.add('detail-tab-active');
             
             const btn = document.getElementById('submit-btn');
+            const inputCard = document.querySelector('.detail-input-card');
+            const resultArea = document.querySelector('.detail-order-result');
+            const sentimentSection = document.querySelector('.detail-sentiment-section');
+            const pendingArea = document.getElementById('pending-list-area');
+            
             const totalMoney = document.getElementById('total-money');
             const availableLabel = document.getElementById('available-label');
             const sentimentDir = document.getElementById('sentiment-direction');
-            const sentimentPercent = document.getElementById('sentiment-percent');
+    		const sentimentPercent = document.getElementById('sentiment-percent');
             const buyPercent = document.getElementById('buy-percent');
             const sellPercent = document.getElementById('sell-percent');
             const buyBar = document.getElementById('buy-bar');
             const sellBar = document.getElementById('sell-bar');
             
+            // 1. 대기(Pending) 탭 처리
+            if (type === 'pending') {
+                console.log('[UI 변경] 대기 목록 모드');
+                // 매수/매도 관련 UI 숨기기
+                if(inputCard) inputCard.style.display = 'none';
+                if(resultArea) resultArea.style.display = 'none';
+                if(sentimentSection) sentimentSection.style.display = 'none';
+                if(btn) btn.style.display = 'none';
+                
+                // 대기 리스트 영역 보이기
+                if(pendingArea) {
+                    pendingArea.style.display = 'flex';
+                }
+    
+                // AJAX 데이터 로드 함수 호출
+                loadPendingOrders(); 
+                return; // 대기 탭일 경우 아래 매수/매도 로직 실행 방지
+            }
+    
+            // 2. 매수/매도 탭 공통 처리 (대기 영역 숨기기)
+            if(pendingArea) pendingArea.style.display = 'none';
+            if(inputCard) inputCard.style.display = 'flex';
+            if(resultArea) resultArea.style.display = 'flex';
+            if(sentimentSection) sentimentSection.style.display = 'block';
+            if(btn) btn.style.display = 'block';
+    
+            // 3. 매수(Buy) 모드 로직
             if (type === 'buy') {
                 console.log('[UI 변경] 매수 모드');
                 btn.textContent = '매수';
@@ -943,9 +970,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 availableLabel.textContent = '구매 가능 금액';
                 sentimentDir.textContent = '매수';
                 sentimentDir.className = 'detail-red-text';
-
-                
-                // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > 손실회피 > FOMO)
+    
                 const urlParams = new URLSearchParams(window.location.search);
                 const stockCode = urlParams.get('code');
                 console.log('[종목 코드]', stockCode);
@@ -1048,6 +1073,53 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 });
+
+// 대기 목록 로드 함수
+function loadPendingOrders() {
+    const tbody = $('#pending-tbody');
+    
+    $.ajax({
+        url: contextPath + '/api/stock/pending-list',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            tbody.empty();
+
+            if (data.length === 0) {
+                // 데이터가 없을 때
+                tbody.append('<tr class="p-empty-row"><td colspan="4" class="p-empty-msg">미체결 내역이 없습니다.</td></tr>');
+            } else {
+                data.forEach(order => {
+                    const typeClass = order.transactionType === 'BUY' ? 'buy' : 'sell';
+                    const typeText = order.transactionType === 'BUY' ? '매수' : '매도';
+                    
+                    let row = `<tr>
+                        <td>
+                            <span class="p-stock-name">${order.stockCode}</span>
+                            <span class="p-type ${typeClass}">${typeText}</span>
+                        </td>
+                        <td>
+                            <span class="p-price">${order.orderPrice.toLocaleString()}원</span>
+                            <span class="p-qty">${order.quantity}주</span>
+                        </td>
+                        <td><span class="p-status">대기</span></td>
+                        <td>
+                            <div class="p-btn-group">
+                                <button class="p-edit-btn" onclick="openEditModal(${order.orderId})">정정</button>
+                                <button class="p-cancel-btn" onclick="cancelOrder(${order.orderId})">취소</button>
+                            </div>
+                        </td>
+                    </tr>`;
+                    tbody.append(row);
+                });
+            }
+        },
+        error: function(err) {
+            console.error("대기 목록 로드 실패:", err);
+            tbody.html('<tr><td colspan="4">데이터를 불러오지 못했습니다.</td></tr>');
+        }
+    });
+}
 
 // 페이지 로드 시 관심종목 상태 확인
 function checkFavoriteStatus() {
