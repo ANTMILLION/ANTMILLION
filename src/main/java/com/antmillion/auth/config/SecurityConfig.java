@@ -80,7 +80,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/ws-stomp/**")).permitAll()
 //                // 여기는 “로그인 필요”
 //                .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
-//                .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated() >>>>>>> refs/heads/develop
+//                .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
 //                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
 
                 // 이외에는 오픈
@@ -115,11 +115,12 @@ public class SecurityConfig {
                 res.sendRedirect(req.getContextPath() + "/login");
             }));
 
-        // RT 쿠키로 화면 요청 인증
-        http.addFilterBefore(rtCookieAuthFilter(), UsernamePasswordAuthenticationFilter.class);
-
+        
         // AT 헤더로 API 인증
         http.addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+        
+        // RT 쿠키로 화면 요청 인증
+        http.addFilterBefore(rtCookieAuthFilter(), UsernamePasswordAuthenticationFilter.class);
           return http.build();
     }
 }
