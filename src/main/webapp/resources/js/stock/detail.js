@@ -943,13 +943,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 availableLabel.textContent = '구매 가능 금액';
                 sentimentDir.textContent = '매수';
                 sentimentDir.className = 'detail-red-text';
-                sentimentPercent.textContent = '78';
-                buyPercent.textContent = '78%';
-                buyPercent.style.width = '78%';
-                sellPercent.textContent = '22%';
-                sellPercent.style.width = '22%';
-                buyBar.style.width = '78%';
-                sellBar.style.width = '22%';
+
                 
                 // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > 손실회피 > FOMO)
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1015,13 +1009,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 availableLabel.textContent = '판매 가능 수량';
                 sentimentDir.textContent = '매도';
                 sentimentDir.className = 'detail-blue-text';
-                sentimentPercent.textContent = '22';
-                buyPercent.textContent = '22%';
-                buyPercent.style.width = '22%';
-                sellPercent.textContent = '78%';
-                sellPercent.style.width = '78%';
-                buyBar.style.width = '22%';
-                sellBar.style.width = '78%';
+
                 
                 // 매도 탭 클릭 시 위험회피 체크
                 const urlParams2 = new URLSearchParams(window.location.search);
@@ -1228,3 +1216,563 @@ function checkMockStatus() {
 window.enableMockMode = enableMockMode;
 window.disableMockMode = disableMockMode;
 window.checkMockStatus = checkMockStatus;
+
+// =========================================
+// 주문 UI 기능 (완전 수정 버전)
+// detail.js 파일 맨 끝에 추가하세요
+// =========================================
+
+(function() {
+    console.log('=== 주문 UI 초기화 시작 ===');
+    
+    const tabLimit = document.getElementById('tab-limit');
+    const tabMarket = document.getElementById('tab-market');
+    const priceInput = document.getElementById('order-price-input');
+    const quantityInput = document.getElementById('order-quantity-input');
+    const qtyMinus = document.getElementById('qty-minus');
+    const qtyPlus = document.getElementById('qty-plus');
+    const submitBtn = document.getElementById('submit-btn');
+    const orderModal = document.getElementById('order-modal');
+    const modalClose = document.getElementById('modal-close');
+    const modalCancel = document.getElementById('modal-cancel');
+    const modalConfirm = document.getElementById('modal-confirm');
+    
+    const tabBtns = document.querySelectorAll('.detail-tab, .detail-tab-active');
+    const presetBtns = document.querySelectorAll('.detail-preset-btn');
+    
+    let currentOrderType = 'limit';
+    let currentTransactionType = 'buy';
+    let currentPrice = 0;
+    let availableBalance = 0;
+    let ownedQuantity = 0; // 보유 주식 수량
+    let isBalanceLoaded = false;
+    let isQuantityLoaded = false;
+    
+    // ===== 실시간 현재가 가져오기 =====
+    function getCurrentPrice() {
+        const priceElement = document.getElementById('detail-current-price-h3');
+        if (priceElement) {
+            const priceText = priceElement.textContent.trim();
+            const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+            if (price > 0) {
+                currentPrice = price;
+                console.log('현재가 업데이트:', currentPrice.toLocaleString());
+                return currentPrice;
+            }
+        }
+        return currentPrice;
+    }
+    
+    // ===== 서버에서 잔액 가져오기 =====
+    function fetchAvailableBalance() {
+        console.log('잔액 조회 시작...');
+        fetch(contextPath + '/api/account/balance')
+            .then(response => {
+                console.log('잔액 API 응답 상태:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('잔액 조회 응답:', data);
+                if (data.success) {
+                    availableBalance = data.balance || 0;
+                    isBalanceLoaded = true;
+                    console.log('✓ 잔액 로드 성공:', availableBalance.toLocaleString() + '원');
+                    updateBalanceDisplay();
+                } else {
+                    console.error('잔액 조회 실패:', data.message);
+                    // 실패해도 0으로 표시
+                    availableBalance = 0;
+                    isBalanceLoaded = true;
+                    updateBalanceDisplay();
+                }
+            })
+            .catch(error => {
+                console.error('잔액 조회 오류:', error);
+                // 오류 시에도 0으로 표시
+                availableBalance = 0;
+                isBalanceLoaded = true;
+                updateBalanceDisplay();
+            });
+    }
+    
+    // ===== 보유 주식 수량 가져오기 (매도용) =====
+    function fetchOwnedQuantity() {
+        const stockCode = new URLSearchParams(window.location.search).get('code');
+        if (!stockCode) {
+            console.error('종목 코드 없음');
+            return;
+        }
+        
+        console.log('보유 수량 조회 시작...');
+        fetch(contextPath + '/api/account/holdings?stockCode=' + stockCode)
+            .then(response => response.json())
+            .then(data => {
+                console.log('보유 수량 응답:', data);
+                if (data.success) {
+                    ownedQuantity = data.quantity || 0;
+                    isQuantityLoaded = true;
+                    console.log('✓ 보유 수량:', ownedQuantity + '주');
+                } else {
+                    ownedQuantity = 0;
+                    isQuantityLoaded = true;
+                }
+            })
+            .catch(error => {
+                console.error('보유 수량 조회 오류:', error);
+                ownedQuantity = 0;
+                isQuantityLoaded = true;
+            });
+    }
+    
+    // ===== 화면 표시 업데이트 =====
+    function updateBalanceDisplay() {
+        const labelElement = document.getElementById('available-label');
+        const balanceElement = document.querySelector('.detail-order-result .detail-row .detail-big-price');
+        
+        if (currentTransactionType === 'buy') {
+            labelElement.textContent = '구매 가능 금액';
+            if (balanceElement) {
+                balanceElement.textContent = availableBalance.toLocaleString() + '원';
+            }
+        } else if (currentTransactionType === 'sell') {
+            labelElement.textContent = '판매 가능 수량';
+            if (balanceElement) {
+                balanceElement.textContent = ownedQuantity.toLocaleString() + '주';
+            }
+        }
+    }
+    
+    // ===== 초기 설정 =====
+    function initialize() {
+        console.log('초기 설정 시작...');
+        
+        // 현재가 가져오기
+        getCurrentPrice();
+        
+        // 가격 입력 필드 초기화
+        if (priceInput && currentPrice > 0) {
+            priceInput.value = currentPrice.toLocaleString();
+            console.log('✓ 가격 초기화:', priceInput.value);
+        }
+        
+        // 잔액 및 보유 수량 가져오기
+        fetchAvailableBalance();
+        fetchOwnedQuantity();
+        
+        // 초기 주문금액 계산
+        setTimeout(updateOrderAmount, 100);
+        
+        console.log('✓ 초기 설정 완료');
+    }
+    
+    // 페이지 로드 후 초기화
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        initialize();
+    }
+    
+    // 지정가/시장가 탭 전환
+    if (tabLimit) {
+        tabLimit.addEventListener('click', function() {
+            console.log('지정가 선택');
+            currentOrderType = 'limit';
+            tabLimit.classList.add('detail-active-type');
+            tabLimit.style.color = '';
+            tabMarket.classList.remove('detail-active-type');
+            tabMarket.style.color = '#6B7280';
+            
+            priceInput.disabled = false;
+            getCurrentPrice();
+            priceInput.value = currentPrice.toLocaleString();
+            updateOrderAmount();
+        });
+    }
+    
+    if (tabMarket) {
+        tabMarket.addEventListener('click', function() {
+            console.log('시장가 선택');
+            currentOrderType = 'market';
+            tabMarket.classList.add('detail-active-type');
+            tabMarket.style.color = '';
+            tabLimit.classList.remove('detail-active-type');
+            tabLimit.style.color = '#6B7280';
+            
+            // 시장가일 때도 현재가를 숫자로 표시
+            priceInput.disabled = true;
+            getCurrentPrice();
+            priceInput.value = currentPrice.toLocaleString();
+            updateOrderAmount();
+        });
+    }
+    
+    // 매수/매도 탭 전환
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            
+            tabBtns.forEach(b => {
+                b.classList.remove('detail-tab-active');
+                b.classList.add('detail-tab');
+            });
+            this.classList.remove('detail-tab');
+            this.classList.add('detail-tab-active');
+            
+            if (type === 'buy') {
+                currentTransactionType = 'buy';
+                submitBtn.textContent = '매수';
+                submitBtn.classList.remove('sell-mode');
+                updateBalanceDisplay();
+            } else if (type === 'sell') {
+                currentTransactionType = 'sell';
+                submitBtn.textContent = '매도';
+                submitBtn.classList.add('sell-mode');
+                fetchOwnedQuantity(); // 매도 시 보유 수량 새로고침
+                setTimeout(updateBalanceDisplay, 100);
+            }
+        });
+    });
+    
+    // 수량 조절
+    if (qtyMinus) {
+        qtyMinus.addEventListener('click', function() {
+            let qty = parseInt(quantityInput.value) || 1;
+            if (qty > 1) {
+                quantityInput.value = qty - 1;
+                updateOrderAmount();
+            }
+        });
+    }
+    
+    if (qtyPlus) {
+        qtyPlus.addEventListener('click', function() {
+            let qty = parseInt(quantityInput.value) || 0;
+            quantityInput.value = qty + 1;
+            updateOrderAmount();
+        });
+    }
+    
+    if (quantityInput) {
+        quantityInput.addEventListener('input', updateOrderAmount);
+    }
+    
+    if (priceInput) {
+        priceInput.addEventListener('input', function() {
+            if (currentOrderType === 'limit') {
+                let value = this.value.replace(/[^0-9]/g, '');
+                if (value) {
+                    this.value = parseInt(value).toLocaleString();
+                }
+                updateOrderAmount();
+            }
+        });
+    }
+    
+    // ===== 퍼센트 버튼 =====
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            console.log('=== 퍼센트 버튼 클릭 ===');
+            
+            const percent = this.getAttribute('data-percent');
+            console.log('선택된 퍼센트:', percent + '%');
+            
+            // 버튼 활성화
+            presetBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // 현재가 확인
+            getCurrentPrice();
+            
+            let price = currentPrice;
+            if (currentOrderType === 'limit') {
+                const inputPrice = parseInt(priceInput.value.replace(/[^0-9]/g, ''));
+                if (inputPrice > 0) {
+                    price = inputPrice;
+                }
+            }
+            
+            let quantity = 0;
+            
+            if (currentTransactionType === 'buy') {
+                // 매수: 잔액 기반 계산
+                if (!isBalanceLoaded) {
+                    alert('잔액 정보를 불러오는 중입니다.\n잠시 후 다시 시도해주세요.');
+                    return;
+                }
+                
+                if (availableBalance <= 0) {
+                    alert('구매 가능 금액이 없습니다.');
+                    return;
+                }
+                
+                console.log('매수 계산:', { percent: percent + '%', price: price.toLocaleString(), balance: availableBalance.toLocaleString() });
+                
+                if (price > 0) {
+                    if (percent == 100) {
+                        quantity = Math.floor(availableBalance / price);
+                    } else {
+                        quantity = Math.floor((availableBalance * percent / 100) / price);
+                    }
+                }
+            } else if (currentTransactionType === 'sell') {
+                // 매도: 보유 수량 기반 계산
+                if (!isQuantityLoaded) {
+                    alert('보유 수량 정보를 불러오는 중입니다.\n잠시 후 다시 시도해주세요.');
+                    return;
+                }
+                
+                if (ownedQuantity <= 0) {
+                    alert('판매 가능한 주식이 없습니다.');
+                    return;
+                }
+                
+                console.log('매도 계산:', { percent: percent + '%', ownedQuantity: ownedQuantity });
+                
+                if (percent == 100) {
+                    quantity = ownedQuantity;
+                } else {
+                    quantity = Math.floor(ownedQuantity * percent / 100);
+                }
+            }
+            
+            quantity = Math.max(1, quantity);
+            console.log('→ 계산된 수량:', quantity + '주');
+            quantityInput.value = quantity;
+            updateOrderAmount();
+        });
+    });
+    
+    // ===== 주문 금액 업데이트 =====
+    function updateOrderAmount() {
+        let price = 0;
+        
+        if (currentOrderType === 'limit') {
+            price = parseInt(priceInput.value.replace(/[^0-9]/g, '')) || 0;
+        } else {
+            getCurrentPrice();
+            price = currentPrice;
+        }
+        
+        const quantity = parseInt(quantityInput.value) || 0;
+        const totalMoney = price * quantity;
+        
+        const totalMoneyElement = document.getElementById('total-money');
+        if (totalMoneyElement) {
+            if (totalMoney > 0) {
+                totalMoneyElement.textContent = totalMoney.toLocaleString() + '원';
+            } else {
+                totalMoneyElement.textContent = '0원';
+            }
+        }
+    }
+    
+    // 매수/매도 버튼
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function() {
+            getCurrentPrice();
+            
+            const quantity = parseInt(quantityInput.value) || 0;
+            let price = 0;
+            
+            if (currentOrderType === 'limit') {
+                price = parseInt(priceInput.value.replace(/[^0-9]/g, '')) || 0;
+                if (price <= 0) {
+                    alert('가격을 입력해주세요.');
+                    return;
+                }
+            } else {
+                price = currentPrice;
+                if (price <= 0) {
+                    alert('현재가를 확인할 수 없습니다.');
+                    return;
+                }
+            }
+            
+            if (quantity <= 0) {
+                alert('수량을 입력해주세요.');
+                return;
+            }
+            
+            // 매수 검증
+            if (currentTransactionType === 'buy') {
+                if (!isBalanceLoaded) {
+                    alert('잔액 정보를 불러오는 중입니다.\n잠시 후 다시 시도해주세요.');
+                    return;
+                }
+                
+                const totalPrice = price * quantity;
+                if (totalPrice > availableBalance) {
+                    alert('구매 가능 금액이 부족합니다.\n\n필요 금액: ' + totalPrice.toLocaleString() + '원\n보유 금액: ' + availableBalance.toLocaleString() + '원');
+                    return;
+                }
+            }
+            
+            // 매도 검증
+            if (currentTransactionType === 'sell') {
+                if (!isQuantityLoaded) {
+                    alert('보유 수량 정보를 불러오는 중입니다.\n잠시 후 다시 시도해주세요.');
+                    return;
+                }
+                
+                if (quantity > ownedQuantity) {
+                    alert('판매 가능한 수량이 부족합니다.\n\n주문 수량: ' + quantity + '주\n보유 수량: ' + ownedQuantity + '주');
+                    return;
+                }
+            }
+            
+            updateModalInfo(price, quantity);
+            orderModal.classList.add('active');
+        });
+    }
+    
+    // 모달 정보 업데이트
+    function updateModalInfo(price, quantity) {
+        const stockName = document.querySelector('.detail-stock-name').textContent.trim().split(' ')[0];
+        const orderTypeText = currentOrderType === 'limit' ? '지정가' : '시장가';
+        const totalMoney = price * quantity;
+        
+        document.getElementById('modal-title').textContent = 
+            currentTransactionType === 'buy' ? '매수 주문 확인' : '매도 주문 확인';
+        document.getElementById('modal-stock-name').textContent = stockName;
+        document.getElementById('modal-order-type').textContent = orderTypeText;
+        
+        const priceRow = document.getElementById('modal-price-row');
+        priceRow.style.display = 'flex';
+        if (currentOrderType === 'market') {
+            document.getElementById('modal-price').textContent = price.toLocaleString() + '원 (시장가)';
+        } else {
+            document.getElementById('modal-price').textContent = price.toLocaleString() + '원';
+        }
+        
+        document.getElementById('modal-quantity').textContent = quantity + '주';
+        
+        const totalElement = document.getElementById('modal-total');
+        totalElement.textContent = totalMoney.toLocaleString() + '원';
+        
+        totalElement.classList.remove('buy', 'sell');
+        totalElement.classList.add(currentTransactionType);
+        
+        const confirmBtn = document.getElementById('modal-confirm');
+        confirmBtn.textContent = currentTransactionType === 'buy' ? '매수' : '매도';
+        confirmBtn.classList.remove('buy', 'sell');
+        confirmBtn.classList.add(currentTransactionType);
+    }
+    
+    // 모달 닫기
+    if (modalClose) {
+        modalClose.addEventListener('click', () => orderModal.classList.remove('active'));
+    }
+    if (modalCancel) {
+        modalCancel.addEventListener('click', () => orderModal.classList.remove('active'));
+    }
+    if (orderModal) {
+        orderModal.addEventListener('click', function(e) {
+            if (e.target === orderModal) orderModal.classList.remove('active');
+        });
+    }
+    
+    // 주문 확인
+    if (modalConfirm) {
+        modalConfirm.addEventListener('click', function() {
+            const stockCode = new URLSearchParams(window.location.search).get('code');
+            const quantity = parseInt(quantityInput.value) || 0;
+            
+            let price = 0;
+            if (currentOrderType === 'limit') {
+                price = parseInt(priceInput.value.replace(/[^0-9]/g, '')) || 0;
+            } else {
+                price = currentPrice;
+            }
+            
+            const orderData = {
+                stockCode: stockCode,
+                transactionType: currentTransactionType.toUpperCase(),
+                orderType: currentOrderType.toUpperCase(),
+                quantity: quantity,
+                orderPrice: price
+            };
+            
+            console.log('주문 전송:', orderData);
+            
+            fetch(contextPath + '/api/stock/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('주문 결과:', data);
+                
+                if (data.success) {
+                    alert('주문이 완료되었습니다.');
+                    orderModal.classList.remove('active');
+                    
+                    quantityInput.value = '1';
+                    if (currentOrderType === 'limit') {
+                        getCurrentPrice();
+                        priceInput.value = currentPrice.toLocaleString();
+                    }
+                    updateOrderAmount();
+                    presetBtns.forEach(b => b.classList.remove('active'));
+                    
+                    // 잔액/보유수량 새로고침
+                    setTimeout(() => {
+                        fetchAvailableBalance();
+                        fetchOwnedQuantity();
+                    }, 1000);
+                } else {
+                    alert('주문 실패: ' + (data.message || '알 수 없는 오류'));
+                }
+            })
+            .catch(error => {
+                console.error('주문 오류:', error);
+                alert('주문 중 오류가 발생했습니다.');
+            });
+        });
+    }
+    
+    // 실시간 가격 감지
+    const priceElement = document.getElementById('detail-current-price-h3');
+    if (priceElement) {
+        const observer = new MutationObserver(function() {
+            const prevPrice = currentPrice;
+            getCurrentPrice();
+            
+            if (prevPrice !== currentPrice) {
+                console.log('가격 변동:', prevPrice.toLocaleString() + '원 → ' + currentPrice.toLocaleString() + '원');
+                
+                // 지정가이고 입력값이 이전 가격이었으면 새 가격으로 업데이트
+                if (currentOrderType === 'limit') {
+                    const inputPrice = parseInt(priceInput.value.replace(/[^0-9]/g, '')) || 0;
+                    if (inputPrice === 0 || inputPrice === prevPrice) {
+                        priceInput.value = currentPrice.toLocaleString();
+                    }
+                }
+                
+                // 시장가일 때 자동 업데이트
+                if (currentOrderType === 'market') {
+                    priceInput.value = currentPrice.toLocaleString();
+                    updateOrderAmount();
+                }
+            }
+        });
+        
+        observer.observe(priceElement, {
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
+        
+        console.log('✓ 실시간 가격 감지 시작');
+    }
+    
+    // 주기적 새로고침 (30초마다)
+    setInterval(() => {
+        fetchAvailableBalance();
+        if (currentTransactionType === 'sell') {
+            fetchOwnedQuantity();
+        }
+    }, 30000);
+    
+    console.log('=== 주문 UI 초기화 완료 ===');
+})();
