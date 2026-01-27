@@ -39,6 +39,21 @@ function createMainStockItemHTML(stock, index) {
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
     const currentPrice = Number(stock.stck_prpr).toLocaleString('ko-KR') + '원';
+    let changeText = '0.00%';
+    let changeClass = '';
+
+    if (stock.prdy_ctrt) {
+        const changeValue = parseFloat(stock.prdy_ctrt);
+        if (changeValue > 0) {
+            changeText = '+' + changeValue + '%';
+            changeClass = 'positive';
+        } else if (changeValue < 0) {
+            changeText = changeValue + '%';
+            changeClass = 'negative';
+        } else {
+            changeText = changeValue + '%';
+        }
+    }
 
     return `
         <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
@@ -53,15 +68,15 @@ function createMainStockItemHTML(stock, index) {
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
             <div class="main-stocklist-price">${currentPrice}</div>
-            <div class="main-stocklist-change">0.00%</div>
+            <div class="main-stocklist-change ${changeClass}">${changeText}</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
-                    <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
-                    <div class="main-stocklist-sentiment-sell" style="width: 50%;"></div>
+                    <div class="main-stocklist-sentiment-buy main-sentiment-inactive" style="width: 50%;"></div>
+                    <div class="main-stocklist-sentiment-sell main-sentiment-inactive" style="width: 50%;"></div>
                 </div>
                 <div class="main-stocklist-sentiment-labels">
-                    <span class="main-stocklist-sentiment-buy-label">50</span>
-                    <span class="main-stocklist-sentiment-sell-label">50</span>
+                    <span class="main-stocklist-sentiment-buy-label"></span>
+                    <span class="main-stocklist-sentiment-sell-label"></span>
                 </div>
             </div>
         </div>
@@ -643,6 +658,9 @@ function updateStockRealtimePrice(stockCode, tradeData) {
         const sellLabel = stockItem.querySelector('.main-stocklist-sentiment-sell-label');
 
         if (buyBar && sellBar) {
+            buyBar.classList.remove('main-sentiment-inactive');
+            sellBar.classList.remove('main-sentiment-inactive');
+
             buyBar.style.width = buyRate + '%';
             sellBar.style.width = sellRate + '%';
         }
