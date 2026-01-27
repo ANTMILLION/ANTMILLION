@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.antmillion.auth.dto.SignUpRequest;
 import com.antmillion.auth.jwt.CookieUtil;
@@ -66,10 +67,10 @@ public class KakaoController {
     public String kakaoCallback(
             javax.servlet.http.HttpServletRequest request,
             HttpServletResponse response,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String code,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String state,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String error,
-            @org.springframework.web.bind.annotation.RequestParam(required = false, name="error_description") String errorDesc
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String state,
+            @RequestParam(required = false) String error,
+            @RequestParam(required = false, name="error_description") String errorDesc
     ) {
         // 1) 카카오에서 에러로 온 경우
         if (error != null) {
@@ -111,6 +112,7 @@ public class KakaoController {
         if (userId != null) {
             var tokens = signService.issueTokensByUserId(userId);
             CookieUtil.addHttpOnlyCookie(response, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+            CookieUtil.addHttpOnlyCookie(response, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
             return "redirect:/";
         }
 

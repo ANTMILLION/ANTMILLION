@@ -108,6 +108,7 @@ public class MyInfoController {
 
             // RT 쿠키 제거(클라이언트는 응답 성공 후 AT(sessionStorage) 제거)
             CookieUtil.deleteCookie(response, "RT");
+            CookieUtil.deleteCookie(response, "AT");
             SecurityContextHolder.clearContext();
 
             return Map.of("ok", true, "redirect", "/");

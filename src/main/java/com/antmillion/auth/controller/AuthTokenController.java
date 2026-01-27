@@ -5,7 +5,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,53 +24,50 @@ import io.jsonwebtoken.Claims;
 @RequestMapping("/auth")
 public class AuthTokenController {
 
-  private final JwtProvider jwtProvider;
-  private final RefreshTokenStore refreshTokenStore;
-  private final SignService signService;
+    private final JwtProvider jwtProvider;
+    private final RefreshTokenStore refreshTokenStore;
+    private final SignService signService;
 
-  public AuthTokenController(JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore, SignService signService) {
-    this.jwtProvider = jwtProvider;
-    this.refreshTokenStore = refreshTokenStore;
-    this.signService = signService;
-  }
-
-  @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Map<String, Object> refresh(HttpServletRequest req, HttpServletResponse res) {
-    String rt = CookieUtil.getCookieValue(req, "RT");
-    if (rt == null || rt.isBlank() || !jwtProvider.isValid(rt)) {
-      res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return Map.of("ok", false, "message", "NO_REFRESH");
+    public AuthTokenController(JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore, SignService signService) {
+        this.jwtProvider = jwtProvider;
+        this.refreshTokenStore = refreshTokenStore;
+        this.signService = signService;
     }
 
-    try {
-      Claims claims = jwtProvider.parseClaims(rt);
-      long userId = Long.parseLong(claims.getSubject());
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, Object>> refresh(HttpServletRequest req, HttpServletResponse res) {
+        String rt = CookieUtil.getCookieValue(req, "RT");
+        if (rt == null || rt.isBlank() || !jwtProvider.isValid(rt)) {
+            CookieUtil.deleteCookie(res, "RT");
+            CookieUtil.deleteCookie(res, "AT");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("ok", false, "message", "NO_REFRESH"));
+        }
 
-      String saved = refreshTokenStore.get(userId);
-      if (saved == null || !saved.equals(rt)) {
-        CookieUtil.deleteCookie(res, "RT");
-        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return Map.of("ok", false, "message", "REFRESH_MISMATCH");
-      }
+        Claims claims = jwtProvider.parseClaims(rt);
+        long userId = Long.parseLong(claims.getSubject());
 
-      // rotate: 새 AT/RT 발급 + Redis 갱신
-      TokenPair tokens = signService.issueTokensByUserId(userId);
+        String saved = refreshTokenStore.get(userId);
+        if (saved == null || !saved.equals(rt)) {
+            CookieUtil.deleteCookie(res, "RT");
+            CookieUtil.deleteCookie(res, "AT");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("ok", false, "message", "REFRESH_MISMATCH"));
+        }
 
-      // RT는 쿠키로만 저장
-      CookieUtil.addHttpOnlyCookie(res, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+        TokenPair tokens = signService.issueTokensByUserId(userId);
 
-      // AT는 헤더 + JSON으로만 전달 (쿠키 X)
-      res.setHeader("Authorization", "Bearer " + tokens.getAccessToken());
+        // RT/AT 둘 다 쿠키로 갱신
+        CookieUtil.addHttpOnlyCookie(res, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+        CookieUtil.addHttpOnlyCookie(res, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
 
-      return Map.of(
-          "ok", true,
-          "accessToken", tokens.getAccessToken(),
-          "accessTtlSeconds", tokens.getAccessTtlSeconds()
-      );
+        // JS가 헤더로도 쓰고 싶으면 내려준다
+        res.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken());
 
-    } catch (Exception e) {
-      res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return Map.of("ok", false, "message", "REFRESH_FAIL");
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "accessToken", tokens.getAccessToken(),
+                "accessTtlSeconds", tokens.getAccessTtlSeconds()
+        ));
     }
-  }
 }

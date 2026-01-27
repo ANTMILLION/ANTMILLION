@@ -27,27 +27,6 @@
             <span>미션</span>
         </a>
     </nav>
-    <div class="sidebar-menu-bottom">
-        <!-- 로그인 상태: 로그아웃 버튼 -->
-        <sec:authorize access="isAuthenticated()">
-            <form action="${cpath}/logout" method="post"
-                onsubmit="if(!confirm('로그아웃 하시겠습니까?')) return false; if(window.clearAccessToken) clearAccessToken(); return true;">
-                <button type="submit" class="sidebar-menu-item btn-link">
-                    <span><img src="${cpath}/resources/images/icon/logout.png" alt="로그아웃"></span>
-                    <span>로그아웃</span>
-                </button>
-            </form>
-        </sec:authorize>
-
-        <!-- 비로그인 상태: 로그인 버튼 -->
-        <sec:authorize access="isAnonymous()">
-            <button type="button" class="sidebar-menu-item btn-link"
-                    onclick="location.href='${cpath}/login'">
-                <span><img src="${cpath}/resources/images/icon/login.png" alt="로그인"></span>
-                <span>로그인</span>
-            </button>
-        </sec:authorize>
-    </div>
 </aside>
 <script>
     // 현재 페이지에 따라 active 클래스 추가

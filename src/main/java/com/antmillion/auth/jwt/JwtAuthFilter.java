@@ -33,7 +33,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
             return;
         }
-        
+
         if (!jwtProvider.isValid(token)) {
             SecurityContextHolder.clearContext();
             chain.doFilter(req, res);
@@ -45,7 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             Long userId = Long.valueOf(claims.getSubject());
 
             UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                    new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
 
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -55,11 +55,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(HttpServletRequest req) {
-        String auth = req.getHeader("Authorization");
-        if (auth != null && auth.startsWith("Bearer ")) {
-            return auth.substring(7);
+        // 1) Authorization: Bearer <AT>
+        String bearer = req.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
         }
-        
+
+        // 2) HttpOnly 쿠키 "AT" fallback (JSP 화면 요청용)
+        String atCookie = CookieUtil.getCookieValue(req, "AT");
+        if (atCookie != null && !atCookie.isBlank()) {
+            return atCookie;
+        }
         return null;
     }
 }
