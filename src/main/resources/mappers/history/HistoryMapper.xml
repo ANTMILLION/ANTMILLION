@@ -109,5 +109,29 @@
         SET is_read = true
         WHERE history_id = #{historyId}
     </update>
+    
+       <!-- 최신 알림 조회 (알림창용) -->
+    <select id="selectRecentNotifications" resultType="com.antmillion.history.dto.HistoryDTO">
+        SELECT
+            h.history_id AS historyId,
+            h.user_id AS userId,
+            h.order_id AS orderId,
+            h.stock_code AS stockCode,
+            h.bias_type AS biasType,
+            h.message_detail AS messageDetail,
+            h.time,
+            h.is_read AS isRead,
+            s.stock_name AS stockName,
+            o.transaction_type AS transactionType,
+            o.quantity AS quantity,
+            o.order_price AS orderPrice,
+            (o.quantity * o.order_price) AS totalAmount
+        FROM history h
+        LEFT JOIN stock_order o ON h.order_id = o.order_id
+        LEFT JOIN stock s ON h.stock_code = s.stock_code
+        WHERE h.user_id = #{userId}
+        ORDER BY h.time DESC
+        LIMIT #{limit}
+    </select>
 
 </mapper>

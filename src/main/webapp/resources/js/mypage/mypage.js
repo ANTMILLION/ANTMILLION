@@ -1,4 +1,178 @@
 // ===========================
+// STOMP 웹소켓 관련 변수 (추가)
+// ===========================
+let stompClient = null;
+let subscribedStockTopics = {}; // 구독한 종목 토픽 저장 {stockCode: subscription}
+let currentHoldingStocks = []; // 현재 보유 중인 종목 정보 (code 포함)
+
+// 계좌 잔고
+let accountBalance = 0;
+
+// ===========================
+// STOMP 연결
+// ===========================
+function connectStompForStockHoldings() {
+    const url = contextPath + '/ws-stomp';
+    const socket = new SockJS(url);
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+        console.log('마이페이지 STOMP 연결 성공: ' + frame);
+
+        // 연결 성공 후 보유 종목들 구독
+        if (currentHoldingStocks.length > 0) {
+            subscribeHoldingStocks();
+        }
+    }, function(error) {
+        console.error('마이페이지 STOMP 연결 실패: ' + error);
+        // 5초 후 재연결 시도
+        setTimeout(connectStompForStockHoldings, 5000);
+    });
+}
+
+// ===========================
+// 보유 종목 백엔드 구독 및 STOMP 토픽 구독
+// ===========================
+function subscribeHoldingStocks() {
+    const stockCodes = currentHoldingStocks.map(stock => stock.code);
+
+    if (stockCodes.length === 0) return;
+
+    // 1. 백엔드에 한국투자증권 구독 요청
+    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0STCNT0', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(stockCodes)
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('마이페이지 백엔드 구독 완료:', response);
+
+            // 2. 프론트엔드 STOMP 토픽 구독
+            stockCodes.forEach(stockCode => {
+                subscribeStockTopicForHolding(stockCode);
+            });
+        })
+        .catch(error => {
+            console.error('마이페이지 백엔드 구독 실패:', error);
+        });
+}
+
+// ===========================
+// 개별 종목 STOMP 토픽 구독
+// ===========================
+function subscribeStockTopicForHolding(stockCode) {
+    if (subscribedStockTopics[stockCode]) {
+        console.log('이미 구독 중:', stockCode);
+        return;
+    }
+
+    const topic = '/topic/kis-trade/present' + stockCode;
+    const subscription = stompClient.subscribe(topic, function(message) {
+        const tradeData = JSON.parse(message.body);
+        console.log('마이페이지 실시간 데이터 수신:', tradeData);
+
+        // 화면 업데이트
+        updateStockHoldingRealtime(stockCode, tradeData);
+    });
+
+    subscribedStockTopics[stockCode] = subscription;
+    console.log('마이페이지 토픽 구독 완료:', topic);
+}
+
+// ===========================
+// 실시간 현재가로 주식 잔고 카드 업데이트
+// ===========================
+function updateStockHoldingRealtime(stockCode, tradeData) {
+    // 해당 종목의 DOM 요소 찾기
+    const stockCard = document.querySelector(`.mypage-stock-card[data-code="${stockCode}"]`);
+    if (!stockCard) return;
+
+    // 현재가 업데이트
+    const currentPrice = Number(tradeData.stckPrpr);
+    const currentPriceElement = stockCard.querySelector('.stock-current-price');
+    if (currentPriceElement) {
+        currentPriceElement.textContent = currentPrice.toLocaleString() + '원';
+    }
+
+    // 해당 종목의 보유 정보 찾기
+    const holdingStock = currentHoldingStocks.find(stock => stock.code === stockCode);
+    if (!holdingStock) return;
+
+    const shares = holdingStock.shares;
+    const buyPrice = holdingStock.buyPrice;
+
+    // 평가금액 = 현재가 × 보유수량
+    const totalValue = currentPrice * shares;
+
+    // 수익금액 = 평가금액 - 매수금액
+    const profit = totalValue - buyPrice;
+
+    // 수익률 = (수익금액 / 매수금액) × 100
+    const profitRate = ((profit / buyPrice) * 100).toFixed(2);
+
+    // currentHoldingStocks 배열의 해당 종목 데이터도 업데이트
+    holdingStock.currentPrice = currentPrice;
+    holdingStock.totalValue = totalValue;
+    holdingStock.profit = profit;
+    holdingStock.profitRate = profitRate;
+
+    // 평가금액 업데이트
+    const totalValueElement = stockCard.querySelector('.stock-total-value');
+    if (totalValueElement) {
+        totalValueElement.textContent = totalValue.toLocaleString() + '원';
+    }
+
+    // 수익금액 및 수익률 업데이트
+    const profitElement = stockCard.querySelector('.mypage-stock-profit');
+    if (profitElement) {
+        const profitClass = profit > 0 ? 'positive' : profit < 0 ? 'negative' : 'neutral';
+        const profitSign = profit > 0 ? '+' : '';
+
+        profitElement.className = `mypage-stock-profit ${profitClass}`;
+        profitElement.textContent = `${profitSign}${profit.toLocaleString()}원(${profitSign}${profitRate}%)`;
+    }
+
+    updateTotalAsset();
+}
+
+// ===========================
+// 모든 구독 해제
+// ===========================
+function unsubscribeAllHoldingStocks() {
+    console.log('마이페이지 구독 해제 시작...');
+
+    // 프론트엔드 STOMP 구독 해제
+    for (let stockCode in subscribedStockTopics) {
+        if (subscribedStockTopics[stockCode]) {
+            subscribedStockTopics[stockCode].unsubscribe();
+            console.log('토픽 구독 해제:', stockCode);
+        }
+    }
+    subscribedStockTopics = {};
+
+    // 백엔드 구독 해제
+    if (currentHoldingStocks.length > 0) {
+        fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0STCNT0', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            keepalive: true
+        })
+            .then(res => res.json())
+            .then(response => {
+                console.log('마이페이지 백엔드 구독 해제 완료:', response);
+            })
+            .catch(error => {
+                console.error('마이페이지 백엔드 구독 해제 실패:', error);
+            });
+    }
+}
+
+// ===========================
 // BiasType 매핑
 // ===========================
 const biasTypeMap = {
@@ -12,50 +186,6 @@ const biasTypeMap = {
 // 샘플 데이터
 // ===========================
 const sampleData = {
-    // 주식잔고 데이터
-    stockHoldings: [
-        {
-            name: '엔트밀리언',
-            shares: 10,
-            buyPrice: 100000,
-            currentPrice: 5000,
-            profit: -50000,
-            profitRate: -50.00,
-            avgBuyPrice: 10000,
-            totalValue: 50000
-        },
-        {
-            name: '삼성전자',
-            shares: 10,
-            buyPrice: 1017000,
-            currentPrice: 1293000,
-            profit: 276000,
-            profitRate: 27.14,
-            avgBuyPrice: 77000,
-            totalValue: 129300
-        },
-        {
-            name: '삼성전자',
-            shares: 10,
-            buyPrice: 1017000,
-            currentPrice: 1293000,
-            profit: 276000,
-            profitRate: 27.14,
-            avgBuyPrice: 77000,
-            totalValue: 129300
-        },
-        {
-            name: '신한지주',
-            shares: 20,
-            buyPrice: 1540000,
-            currentPrice: 1540000,
-            profit: 0,
-            profitRate: 0,
-            avgBuyPrice: 77000,
-            totalValue: 77000
-        }
-    ],
-    
     // 실현손익 데이터
     realizedProfits: [
         {
@@ -430,12 +560,44 @@ function renderInitialData() {
     renderTradingHistory('all');
 }
 
-// DB에서 주식 잔고 데이터를 가져오는 함수 (새로 추가)
+// DB에서 주식 잔고 데이터를 가져오는 함수 (수정)
 function loadStockHoldings() {
-    fetch(contextPath+'/mypage/api/stock-holdings') // 앞서 만든 컨트롤러 URL
+    // 1. 계좌 정보 조회 (잔고 가져오기)
+    fetch(contextPath + '/mypage/api/account-info')
+        .then(res => res.json())
+        .then(accountData => {
+            // 계좌 잔고 저장
+            accountBalance = accountData.balance || 0;
+            console.log('계좌 잔고:', accountBalance);
+
+            // 2. 주식 잔고 조회
+            return fetch(contextPath + '/mypage/api/stock-holdings');
+        })
         .then(res => res.json())
         .then(data => {
-            renderStockHoldings(data); // 데이터를 받아서 렌더링 함수에 전달
+            if (!data || data.length === 0) {
+                if (stockList) stockList.innerHTML = "<p class='no-data'>보유 중인 주식이 없습니다.</p>";
+                // 잔고만 있는 경우에도 총 자산 업데이트
+                currentHoldingStocks = [];
+                updateTotalAsset();
+                return;
+            }
+
+            // 현재 보유 종목 정보 저장 (code 포함)
+            currentHoldingStocks = data;
+
+            // 화면 렌더링
+            renderStockHoldings(data);
+
+            // 추가: 초기 총 자산 업데이트
+            updateTotalAsset();
+
+            // STOMP 연결 및 구독
+            if (stompClient && stompClient.connected) {
+                subscribeHoldingStocks();
+            } else {
+                connectStompForStockHoldings();
+            }
         })
         .catch(err => {
             console.error("주식 잔고 로드 실패:", err);
@@ -444,9 +606,50 @@ function loadStockHoldings() {
 }
 
 // ===========================
+// 총 자산 계산 및 업데이트
+// ===========================
+function updateTotalAsset() {
+    // 1. 보유 주식의 총 평가금액, 총 매수금액, 총 수익 계산
+    let totalStockValue = 0;  // 보유 주식 총 평가금액
+    let totalBuyPrice = 0;     // 총 매수금액
+    let totalProfit = 0;       // 총 수익금액
+
+    currentHoldingStocks.forEach(stock => {
+        totalStockValue += (stock.totalValue || 0);
+        totalBuyPrice += (stock.buyPrice || 0);
+        totalProfit += (stock.profit || 0);
+    });
+
+    // 2. 내 자산 총액 = 계좌 잔고 + 보유 주식 총 평가금액
+    const totalAsset = accountBalance + totalStockValue;
+
+    // 3. 총 평가손익률 = (총 평가손익 / 총 매수금액) × 100
+    const totalProfitRate = totalBuyPrice > 0
+        ? ((totalProfit / totalBuyPrice) * 100).toFixed(2)
+        : '0.00';
+
+    // 4. DOM 업데이트 - 내 자산 총액
+    const totalAssetElement = document.getElementById('totalAsset');
+    if (totalAssetElement) {
+        totalAssetElement.textContent = totalAsset.toLocaleString() + '원';
+    }
+
+    // 5. DOM 업데이트 - 총 평가 손익
+    const totalProfitElement = document.getElementById('totalProfit');
+    if (totalProfitElement) {
+        const profitClass = totalProfit > 0 ? 'positive' : totalProfit < 0 ? 'negative' : 'neutral';
+        const profitSign = totalProfit > 0 ? '+' : '';
+
+        // 기존 클래스를 유지하면서 positive/negative만 변경
+        totalProfitElement.className = `mypage-profit-amount ${profitClass}`;
+        totalProfitElement.textContent = `${profitSign}${totalProfit.toLocaleString()}원(${profitSign}${totalProfitRate}%)`;
+    }
+}
+
+// ===========================
 // 주식잔고 렌더링 (수정)
 // ===========================
-function renderStockHoldings(holdings) { // ✅ 매개변수 추가
+function renderStockHoldings(holdings) { // 매개변수 추가
     if (!stockList) return;
     
     // 데이터가 없을 때 처리 추가
@@ -461,14 +664,14 @@ function renderStockHoldings(holdings) { // ✅ 매개변수 추가
         const profitSign = stock.profit > 0 ? '+' : '';
         
         return `
-            <div class="mypage-stock-card">
+            <div class="mypage-stock-card" data-code="${stock.code}">
                 <div class="mypage-stock-header">
                     <div>
                         <div class="mypage-stock-name">${stock.name}</div>
                         <div class="mypage-stock-shares">현금 ${stock.shares}주</div>
                     </div>
                     <div class="mypage-stock-profit ${profitClass}">
-                        ${profitSign}${stock.profit.toLocaleString()}원(${profitSign}${stock.profitRate}%)
+                        ${profitSign}${stock.profit.toLocaleString()}원(${profitSign}${stock.profitRate ? stock.profitRate : '0.00'}%)
                     </div>
                 </div>
                 <div class="mypage-stock-details">
@@ -482,11 +685,11 @@ function renderStockHoldings(holdings) { // ✅ 매개변수 추가
                     </div>
                     <div class="mypage-stock-detail-item">
                         <span class="mypage-detail-label">평가 금액</span>
-                        <span class="mypage-detail-value">${stock.totalValue.toLocaleString()}원</span>
+                        <span class="mypage-detail-value stock-total-value">${stock.totalValue.toLocaleString()}원</span>
                     </div>
                     <div class="mypage-stock-detail-item">
                         <span class="mypage-detail-label">현재가</span>
-                        <span class="mypage-detail-value">${stock.currentPrice.toLocaleString()}원</span>
+                        <span class="mypage-detail-value stock-current-price">${stock.currentPrice.toLocaleString()}원</span>
                     </div>
                 </div>
             </div>
@@ -800,11 +1003,11 @@ function loadHistoryData() {
 
                 // 수정된 HTML 구조
                 const html = `
-                    <div class="mypage-warning-container">
+                    <div class="mypage-warning-container" data-stock-code="${history.stockCode}" data-bias-type="${history.biasType}" data-time="${history.time}">
                         <div class="mypage-warning-header">
                             <span class="warning-icon">⚠️</span>
                             <span class="warning-title">${biasInfo.title}</span>
-                            <span class="info-icon">ⓘ</span>
+                            <span class="info-icon" data-bias-type="${history.biasType}">ⓘ</span>
                         </div>
 
                         <div class="inner-trade-card">
@@ -837,11 +1040,37 @@ function loadHistoryData() {
             });
             
             console.log("렌더링 완료");
+            
+            // 툴팁 설정
+            setupBiasTooltips();
         })
         .catch(error => {
             console.error("심리경고 데이터 로드 실패:", error);
             alertList.innerHTML = "<p class='no-data'>심리경고 데이터를 불러오지 못했습니다.</p>";
         });
+}
+
+/**
+ * 편향 설명 툴팁 설정
+ */
+function setupBiasTooltips() {
+    const biasDescriptions = {
+        'RISK_AVERSION': '위험회피란? 전망이론에 따르면 투자자들은 이익 영역에서 확실한 작은 이익을 선호하는 경향이 있습니다.\n 주의: 성급한 매도를 경계하세요',
+        
+        'LOSS_AVERSION': '손실회피란? 투자자들은 이익보다 손실을 약 2.25배 더 크게 느끼며, 손실을 확정짓지 않으려는 경향이 있습니다.\n 주의: 손실 확정을 미루고 있지 않은지 확인하세요',
+        
+        'SUNK_COST': '매몰비용오류란? 이미 투자한 금액이 아깝다는 이유로 손실을 인정하지 못하는 심리 편향입니다. \n과거 비용은 회수할 수 없으므로 현재 시점에서 합리적 판단이 필요합니다',
+        
+        'FOMO': 'FOMO란? Fear Of Missing Out의 약자로, 급등 종목을 놓칠까봐 두려워 충분한 분석 없이 고점 매수하는 심리 편향입니다.\n 주의: 이미 상승한 종목은 조정 가능성이 높습니다'
+    };
+    
+    const infoIcons = document.querySelectorAll('.info-icon');
+    
+    infoIcons.forEach(icon => {
+        const biasType = icon.getAttribute('data-bias-type');
+        const description = biasDescriptions[biasType] || '심리 편향에 대한 설명입니다.';
+        icon.setAttribute('data-tooltip', description);
+    });
 }
 
 /**
@@ -881,3 +1110,97 @@ function formatPercent(num) {
     const sign = num >= 0 ? '+' : '';
     return `${sign}${num}%`;
 }
+// ===== 알림에서 이동 시 스크롤 + 강조 =====
+
+// URL 파라미터 읽기
+function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        stock: params.get('stock'),
+        bias: params.get('bias'),
+        time: params.get('time')  // 시간 추가
+    };
+}
+
+// 특정 경고로 스크롤 + 강조 (시간으로 정확히 매칭)
+function scrollToAlert(stockCode, biasType, time) {
+    console.log('[스크롤] 대상 찾기:', stockCode, biasType, time);
+    
+    // 모든 경고 카드 찾기
+    const alerts = document.querySelectorAll('.mypage-warning-container');
+    
+    alerts.forEach(alert => {
+        // data 속성에서 직접 가져오기
+        const dataStockCode = alert.getAttribute('data-stock-code');
+        const dataBiasType = alert.getAttribute('data-bias-type');
+        const dataTime = alert.getAttribute('data-time');
+        
+        console.log('[스크롤] 검사 중:', dataStockCode, dataBiasType, dataTime);
+        
+        // 시간 비교 (둘 다 밀리초로 변환)
+        const targetTime = new Date(time).getTime();
+        const alertTime = parseInt(dataTime);  // 문자열 → 숫자 변환!
+        
+        console.log('[스크롤] 시간 비교:', targetTime, '===', alertTime, '?', targetTime === alertTime);
+        
+        // 정확히 일치하는 경고 찾기
+        if (dataStockCode === stockCode && 
+            dataBiasType === biasType && 
+            targetTime === alertTime) {
+            
+            console.log('[스크롤] ✅ 정확한 대상 발견!', dataStockCode, dataBiasType, dataTime);
+            
+            // 스크롤
+            setTimeout(() => {
+                alert.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                
+                // 강조 효과
+                alert.classList.add('highlight');
+                
+                // 3초 후 제거
+                setTimeout(() => {
+                    alert.classList.remove('highlight');
+                }, 3000);
+                
+                // URL 파라미터 제거 (새로고침 시 정상 동작)
+                window.history.replaceState({}, document.title, '/antmillion/mypage');
+                console.log('[스크롤] URL 파라미터 제거 완료');
+                
+            }, 500);
+        }
+    });
+}
+
+// 페이지 로드 시 확인
+window.addEventListener('load', function() {
+    const params = getUrlParams();
+    
+    if (params.stock && params.bias && params.time) {
+        console.log('[알림 이동] 파라미터 감지:', params);
+        
+        // 0.1초 대기 후 스크롤 (데이터 로딩 대기)
+        setTimeout(() => {
+            scrollToAlert(params.stock, params.bias, params.time);
+        }, 100);
+    }
+});
+
+// ===========================
+// 페이지 떠날 때 구독 해제
+// ===========================
+window.addEventListener('beforeunload', function(e) {
+    unsubscribeAllHoldingStocks();
+
+    if (stompClient !== null && stompClient.connected) {
+        stompClient.disconnect(function() {
+            console.log('마이페이지 STOMP 연결 종료');
+        });
+    }
+});
+
+window.addEventListener('pagehide', function(e) {
+    unsubscribeAllHoldingStocks();
+});

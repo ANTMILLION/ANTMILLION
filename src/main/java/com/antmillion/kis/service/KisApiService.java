@@ -411,4 +411,22 @@ public class KisApiService {
 				.build().toUriString();
 
     }
+
+    public Integer getCurrentPrice(CurrentPriceRequest request) {
+        String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHKST01010100");
+        URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PRESENT_PRICE);
+        String url = UriComponentsBuilder.fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                .queryParam("FID_INPUT_ISCD", request.getStockCode())
+                .build().toUriString();
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisCurrentPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisCurrentPriceResponse.class);
+        KisCurrentPriceResponse responseBody = response.getBody();
+        if(responseBody != null && responseBody.getOutput() != null) {
+            return Integer.parseInt(responseBody.getOutput().getCurrentPrice());
+        }
+        throw new RuntimeException("현재가 조회 실패");
+    }
+
 }

@@ -15,4 +15,5 @@ public interface HistoryService {
     );
     int getUnreadCount(Long userId);
     void markAsRead(Long historyId);
+    List<HistoryDTO> getRecentNotifications(Long userId, int limit);
 }
