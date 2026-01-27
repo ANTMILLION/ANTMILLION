@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
+import com.antmillion.mypage.dto.RealizedProfitDTO;
 import com.antmillion.mypage.dto.StockHoldingsDTO;
 
 @Mapper
@@ -15,7 +16,7 @@ public interface MyPageMapper {
     List<StockHoldingsDTO> selectStockHoldings(Long accountId);
     
     // 2. 실현손익 조회
-    List<Map<String, Object>> selectRealizedProfit(Map<String, Object> params);
+    List<RealizedProfitDTO> selectRealizedProfit(Map<String, Object> params);
     
     // 3. 체결내역 조회
     List<ExecutedOrdersDTO> selectExecutedOrders(

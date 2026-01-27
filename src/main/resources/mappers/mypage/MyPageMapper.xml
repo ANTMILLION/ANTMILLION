@@ -17,7 +17,7 @@
 	        a.account_id = #{accountId}
     </select>
     
-    <select id="selectRealizedProfit" resultType="map">
+    <select id="selectRealizedProfit" resultType="com.antmillion.mypage.dto.RealizedProfitDTO">
 	    SELECT 
 	        s.stock_name AS "name",
 	        so.quantity AS "shares",

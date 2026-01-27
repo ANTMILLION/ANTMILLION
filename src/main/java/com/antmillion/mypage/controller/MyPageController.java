@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
+import com.antmillion.mypage.dto.RealizedProfitDTO;
 import com.antmillion.mypage.dto.StockHoldingsDTO;
 import com.antmillion.mypage.service.MyPageService;
 
@@ -60,16 +61,15 @@ public class MyPageController {
     //2. 실현손익
     @GetMapping("/api/realized-profit")
     @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> getRealizedProfit(
-            @RequestParam(value = "startDate", required = false) String startDate,
-            @RequestParam(value = "endDate", required = false) String endDate,
+    public ResponseEntity<List<RealizedProfitDTO>> getRealizedProfit(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
             HttpSession session) {
         
         Long accountId = (Long) session.getAttribute("accountId");
         if (accountId == null) accountId = 1L;
         
-        // 서비스로 날짜 데이터 전달
-        List<Map<String, Object>> result = myPageService.getRealizedProfit(accountId, startDate, endDate);
+        List<RealizedProfitDTO> result = myPageService.getRealizedProfit(accountId, startDate, endDate);
         return ResponseEntity.ok(result);
     }
     

@@ -9,6 +9,7 @@ import com.antmillion.kis.service.KisApiService;
 import org.springframework.stereotype.Service;
 
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
+import com.antmillion.mypage.dto.RealizedProfitDTO;
 import com.antmillion.mypage.dto.StockHoldingsDTO;
 import com.antmillion.mypage.mapper.MyPageMapper;
 
@@ -60,16 +61,17 @@ public class MyPageServiceImpl implements MyPageService {
     
     //2. 실현손익
     @Override
-    public List<Map<String, Object>> getRealizedProfit(Long accountId, String startDate, String endDate) {
-        // 매퍼에 넘길 파라미터 맵 생성 (또는 DTO 사용)
+    public List<RealizedProfitDTO> getRealizedProfit(Long accountId, String startDate, String endDate) {
         Map<String, Object> params = new HashMap<>();
         params.put("accountId", accountId);
         params.put("startDate", startDate);
         params.put("endDate", endDate);
         
+        // DB에서 DTO 리스트로 직접 매핑하여 가져옴
         return myPageMapper.selectRealizedProfit(params);
     }
     
+    //3. 체결내역
     @Override
     public List<ExecutedOrdersDTO> getExecutedOrders(Long accountId, String startDate, String endDate) {
         // Mapper의 select id인 selectExecutedOrders를 호출
