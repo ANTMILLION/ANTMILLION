@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.antmillion.mypage.dto.AccountInfoDTO;
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
 import com.antmillion.mypage.dto.RealizedProfitDTO;
 import com.antmillion.mypage.dto.StockHoldingsDTO;
@@ -26,6 +27,5 @@ public interface MyPageMapper {
     );
     
     // 4. 계좌정보 조회
-    Map<String, Object> selectAccountInfo(Long accountId);
-
+    AccountInfoDTO selectAccountInfo(Long accountId);
 }

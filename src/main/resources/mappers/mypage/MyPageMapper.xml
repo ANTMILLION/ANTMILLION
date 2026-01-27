@@ -78,7 +78,7 @@
 	
     
 
-	<select id="selectAccountInfo" resultType="map">
+	<select id="selectAccountInfo" resultType="com.antmillion.mypage.dto.AccountInfoDTO">
 	    SELECT 
 	        m.nickname AS "nickname",
 	        a.account_number AS "accountNumber",

@@ -8,6 +8,7 @@ import com.antmillion.kis.dto.CurrentPriceRequest;
 import com.antmillion.kis.service.KisApiService;
 import org.springframework.stereotype.Service;
 
+import com.antmillion.mypage.dto.AccountInfoDTO;
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
 import com.antmillion.mypage.dto.RealizedProfitDTO;
 import com.antmillion.mypage.dto.StockHoldingsDTO;
@@ -67,14 +68,12 @@ public class MyPageServiceImpl implements MyPageService {
         params.put("startDate", startDate);
         params.put("endDate", endDate);
         
-        // DB에서 DTO 리스트로 직접 매핑하여 가져옴
         return myPageMapper.selectRealizedProfit(params);
     }
     
     //3. 체결내역
     @Override
     public List<ExecutedOrdersDTO> getExecutedOrders(Long accountId, String startDate, String endDate) {
-        // Mapper의 select id인 selectExecutedOrders를 호출
         return myPageMapper.selectExecutedOrders(accountId, startDate, endDate);
     }
     
@@ -82,7 +81,7 @@ public class MyPageServiceImpl implements MyPageService {
     
     //4. 계좌정보
     @Override
-    public Map<String, Object> getAccountInfo(Long accountId) {
+    public AccountInfoDTO getAccountInfo(Long accountId) {
         return myPageMapper.selectAccountInfo(accountId);
     }
 }

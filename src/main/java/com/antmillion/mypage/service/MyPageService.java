@@ -3,6 +3,7 @@ package com.antmillion.mypage.service;
 import java.util.List;
 import java.util.Map;
 
+import com.antmillion.mypage.dto.AccountInfoDTO;
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
 import com.antmillion.mypage.dto.RealizedProfitDTO;
 import com.antmillion.mypage.dto.StockHoldingsDTO;
@@ -19,6 +20,5 @@ public interface MyPageService {
     List<ExecutedOrdersDTO> getExecutedOrders(Long accountId, String startDate, String endDate);
     
     //4. 계좌관리
-	Map<String, Object> getAccountInfo(Long accountId);
-
+    AccountInfoDTO getAccountInfo(Long accountId);
 }
