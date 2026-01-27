@@ -9,6 +9,7 @@ import com.antmillion.kis.service.KisApiService;
 import org.springframework.stereotype.Service;
 
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
+import com.antmillion.mypage.dto.StockHoldingsDTO;
 import com.antmillion.mypage.mapper.MyPageMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -21,38 +22,38 @@ public class MyPageServiceImpl implements MyPageService {
     
     //1. 주식잔고
     @Override
-    public List<Map<String, Object>> getStockHoldings(Long accountId) {
-        // 1. DB에서 기본 데이터(수량, 매수금액 등) 가져오기
-        List<Map<String, Object>> holdings = myPageMapper.selectStockHoldings(accountId);
+    public List<StockHoldingsDTO> getStockHoldings(Long accountId) {
+        // 1. DB에서 DTO 리스트로 가져오기
+        List<StockHoldingsDTO> holdings = myPageMapper.selectStockHoldings(accountId);
         
-        // 2. 각 종목별로 현재가(고정값) 및 계산 데이터 주입
-        for (Map<String, Object> stock : holdings) {
-            String stockCode = stock.get("code").toString();
-            long shares = ((Number) stock.get("shares")).longValue();
-            long buyPrice = ((Number) stock.get("buyPrice")).longValue();
-            //한투에서 현재가 조회
+        // 2. 각 DTO별로 API 호출 및 계산 데이터 세팅
+        for (StockHoldingsDTO stock : holdings) {
             CurrentPriceRequest request = CurrentPriceRequest.builder()
                     .marketCode("J")
-                    .stockCode(stockCode)
+                    .stockCode(stock.getCode())
                     .build();
+            
             long currentPrice = kisApiService.getCurrentPrice(request);
-            long totalValue = currentPrice * shares;
-            long profit = totalValue - buyPrice;
+            long totalValue = currentPrice * stock.getShares();
+            long profit = totalValue - stock.getBuyPrice();
             
             double profitRate = 0.0;
-            if (buyPrice > 0) {
-                profitRate = Math.round(((double) profit / buyPrice * 100) * 100) / 100.0;
+            if (stock.getBuyPrice() > 0) {
+                profitRate = Math.round(((double) profit / stock.getBuyPrice() * 100) * 100) / 100.0;
             }
 
-            // Map에 계산된 값들을 강제로 넣어줌 (JS에서 사용할 키값들)
-            stock.put("currentPrice", currentPrice);
-            stock.put("totalValue", totalValue);
-            stock.put("profit", profit);
-            stock.put("profitRate", profitRate);
+            // DTO에 값 주입
+            stock.setCurrentPrice(currentPrice);
+            stock.setTotalValue(totalValue);
+            stock.setProfit(profit);
+            stock.setProfitRate(profitRate);
         }
         
-        // 3. (선택사항) totalValue 기준 내림차순 정렬
-        holdings.sort((a, b) -> Long.compare((long)b.get("totalValue"), (long)a.get("totalValue")));
+        // 3. 종목명(name) 기준 ㄱㄴㄷ(오름차순) 정렬
+        holdings.sort((a, b) -> a.getName().compareTo(b.getName()));
+        
+        // 평가금액 기준 내림차순 정렬
+        //holdings.sort((a, b) -> Long.compare(b.getTotalValue(), a.getTotalValue()));
         
         return holdings;
     }

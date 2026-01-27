@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.antmillion.mypage.dto.ExecutedOrdersDTO;
+import com.antmillion.mypage.dto.StockHoldingsDTO;
 
 
 public interface MyPageService {
 	//1. 주식잔고
-    List<Map<String, Object>> getStockHoldings(Long accountId);
-    
+	List<StockHoldingsDTO> getStockHoldings(Long accountId);
+	
     //2. 실현손익
     List<Map<String, Object>> getRealizedProfit(Long accountId, String startDate, String endDate);
     

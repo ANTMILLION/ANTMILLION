@@ -3,7 +3,7 @@
 <mapper namespace="com.antmillion.mypage.mapper.MyPageMapper">
 
 	
-	<select id="selectStockHoldings" resultType="map">
+	<select id="selectStockHoldings" resultType="com.antmillion.mypage.dto.StockHoldingsDTO">
 	    SELECT
 	        s.stock_name AS "name", 
 	        s.stock_code AS "code",
