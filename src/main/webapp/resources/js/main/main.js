@@ -39,6 +39,7 @@ function createMainStockItemHTML(stock, index) {
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
     const currentPrice = Number(stock.stck_prpr).toLocaleString('ko-KR') + '원';
+    const imgUrl = contextPath + '/resources/images/stock/' + stock.mksc_shrn_iscd + '.png';
 
     return `
         <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
@@ -48,7 +49,7 @@ function createMainStockItemHTML(stock, index) {
             </div>
             <div class="main-stocklist-info">
                 <div class="main-stocklist-logo">
-                    <img src="" alt="${stock.hts_kor_isnm}">
+                    <img src="${imgUrl}" alt="${stock.hts_kor_isnm}">
                 </div>
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
