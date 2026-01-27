@@ -23,12 +23,14 @@
     SELECT account_id, user_id, account_number, balance
     FROM account
     WHERE user_id = #{userId}
+    LIMIT 1
   </select>
 
   <select id="selectByAccountId" resultMap="AccountMap">
     SELECT account_id, user_id, account_number, balance
     FROM account
     WHERE account_id = #{accountId}
+    LIMIT 1
   </select>
 
   <update id="updateBalance">
