@@ -229,6 +229,22 @@ function unsubscribeAllStocks() {
             .catch(error => {
                 console.error('백엔드 구독 해제 실패:', error);
             });
+
+        // ✅ 추가: 호가 (H0UNASP0) 구독 해제
+        fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0UNASP0', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            keepalive: true
+        })
+            .then(res => res.json())
+            .then(response => {
+                console.log('호가 백엔드 구독 해제 완료:', response);
+            })
+            .catch(error => {
+                console.error('호가 백엔드 구독 해제 실패:', error);
+            });
     }
 }
 
@@ -292,14 +308,26 @@ function createHogaRow(price, qty, type) {
 
 // 호가
 function subscribeStockHoga(stockCode) {
+    // 호가용 키 생성 (현재가와 구분하기 위해)
+    const hogaKey = stockCode + '_hoga';
+
+    // 이미 구독 중이면 건너뛰기
+    if (subscribedTopics[hogaKey]) {
+        console.log('이미 호가 구독 중:', stockCode);
+        return;
+    }
     // 백엔드와 일치하는 경로: /topic/kis-trade/ask-bid005930 형태
     const topic = '/topic/kis-trade/ask-bid' + stockCode;
 
-    stompClient.subscribe(topic, function(message) {
+    const subscription = stompClient.subscribe(topic, function(message) {
         const askBidData = JSON.parse(message.body);
         console.log('[호가 실시간 데이터 수신]', askBidData);
         updateHogaUI(askBidData);
     });
+
+    // ✅ subscribedTopics에 저장
+    subscribedTopics[hogaKey] = subscription;
+    console.log('호가 토픽 구독 완료:', topic);
 }
 
 
@@ -933,6 +961,21 @@ document.querySelector('.detail-favorite-btn').addEventListener('click', functio
         .catch(error => {
             console.error('관심종목 토글 실패:', error);
         });
+});
+
+// ========== 페이지 떠날 때 구독 해제 ==========
+window.addEventListener('beforeunload', function(e) {
+    unsubscribeAllStocks();
+
+    if (stompClient !== null && stompClient.connected) {
+        stompClient.disconnect(function() {
+            console.log('STOMP 연결 종료');
+        });
+    }
+});
+
+window.addEventListener('pagehide', function(e) {
+    unsubscribeAllStocks();
 });
 
 // ========== Mock 데이터 제어 함수 ==========
