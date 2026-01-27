@@ -1,16 +1,19 @@
 package com.antmillion.stock.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.antmillion.stock.dto.StockOrderDTO;
 import com.antmillion.stock.service.StockOrderService;
 import com.antmillion.user.dto.AccountDTO;
 
@@ -75,4 +78,16 @@ public class StockOrderController {
         
         return ResponseEntity.ok(response);
     }
+    
+    // 주문 대기
+    @GetMapping("/pending-list")
+    public ResponseEntity<List<StockOrderDTO>> getPendingList(HttpSession session) {
+        AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
+        Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
+
+        List<StockOrderDTO> list = stockOrderService.getWaitOrders(accountId);
+        return ResponseEntity.ok(list);
+    }
+    
+    
 }
