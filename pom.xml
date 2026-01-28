@@ -17,6 +17,13 @@
 		<jjwt.version>0.11.5</jjwt.version>
 	</properties>
 	<dependencies>
+		<!-- ZIP -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.26.1</version>
+		</dependency>
+
 	   <!-- WebSocket -->
 	    <dependency>
 		    <groupId>org.springframework</groupId>
