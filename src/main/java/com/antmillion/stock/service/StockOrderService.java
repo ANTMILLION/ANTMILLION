@@ -1,6 +1,8 @@
 package com.antmillion.stock.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StockOrderService {
 
-    private final StockOrderMapper stockOrderMapper;
-    private final AccountMapper accountMapper;
-    private final AssetMapper assetMapper;
+	private final StockOrderMapper stockOrderMapper;
+	private final AccountMapper accountMapper;
+	private final AssetMapper assetMapper;
 
+	// 주문 생성
     @Transactional
     public boolean createOrder(Long accountId, String stockCode, String transactionType, 
                                String orderType, Integer quantity, Integer orderPrice) {
@@ -92,4 +95,26 @@ public class StockOrderService {
         
         return result > 0;
     }
+
+	// 주문 대기 조회
+	public List<StockOrderDTO> getWaitOrders(Long accountId) {
+		return stockOrderMapper.selectWaitOrders(accountId);
+	}
+	
+	// 주문 취소
+	@Transactional
+	public boolean cancelOrder(Long orderId, Long accountId) {
+	    int result = stockOrderMapper.cancelOrder(orderId, accountId);
+	    return result > 0;
+	}
+	
+	// 주문 정정
+	@Transactional
+	public boolean modifyOrder(StockOrderDTO orderRequest) {
+	    StockOrderDTO original = stockOrderMapper.getOrderByOrderId(orderRequest.getOrderId());
+	    
+	    orderRequest.setAccountId(original.getAccountId());
+	    
+	    return stockOrderMapper.updateOrder(orderRequest) > 0;
+	}
 }
