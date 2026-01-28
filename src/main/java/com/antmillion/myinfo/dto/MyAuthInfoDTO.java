@@ -10,5 +10,5 @@ import lombok.ToString;
 public class MyAuthInfoDTO {
     private Long userId;
     private String provider;
-    private String password; // bcrypt 해시
+    private String password;
 }

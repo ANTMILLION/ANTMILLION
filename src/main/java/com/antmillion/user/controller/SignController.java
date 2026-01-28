@@ -107,21 +107,21 @@ public class SignController {
 		passwordConfirm = n(passwordConfirm);
 
 		try {
-			// 1) 입력 검증
+			// 입력 검증
 			validateLocalStep1(email, password, passwordConfirm);
 
-			// 2) 이메일 중복
+			// 이메일 중복
 			if (!signService.isEmailAvailable(email)) {
 				throw new IllegalStateException("이미 사용 중인 이메일입니다.");
 			}
 
-			// 3) 이메일 인증 강제(서버 최종 방어)
+			// 이메일 인증
 			String verifiedEmail = (String) session.getAttribute(SignupSessionKeys.EMAIL_VERIFIED_EMAIL);
 			if (verifiedEmail == null || !verifiedEmail.equalsIgnoreCase(email)) {
 				throw new IllegalStateException("이메일 인증을 완료해 주세요.");
 			}
 
-			// 4) Step1 정보 세션에 저장 (Step2에서 nickname 추가)
+			// Step1 정보 세션에 저장
 			SignUpRequest sessionForm = new SignUpRequest();
 			sessionForm.setEmail(email);
 			sessionForm.setPassword(password);
@@ -176,7 +176,7 @@ public class SignController {
 			if (sessionForm == null)
 				return "redirect:/signup";
 
-			// 카카오 가입 플래그 (세션에 있으면 카카오 플로우)
+			// 카카오 가입
 			String kakaoSignupKey = (String) session.getAttribute(SignupSessionKeys.KAKAO_SIGNUP_KEY);
 			boolean isKakao = (kakaoSignupKey != null)
 					&& (sessionForm.getEmail() == null || sessionForm.getEmail().trim().isEmpty());
@@ -206,7 +206,7 @@ public class SignController {
 				throw new IllegalStateException("필수 약관에 동의해야 합니다.");
 			}
 
-			// 카카오면: Redis에서 kakaoId 꺼내서 카카오 회원가입 처리
+			// 카카오 회원가입
 			if (isKakao) {
 				Long kakaoId = kakaoSignupStore.get(kakaoSignupKey);
 				if (kakaoId == null) {
@@ -217,9 +217,7 @@ public class SignController {
 				// DB insert: member(email/password null) + account + social
 				SignUpResult result = signService.signUpKakao(kakaoId, nickname);
 
-				// 가입과 동시에 로그인(토큰 발급)
-				// - RT는 즉시 쿠키로 저장
-				// - AT는 다음 GET 요청에서 AutoRefreshFilter가 RT를 보고 발급/갱신하도록 둔다 (현 로직 유지)
+				// 가입과 동시에 로그인
 				TokenPair tokens = signService.issueTokensByUserId(result.getUserId());
 				CookieUtil.addHttpOnlyCookie(response, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
 
@@ -232,7 +230,7 @@ public class SignController {
 				ra.addFlashAttribute("balance", result.getBalance());
 				return "redirect:/signup/complete";
 			}
-			// ===== LOCAL 회원가입 =====
+			// LOCAL 회원가입 
 			sessionForm.setNickname(nickname);
 			SignUpResult result = signService.signUpLocal(sessionForm);
 
@@ -248,12 +246,12 @@ public class SignController {
 			    kakaoSignupStore.delete(kakaoKey);
 			}
 
-			// step 완료 후 세션 제거
-			cleanupSignupSession(session);
-
 			ra.addFlashAttribute("signupType", "LOCAL");
 			ra.addFlashAttribute("accountNumber", result.getAccountNumber());
 			ra.addFlashAttribute("balance", result.getBalance());
+			
+			// step 완료 후 세션 제거
+			cleanupSignupSession(session);
 
 			return "redirect:/signup/complete";
 

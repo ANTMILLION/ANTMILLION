@@ -37,7 +37,6 @@ public class EmailVerificationStore {
         this.maxTries = maxTries;
     }
 
-    // ---- key helpers ----
     private String nEmail(String email) {
         return (email == null) ? "" : email.trim().toLowerCase();
     }
@@ -48,7 +47,6 @@ public class EmailVerificationStore {
     private String cooldownKey(String email) { return "EMAIL_VERIFY:COOLDOWN:" + nEmail(email); }
     private String ipKey(String ip) { return "EMAIL_VERIFY:IP:" + (ip == null ? "" : ip.trim()); }
 
-    // ---- send guards ----
     public boolean isLocked(String email) {
         return Boolean.TRUE.equals(redis.hasKey(lockKey(email)));
     }
@@ -122,7 +120,6 @@ public class EmailVerificationStore {
         String key = tryKey(email);
         Long val = redis.opsForValue().increment(key);
         if (val != null && val == 1L) {
-            // 시도횟수 TTL은 코드 TTL과 동일하게 둔다.
             redis.expire(key, codeTtl);
         }
         return val == null ? 0 : val;
@@ -137,7 +134,7 @@ public class EmailVerificationStore {
 
     public static class VerifyResult {
         private final boolean ok;
-        private final String reason; // OK, NO_CODE, BAD_CODE, LOCKED
+        private final String reason;
         private final long secondsLeft;
         private final long remainingTries;
 

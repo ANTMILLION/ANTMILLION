@@ -66,7 +66,6 @@ public class MyInfoService {
 
     @Transactional
     public void deleteAccount(long userId, String passwordOrEmpty) {
-        // 1) provider 확인 + (LOCAL이면) 비밀번호 확인
         MyAuthInfoDTO auth = myInfoMapper.selectAuthInfo(userId);
         if (auth == null) {
             throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
@@ -81,11 +80,8 @@ public class MyInfoService {
                 throw new IllegalStateException("비밀번호가 올바르지 않습니다.");
             }
         }
-
-        // 2) 토큰 무효화(삭제)
         refreshTokenStore.delete(userId);
-
-        // 3) 회원 삭제 (DB FK ON DELETE CASCADE 전제)
+        
         int deleted = myInfoMapper.deleteMember(userId);
         if (deleted != 1) {
             throw new IllegalStateException("회원탈퇴에 실패했습니다.");
