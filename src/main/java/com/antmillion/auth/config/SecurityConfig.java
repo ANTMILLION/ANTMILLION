@@ -39,45 +39,58 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
 
-		http.csrf(csrf -> csrf.disable()).formLogin(form -> form.disable()).httpBasic(basic -> basic.disable())
-				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth
-						// 로그인 불필요
-						.requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/signup/**")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-						// 로그인 필요
-						// .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
-						// .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
-						// .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+		http
+			.csrf(csrf -> csrf.disable())
+			.formLogin(form -> form.disable())
+			.httpBasic(basic -> basic.disable())
+			.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.authorizeHttpRequests(auth -> auth
+					// 로그인 불필요
+					.requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/signup/**")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
+					.requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+					// 로그인 필요
+					// .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
+					// .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
+					// .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+					.anyRequest().permitAll())
+			.exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
+	            final String ctx = req.getContextPath();
+	            final String uri = req.getRequestURI();
 
-						.anyRequest().permitAll())
-				.exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
-					String uri = req.getRequestURI();
-					if (uri.startsWith(req.getContextPath() + "/api/")
-							|| uri.startsWith(req.getContextPath() + "/auth/")) {
-						res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-					} else {
-						res.sendRedirect(req.getContextPath() + "/login");
-					}
-				})).logout(logout -> logout.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))
-						.addLogoutHandler((req, res, auth) -> {
-							String rt = CookieUtil.getCookieValue(req, "RT");
-							if (rt != null && jwtProvider.isValid(rt)) {
-								Claims claims = jwtProvider.parseClaims(rt);
-								long userId = Long.parseLong(claims.getSubject());
-								refreshTokenStore.delete(userId);
-							}
-							CookieUtil.deleteCookie(res, "RT");
-							CookieUtil.deleteCookie(res, "AT");
-						}).logoutSuccessUrl("/"));
+	            final boolean isApi =
+	                    uri.startsWith(ctx + "/api/") ||
+	                    uri.startsWith(ctx + "/auth/");
+
+	            if (isApi) {
+	                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	            } else {
+	                res.sendRedirect(ctx + "/login");
+	            }
+	        }))
+			.logout(logout -> logout
+		            .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))
+		            .addLogoutHandler((req, res, auth) -> {
+		                String rt = CookieUtil.getCookieValue(req, "RT");
+
+		                if (rt != null && jwtProvider.isValid(rt)) {
+		                    Claims claims = jwtProvider.parseClaims(rt);
+		                    long userId = Long.parseLong(claims.getSubject());
+		                    refreshTokenStore.delete(userId);
+		                }
+
+		                CookieUtil.deleteCookie(res, "RT");
+		                CookieUtil.deleteCookie(res, "AT");
+		            })
+		            .logoutSuccessUrl("/")
+		        );
 
 		// AT 만료시: RT로 자동 재발급
 		http.addFilterBefore(autoRefreshFilter(), UsernamePasswordAuthenticationFilter.class);
