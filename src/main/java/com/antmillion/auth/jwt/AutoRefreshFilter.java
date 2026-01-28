@@ -33,7 +33,7 @@ public class AutoRefreshFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest req) {
-        // "페이지 이동"에서만 자동갱신을 태운다 (API는 JS Silent Refresh가 담당)
+    	// "페이지 이동"에서만 자동갱신을 태운다 (API는 JS Silent Refresh가 담당)
         if (!"GET".equalsIgnoreCase(req.getMethod())) return true;
 
         String uri = req.getRequestURI();
@@ -62,11 +62,12 @@ public class AutoRefreshFilter extends OncePerRequestFilter {
         }
 
         // AT가 이미 유효하면(헤더/쿠키) -> JwtAuthFilter가 처리하게 통과
-        String at = resolveAccessToken(req);
+        String at = TokenResolver.resolveAccessToken(req);
         if (at != null && jwtProvider.isValid(at)) {
             chain.doFilter(req, res);
             return;
         }
+
 
         // AT 없거나 만료 -> RT로 갱신 시도
         String rt = CookieUtil.getCookieValue(req, "RT");
@@ -107,20 +108,5 @@ public class AutoRefreshFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             chain.doFilter(req, res);
         }
-    }
-
-    private String resolveAccessToken(HttpServletRequest req) {
-        // 1) Authorization 헤더 우선
-        String bearer = req.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
-        }
-
-        // 2) AT 쿠키 fallback
-        String cookieToken = CookieUtil.getCookieValue(req, "AT");
-        if (cookieToken != null && !cookieToken.isBlank()) {
-            return cookieToken;
-        }
-        return null;
     }
 }

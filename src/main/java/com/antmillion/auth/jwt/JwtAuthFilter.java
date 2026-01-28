@@ -27,45 +27,37 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        String token = resolveToken(req);
+    	// 이미 인증된 요청이면 통과 (AutoRefreshFilter가 인증을 세팅한 경우 포함)
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            chain.doFilter(req, res);
+            return;
+        }
+
+        // AT 추출: Authorization 헤더 우선, 없으면 HttpOnly 쿠키(AT) fallback
+        String token = TokenResolver.resolveAccessToken(req);
 
         if (token == null || token.isBlank()) {
             chain.doFilter(req, res);
             return;
         }
 
+        // 토큰이 있지만 유효하지 않으면 인증을 만들지 않고 통과
         if (!jwtProvider.isValid(token)) {
             SecurityContextHolder.clearContext();
             chain.doFilter(req, res);
             return;
         }
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            Claims claims = jwtProvider.parseClaims(token);
-            Long userId = Long.valueOf(claims.getSubject());
+        // 유효한 토큰이면: subject(userId)로 Authentication 생성
+        Claims claims = jwtProvider.parseClaims(token);
+        Long userId = Long.valueOf(claims.getSubject());
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
 
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         chain.doFilter(req, res);
-    }
-
-    private String resolveToken(HttpServletRequest req) {
-        // 1) Authorization: Bearer <AT>
-        String bearer = req.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
-        }
-
-        // 2) HttpOnly 쿠키 "AT" fallback (JSP 화면 요청용)
-        String atCookie = CookieUtil.getCookieValue(req, "AT");
-        if (atCookie != null && !atCookie.isBlank()) {
-            return atCookie;
-        }
-        return null;
     }
 }

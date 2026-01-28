@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -27,84 +26,75 @@ import io.jsonwebtoken.Claims;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final RefreshTokenStore refreshTokenStore;
-    private final JwtProvider jwtProvider;
-    private final SignService signService;
+	private final RefreshTokenStore refreshTokenStore;
+	private final JwtProvider jwtProvider;
+	private final SignService signService;
 
-    public SecurityConfig(RefreshTokenStore refreshTokenStore, JwtProvider jwtProvider, SignService signService) {
-        this.refreshTokenStore = refreshTokenStore;
-        this.jwtProvider = jwtProvider;
-        this.signService = signService;
-    }
+	public SecurityConfig(RefreshTokenStore refreshTokenStore, JwtProvider jwtProvider, SignService signService) {
+		this.refreshTokenStore = refreshTokenStore;
+		this.jwtProvider = jwtProvider;
+		this.signService = signService;
+	}
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
 
-        http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-            	// 로그인 불필요
-                .requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/signup/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                // 로그인 필요
-                // .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
-                // .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
-                //.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+		http.csrf(csrf -> csrf.disable()).formLogin(form -> form.disable()).httpBasic(basic -> basic.disable())
+				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(auth -> auth
+						// 로그인 불필요
+						.requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/signup/**")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+						// 로그인 필요
+						// .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
+						// .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
+						// .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
 
-                .anyRequest().permitAll()
-            )
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((req, res, e) -> {
-                    String uri = req.getRequestURI();
-                    if (uri.startsWith(req.getContextPath() + "/api/") || uri.startsWith(req.getContextPath() + "/auth/")) {
-                        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    } else {
-                        res.sendRedirect(req.getContextPath() + "/login");
-                    }
-                })
-            )
-            .logout(logout -> logout
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))
-                    .addLogoutHandler((req, res, auth) -> {
-                        String rt = CookieUtil.getCookieValue(req, "RT");
-                        if (rt != null && jwtProvider.isValid(rt)) {
-                            Claims claims = jwtProvider.parseClaims(rt);
-                            long userId = Long.parseLong(claims.getSubject());
-                            refreshTokenStore.delete(userId);
-                        }
-                        CookieUtil.deleteCookie(res, "RT");
-                        CookieUtil.deleteCookie(res, "AT");
-                    })
-                    .logoutSuccessUrl("/")
-                )
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable());
+						.anyRequest().permitAll())
+				.exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
+					String uri = req.getRequestURI();
+					if (uri.startsWith(req.getContextPath() + "/api/")
+							|| uri.startsWith(req.getContextPath() + "/auth/")) {
+						res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+					} else {
+						res.sendRedirect(req.getContextPath() + "/login");
+					}
+				})).logout(logout -> logout.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))
+						.addLogoutHandler((req, res, auth) -> {
+							String rt = CookieUtil.getCookieValue(req, "RT");
+							if (rt != null && jwtProvider.isValid(rt)) {
+								Claims claims = jwtProvider.parseClaims(rt);
+								long userId = Long.parseLong(claims.getSubject());
+								refreshTokenStore.delete(userId);
+							}
+							CookieUtil.deleteCookie(res, "RT");
+							CookieUtil.deleteCookie(res, "AT");
+						}).logoutSuccessUrl("/"));
 
-        // AT 만료시: RT로 자동 재발급
-        http.addFilterBefore(autoRefreshFilter(), UsernamePasswordAuthenticationFilter.class);
+		// AT 만료시: RT로 자동 재발급
+		http.addFilterBefore(autoRefreshFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        // AT 인증
-        http.addFilterAfter(jwtAuthFilter, AutoRefreshFilter.class);
+		// AT 인증
+		http.addFilterAfter(jwtAuthFilter, AutoRefreshFilter.class);
 
-        return http.build();
-    }
+		return http.build();
+	}
 
-    @Bean
-    public JwtAuthFilter jwtAuthFilter() {
-        return new JwtAuthFilter(jwtProvider);
-    }
+	@Bean
+	public JwtAuthFilter jwtAuthFilter() {
+		return new JwtAuthFilter(jwtProvider);
+	}
 
-    @Bean
-    public AutoRefreshFilter autoRefreshFilter() {
-        return new AutoRefreshFilter(jwtProvider, refreshTokenStore, signService);
-    }
+	@Bean
+	public AutoRefreshFilter autoRefreshFilter() {
+		return new AutoRefreshFilter(jwtProvider, refreshTokenStore, signService);
+	}
 }
