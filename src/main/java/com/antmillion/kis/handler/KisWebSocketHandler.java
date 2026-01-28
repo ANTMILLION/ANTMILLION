@@ -87,7 +87,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
                 String stockCode = data[0];
                 // STOMP 전송
                 messagingTemplate.convertAndSend("/topic/kis-trade/present" + stockCode, tradeData); // 실시간 체결가
-//                System.out.println("체결가 수신: " + tradeData);
+                //System.out.println("체결가 수신: " + tradeData);
             } else if (isAskBidTrId(trId)) {
                 String[] data = parts[3].split("\\^");
                 Map<String, String> askBidData = new HashMap<>();
@@ -115,7 +115,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 
                 String stockCode = data[0];
                 messagingTemplate.convertAndSend("/topic/kis-trade/ask-bid" + stockCode, askBidData);
-//                System.out.println("호가 수신: " +  askBidData);
+                //System.out.println("호가 수신: " +  askBidData);
             } else {
                 System.out.println("현재가/호가 아님");
             }

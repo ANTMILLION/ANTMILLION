@@ -1,19 +1,28 @@
-// 전역 변수로 읽은 목록 저장
-let readUrls = [];
+let readUrls = []; // 전역 변수로 읽은 목록 저장
+let currentPage = 1; // 현재 조회 중인 뉴스 페이지 번호
+const pageSize = 5; // 한 페이지에 표시할 뉴스 개수
+let maxPage = 1; // 전체 뉴스 기준 최대 페이지 수
 
 $(document).ready(function() {
-    loadNews();
+    loadNews(1);
     loadMissionProgress();
 });
 
-function loadNews() {
+function loadNews(page) {
     $.ajax({
         url: `${cpath}/api/news`,
         method: 'GET',
+        data: {
+            page: page,
+            size: pageSize
+        },
         dataType: 'json',
         success: function(response) {
             readUrls = response.readList || [];
+            currentPage = response.currentPage;
+            maxPage = response.maxPage;
             displayNews(response.articles);
+            renderPagination();
         },
         error: function(error) {
             console.error('뉴스 로딩 실패:', error);
@@ -77,6 +86,19 @@ function handleNewsClick(url, cardElement) {
     window.open(url, '_blank');
     const $card = $(cardElement);
 
+    // 화면에서 즉시 읽음 처리
+    if (!$card.hasClass('read')) {
+        $card.addClass('read');
+        // 뱃지가 없으면 추가
+        if ($card.find('.news-read-badge').length === 0) {
+            $card.find('.news-card-header').append('<span class="news-read-badge">읽음</span>');
+        }
+        // 전역 변수(readUrls)에도 즉시 추가 (페이지 이동해도 유지되게)
+        if (!readUrls.includes(url)) {
+            readUrls.push(url);
+        }
+    }
+
     // 서버에 읽음 기록 요청
     $.ajax({
         url: `${cpath}/api/news/read`,
@@ -84,12 +106,6 @@ function handleNewsClick(url, cardElement) {
         contentType: 'application/json',
         data: JSON.stringify({ newsUrl: url }),
         success: function(data) {
-            // 성공일 경우 읽음 처리 (중복 추가 방지)
-            if (!$card.hasClass('read')) {
-                $card.addClass('read');
-                // 헤더 영역을 찾아서 날짜 뒤에 배지 추가
-                $card.find('.news-card-header').append('<span class="news-read-badge">읽음</span>');
-            }
             // 달성률 업데이트
             updateProgressBar(data.progress);
         },
@@ -101,6 +117,28 @@ function handleNewsClick(url, cardElement) {
             }
         }
     });
+}
+
+function renderPagination() {
+    const pagination = $('#newsPagination');
+    pagination.empty();
+
+    if (maxPage <= 1) return;
+
+    for (let i = 1; i <= maxPage; i++) {
+        const activeClass = (i === currentPage) ? 'active' : '';
+
+        pagination.append(`
+            <button class="news-page-btn ${activeClass}" onclick="changePage(${i})">
+                ${i}
+            </button>
+        `);
+    }
+}
+
+function changePage(page) {
+    if (page === currentPage) return;
+    loadNews(page);
 }
 
 // 미션 진행률 로딩
