@@ -183,206 +183,6 @@ const biasTypeMap = {
 };
 
 // ===========================
-// 샘플 데이터
-// ===========================
-const sampleData = {
-    // 실현손익 데이터
-    realizedProfits: [
-        {
-            date: '2025.12',
-            amount: 211048,
-            items: [
-                {
-                    date: '12.03',
-                    stock: '두산에너빌리티',
-                    amount: 43012
-                },
-                {
-                    date: '12.01',
-                    stock: '삼성전자',
-                    amount: 168036
-                }
-            ]
-        },
-        {
-            date: '2025.11',
-            amount: -211048,
-            items: [
-                {
-                    date: '11.03',
-                    stock: '두산에너빌리티',
-                    amount: -43012
-                },
-                {
-                    date: '11.01',
-                    stock: '삼성전자',
-                    amount: -168036
-                }
-            ]
-        },
-        {
-            date: '2025.10',
-            amount: 211048,
-            items: [
-                {
-                    date: '10.03',
-                    stock: '두산에너빌리티',
-                    amount: 43012
-                },
-                {
-                    date: '10.01',
-                    stock: '삼성전자',
-                    amount: 168036
-                },
-                {
-                    date: '10.03',
-                    stock: '두산에너빌리티',
-                    amount: 43012
-                },
-                {
-                    date: '10.03',
-                    stock: '두산에너빌리티',
-                    amount: 43012
-                },
-                {
-                    date: '10.03',
-                    stock: '두산에너빌리티',
-                    amount: 43012
-                }
-            ]
-        }
-    ],
-    
-    // 체결내역 데이터
-    executedOrders: {
-        all: [
-            {
-                stock: '신한지주',
-                type: 'sell',
-                orderQty: 20,
-                executedQty: 20,
-                unexecutedQty: 0,
-                unexecutedAmount: 0,
-                time: '11:20:11',
-                orderPrice: 77000,
-                executedPrice: 77000,
-                orderAmount: 0,
-                stockCode: '055550',
-                executedTime: '11:20:11'
-            },
-            {
-                stock: '신한지주',
-                type: 'sell',
-                orderQty: 20,
-                executedQty: 20,
-                unexecutedQty: 0,
-                unexecutedAmount: 0,
-                time: '11:20:11',
-                orderPrice: 77000,
-                executedPrice: 77000,
-                orderAmount: 0,
-                stockCode: '055550',
-                executedTime: '11:20:11'
-            },
-            {
-                stock: '신한지주',
-                type: 'buy',
-                orderQty: 20,
-                executedQty: 20,
-                unexecutedQty: 0,
-                unexecutedAmount: 0,
-                time: '11:20:11',
-                orderPrice: 77000,
-                executedPrice: 77000,
-                orderAmount: 0,
-                stockCode: '055550',
-                executedTime: '11:20:11'
-            },
-            {
-                stock: '삼성전자',
-                type: 'buy',
-                orderQty: 10,
-                executedQty: 10,
-                unexecutedQty: 0,
-                unexecutedAmount: 0,
-                time: '10:54:01',
-                orderPrice: 77000,
-                executedPrice: 77000,
-                orderAmount: 0,
-                stockCode: '005930',
-                executedTime: '10:54:01'
-            },
-            {
-                stock: 'SK하이닉스',
-                type: 'buy',
-                orderQty: 1,
-                executedQty: 0,
-                unexecutedQty: 1,
-                unexecutedAmount: 742000,
-                time: '11:20:11',
-                orderPrice: 742000,
-                executedPrice: '-',
-                orderAmount: 742000,
-                stockCode: '000660',
-                executedTime: '-'
-            }
-        ]
-    },
-    
-    // 매매내역 데이터
-    tradingHistory: [
-        {
-            date: '2026.01.02',
-            stock: '삼성전자',
-            type: 'sell',
-            shares: 10,
-            amount: 1017000,
-            detail: '77,000원'
-        },
-        {
-            date: '2026.01.02',
-            stock: '삼성전자',
-            type: 'sell',
-            shares: 10,
-            amount: 1017000,
-            detail: '77,000원'
-        },
-        {
-            date: '2026.01.02',
-            stock: '삼성전자',
-            type: 'buy',
-            shares: 10,
-            amount: 1017000,
-            detail: '77,000원'
-        },
-        {
-            date: '2026.01.02',
-            stock: '삼성전자',
-            type: 'buy',
-            shares: 10,
-            amount: 1017000,
-            detail: '77,000원'
-        },
-        {
-            date: '2026.01.02',
-            stock: '삼성전자',
-            type: 'buy',
-            shares: 10,
-            amount: 1017000,
-            detail: '77,000원'
-        },
-        {
-            date: '2026.01.02',
-            stock: '신한지주',
-            type: 'buy',
-            shares: 20,
-            amount: 1540000,
-            detail: '77,000원'
-        }
-    ]
-};
-
-// ===========================
 // DOM 요소
 // ===========================
 let stockList, realizedList, executedTable, tradingList;
@@ -394,23 +194,21 @@ let tabButtons, subTabButtons, filterButtons;
 document.addEventListener('DOMContentLoaded', function() {
     console.log("마이페이지 로드 완료");
     
-    // 1. UI 요소 참조 및 기본 이벤트 연결 (이게 최우선)
+    // 1. UI 요소 참조 및 기본 이벤트 연결
     initializeElements();
     setupEventListeners(); 
     
-    // 2. 첫 화면 데이터만 로드 (주식 잔고)
+    // 2. 첫 화면 데이터 로드 (주식 잔고 → 심리경고 순서)
     loadStockHoldings();
+    // loadHistoryData()는 loadStockHoldings() 완료 후 호출됨!
     
     // 탭 기간 조회 초기화
     initializeRealizedDates();
     initializeExcutedDates();
     
-    // 3. 심리경고 전용 로직
+    // 3. 심리경고 날짜 초기화 및 이벤트
     initializeHistoryDates();
-    loadHistoryData();
     setupHistoryEventListeners();
-    
-    // ※ loadRealizedProfit()은 여기서 직접 호출하지 마세요!
 });
 
 // ===========================
@@ -439,9 +237,9 @@ function setupEventListeners() {
                 loadStockHoldings();
             } else if (target === 'realized') {
                 loadRealizedProfit(); 
-            } else if (target === 'executed') { // 👈 체결내역 탭 추가
+            } else if (target === 'executed') { 
                 loadExecutedOrders(); 
-            } else if (target === 'account') { // 👈 계좌정보 탭 추가
+            } else if (target === 'account') { 
                 loadAccountInfo();
             }
         });
@@ -611,11 +409,15 @@ function loadStockHoldings() {
                 // 잔고만 있는 경우에도 총 자산 업데이트
                 currentHoldingStocks = [];
                 updateTotalAsset();
+                
+                // ✅ 주식이 없어도 심리경고는 로드
+                loadHistoryData();
                 return;
             }
 
             // 현재 보유 종목 정보 저장 (code 포함)
             currentHoldingStocks = data;
+            console.log('✅ 주식 잔고 로드 완료:', currentHoldingStocks.length, '개');
 
             // 화면 렌더링
             renderStockHoldings(data);
@@ -629,10 +431,16 @@ function loadStockHoldings() {
             } else {
                 connectStompForStockHoldings();
             }
+            
+            // 주식 잔고 로드 완료 후 심리경고 로드
+            loadHistoryData();
         })
         .catch(err => {
             console.error("주식 잔고 로드 실패:", err);
             if (stockList) stockList.innerHTML = "<p class='no-data'>데이터 로드 실패</p>";
+            
+            // 에러가 나도 심리경고는 로드
+            loadHistoryData();
         });
 }
 
@@ -678,9 +486,9 @@ function updateTotalAsset() {
 }
 
 // ===========================
-// 주식잔고 렌더링 (수정)
+// 주식잔고 렌더링 
 // ===========================
-function renderStockHoldings(holdings) { // 매개변수 추가
+function renderStockHoldings(holdings) { 
     if (!stockList) return;
     
     // 데이터가 없을 때 처리 추가
@@ -889,7 +697,7 @@ function renderExecutedOrders(filter) {
         const typeClass = isBuy ? 'mypage-buy-badge' : 'mypage-sell-badge';
         const typeText = isBuy ? '매수' : '매도';
         
-        // 💡 홀수인덱스인 경우 'bg-light' 클래스를 추가하여 배경색을 줍니다.
+        //  홀수인덱스인 경우 'bg-light' 클래스를 추가하여 배경색을 줍니다.
         const rowBgClass = i % 2 === 1 ? 'bg-light' : '';
         
         return `
@@ -916,9 +724,6 @@ function renderExecutedOrders(filter) {
 /**
  * 계좌 정보 데이터를 서버에서 가져와 화면에 렌더링
  */
-/**
- * 계좌 정보 데이터를 서버에서 가져와 화면에 렌더링
- */
 function loadAccountInfo() {
     fetch(`${contextPath}/mypage/api/account-info`)
         .then(response => {
@@ -931,7 +736,7 @@ function loadAccountInfo() {
                 document.getElementById("accNumber").innerText = data.accountNumber || "정보 없음";
                 document.getElementById("accBalance").innerText = formatNumber(data.balance || 0);
                 
-                // ✅ 날짜 처리 로직 개선
+                // 날짜 처리 로직 개선
                 const createDateEl = document.getElementById("accCreateDate");
                 if (data.createdAt) {
                     // 서버 데이터가 [2026, 1, 22] 배열 형식이거나 문자열인 경우 모두 대응
@@ -955,7 +760,7 @@ function loadAccountInfo() {
  * 실현손익탭 기간 날짜 필드 초기화 (한달전 ~ 오늘 날짜로)
  */
 function initializeRealizedDates() {
-    const now = new Date(); // 현재 날짜 객체 생성
+    const now = new Date(); 
     const today = now.toISOString().split('T')[0];
     
     const startDateInput = document.getElementById("executedStartDate");
@@ -976,7 +781,7 @@ function initializeRealizedDates() {
  * 체결내역탭 기간 날짜 필드 초기화 (한달전 ~ 오늘 날짜로)
  */
  function initializeExcutedDates() {
-    const now = new Date(); // 현재 날짜 객체 생성
+    const now = new Date(); 
     const today = now.toISOString().split('T')[0];
     
     // 한 달 전 날짜 계산
@@ -1064,7 +869,7 @@ function loadHistoryData() {
             }
 
             alertList.innerHTML = "";
-
+                      
             data.forEach(history => {
                 const date = new Date(history.time);
                 const formattedDate = 
@@ -1082,33 +887,56 @@ function loadHistoryData() {
 
                 const transactionClass = history.transactionType === '매수' ? 'buy' : 'sell';
                 const transactionText = history.transactionType || '-';
+                
+                const stockImgSrc = `/antmillion/resources/images/stock/${history.stockCode}.png`;
+                
+                // trim() 및 대소문자 통일하여 비교
+                const historyStockCode = (history.stockCode || '').toString().trim();
+                
+                console.log(`[심리경고] 종목: ${history.stockName} (${historyStockCode}) 확인 중...`);
+                
+                const holdingStock = currentHoldingStocks.find(stock => {
+                    const holdingCode = (stock.code || '').toString().trim();
+                    const match = holdingCode === historyStockCode;
+                    
+                    if (!match) {
+                        console.log(`  - 비교: "${holdingCode}" !== "${historyStockCode}"`);
+                    } else {
+                        console.log(`   보유 종목 발견! ${stock.shares}주`);
+                    }
+                    
+                    return match;
+                });
+                
+                const holdingInfo = holdingStock 
+                    ? `${holdingStock.shares}주 보유`
+                    : `보유 주식이 없습니다`;
 
-                // 수정된 HTML 구조
                 const html = `
-                    <div class="mypage-warning-container" data-stock-code="${history.stockCode}" data-bias-type="${history.biasType}" data-time="${history.time}">
+                    <div class="mypage-warning-container" data-stock-code="${history.stockCode}" data-bias-type="${history.biasType}" data-time="${history.time}" onclick="scrollToStockCard('${history.stockCode}')">
                         <div class="mypage-warning-header">
                             <span class="warning-icon">⚠️</span>
                             <span class="warning-title">${biasInfo.title}</span>
                             <span class="info-icon" data-bias-type="${history.biasType}">ⓘ</span>
                         </div>
+                        
+                        <div style="text-align: right; color: #999; font-size: 13px; margin-bottom: 12px;">
+                            ${formattedDate}
+                        </div>
 
-                        <div class="inner-trade-card">
-                            <div class="trade-info-top">
-                                <span class="trade-label">매매내역</span>
-                                <span class="trade-date">${formattedDate}</span>
-                            </div>
-                            <div class="trade-info-main">
-                                <span class="stock-name">${history.stockName || "-"}</span>
-                                <span class="trade-amount">
-                                    ${history.totalAmount ? history.totalAmount.toLocaleString() : "0"}원
-                                </span>
-                            </div>
-                            <div class="trade-info-bottom">
-                                <span class="trade-type ${transactionClass}">${transactionText}</span>
-                                <span class="trade-quantity">${history.quantity || 0}주</span>
-                                <span class="unit-price">
-                                    ${history.orderPrice ? history.orderPrice.toLocaleString() : "0"}원
-                                </span>
+                        <div style="display: flex; align-items: center; gap: 12px; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-bottom: 15px;">
+                            <img src="${stockImgSrc}" 
+                                 alt="${history.stockName}" 
+                                 style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #fff;"
+                                 onerror="this.src='/antmillion/resources/images/stock/default.png'">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span style="font-weight: bold; font-size: 16px; color: #333;">${history.stockName || "-"}</span>
+                                    <span style="color: #999; font-size: 13px;">${history.stockCode}</span>
+                                </div>
+                                <div style="color: #666; font-size: 13px;">
+                                    ${holdingInfo}
+                                </div>
                             </div>
                         </div>
 
@@ -1194,60 +1022,94 @@ function formatPercent(num) {
 }
 // ===== 알림에서 이동 시 스크롤 + 강조 =====
 
-// URL 파라미터 읽기
 function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     return {
         stock: params.get('stock'),
         bias: params.get('bias'),
-        time: params.get('time')  // 시간 추가
+        time: params.get('time')
     };
 }
 
-// 특정 경고로 스크롤 + 강조 (시간으로 정확히 매칭)
 function scrollToAlert(stockCode, biasType, time) {
     console.log('[스크롤] 대상 찾기:', stockCode, biasType, time);
     
-    // 모든 경고 카드 찾기
+    const alertDate = new Date(time);
+    const alertDateStr = alertDate.toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    
+    console.log('[스크롤] 알림 날짜:', alertDateStr, '/ 오늘:', today);
+    
+    const startDateInput = document.getElementById("alertStartDate");
+    const endDateInput = document.getElementById("alertEndDate");
+    
+    if (startDateInput && endDateInput) {
+        if (alertDateStr < today) {
+            console.log('[스크롤] 날짜 범위 확장:', alertDateStr, '~', today);
+            startDateInput.value = alertDateStr;
+            endDateInput.value = today;
+            
+            loadHistoryData();
+            
+            setTimeout(() => {
+                scrollToAlertAfterLoad(stockCode, biasType, time);
+            }, 800);
+            
+            return;
+        }
+    }
+    
+    // 오늘 날짜도 대기 시간 추가 (데이터 로딩 확인)
+    console.log('[스크롤] 오늘 알림 - 데이터 로딩 대기');
+    setTimeout(() => {
+        scrollToAlertAfterLoad(stockCode, biasType, time);
+    }, 500);
+}
+
+function scrollToAlertAfterLoad(stockCode, biasType, time) {
+    console.log('[스크롤] 경고 찾기 시작:', stockCode, biasType);
+    
     const alerts = document.querySelectorAll('.mypage-warning-container');
     
-    alerts.forEach(alert => {
-        // data 속성에서 직접 가져오기
+    if (alerts.length === 0) {
+        console.log('[스크롤] ⚠️ 경고 카드를 찾을 수 없습니다');
+        return;
+    }
+    
+    console.log('[스크롤] 총', alerts.length, '개 경고 검사 중...');
+    
+    alerts.forEach((alert, index) => {
         const dataStockCode = alert.getAttribute('data-stock-code');
         const dataBiasType = alert.getAttribute('data-bias-type');
         const dataTime = alert.getAttribute('data-time');
         
-        console.log('[스크롤] 검사 중:', dataStockCode, dataBiasType, dataTime);
-        
-        // 시간 비교 (둘 다 밀리초로 변환)
         const targetTime = new Date(time).getTime();
-        const alertTime = parseInt(dataTime);  // 문자열 → 숫자 변환!
+        const alertTime = parseInt(dataTime);
         
-        console.log('[스크롤] 시간 비교:', targetTime, '===', alertTime, '?', targetTime === alertTime);
-        
-        // 정확히 일치하는 경고 찾기
         if (dataStockCode === stockCode && 
             dataBiasType === biasType && 
             targetTime === alertTime) {
             
-            console.log('[스크롤] ✅ 정확한 대상 발견!', dataStockCode, dataBiasType, dataTime);
+            console.log('[스크롤] 정확한 대상 발견! (index:', index, ')');
             
-            // 스크롤
             setTimeout(() => {
+                // 기존 심리경고 하이라이트 모두 제거
+                document.querySelectorAll('.mypage-warning-container.highlight').forEach(card => {
+                    card.classList.remove('highlight');
+                });
+                
                 alert.scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
                 });
                 
-                // 강조 효과
+                // 심리경고 하이라이트 (계속 유지)
                 alert.classList.add('highlight');
+                console.log('[스크롤] 심리경고 하이라이트 적용 (계속 유지)');
                 
-                // 3초 후 제거
-                setTimeout(() => {
-                    alert.classList.remove('highlight');
-                }, 3000);
+                // 주식잔고도 동시에 하이라이트!
+                scrollToStockCard(stockCode);
                 
-                // URL 파라미터 제거 (새로고침 시 정상 동작)
                 window.history.replaceState({}, document.title, '/antmillion/mypage');
                 console.log('[스크롤] URL 파라미터 제거 완료');
                 
@@ -1256,19 +1118,58 @@ function scrollToAlert(stockCode, biasType, time) {
     });
 }
 
-// 페이지 로드 시 확인
 window.addEventListener('load', function() {
     const params = getUrlParams();
     
     if (params.stock && params.bias && params.time) {
         console.log('[알림 이동] 파라미터 감지:', params);
         
-        // 0.1초 대기 후 스크롤 (데이터 로딩 대기)
         setTimeout(() => {
             scrollToAlert(params.stock, params.bias, params.time);
-        }, 100);
+        }, 500);
     }
 });
+
+// ===========================
+// 심리경고 → 주식잔고 스크롤 기능
+// ===========================
+function scrollToStockCard(stockCode) {
+    console.log('[심리경고 → 주식잔고] 이동 시작:', stockCode);
+    
+    const stockTab = document.querySelector('[data-tab="stock"]');
+    if (stockTab && !stockTab.classList.contains('active')) {
+        stockTab.click();
+        console.log('[심리경고 → 주식잔고] 주식잔고 탭 활성화');
+    }
+    
+    setTimeout(() => {
+        const stockCard = document.querySelector(`.mypage-stock-card[data-code="${stockCode}"]`);
+        
+        if (stockCard) {
+            console.log('[심리경고 → 주식잔고] 종목 카드 발견!', stockCode);
+            
+            // 기존 하이라이트 모두 제거
+            document.querySelectorAll('.mypage-stock-card.stock-highlight').forEach(card => {
+                card.classList.remove('stock-highlight');
+            });
+            
+            // 스크롤
+            stockCard.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            // 하이라이트 추가 (계속 유지, 3초 제거 없음)
+            stockCard.classList.add('stock-highlight');
+            console.log('[심리경고 → 주식잔고] 하이라이트 적용 (계속 유지)');
+            
+        } else {
+            console.log('[심리경고 → 주식잔고] ⚠️ 해당 종목 미보유:', stockCode);
+            alert('해당 종목을 보유하고 있지 않습니다.');
+        }
+    }, 300);
+}
+
 
 // ===========================
 // 페이지 떠날 때 구독 해제

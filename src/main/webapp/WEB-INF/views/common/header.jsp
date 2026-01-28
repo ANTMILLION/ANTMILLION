@@ -419,9 +419,14 @@ async function loadNotifications() {
             }).replace(/\. /g, '/').replace('.', '') : '';
             
             const timeISO = timeValue ? new Date(timeValue).toISOString() : '';
+            const stockImgSrc = '/antmillion/resources/images/stock/' + stockCode + '.png';
             
             return '<div class="header-notif-list-item" onclick="goToMyPageAlert(\'' + stockCode + '\', \'' + biasType + '\', \'' + timeISO + '\')" style="cursor: pointer;">' +
-                '<div class="header-stock-img-box">' + stockName.substring(0, 7) + '</div>' +
+                '<div class="header-stock-img-box">' +
+                    '<img src="' + stockImgSrc + '" alt="' + stockName + '" ' +
+                    'style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px;" ' +
+                    'onerror="this.onerror=null; this.src=\'/antmillion/resources/images/stock/default.png\';">' +
+                '</div>' +
                 '<div>' +
                     '<div style="font-size: 13px; font-weight: bold;">(' + stockCode + ') ' + stockName + '</div>' +
                     '<div style="font-size: 13px; color: ' + color + '; font-weight: bold;">⚠️ ' + biasText + '</div>' +
