@@ -1077,46 +1077,49 @@ document.addEventListener('DOMContentLoaded', async function() {
 // 대기 목록 로드 함수
 function loadPendingOrders() {
     const tbody = $('#pending-tbody');
-    
     $.ajax({
         url: contextPath + '/api/stock/pending-list',
         type: 'GET',
-        dataType: 'json',
         success: function(data) {
             tbody.empty();
-
-            if (data.length === 0) {
-                // 데이터가 없을 때
-                tbody.append('<tr class="p-empty-row"><td colspan="4" class="p-empty-msg">미체결 내역이 없습니다.</td></tr>');
-            } else {
-                data.forEach(order => {
-                    const typeClass = order.transactionType === 'BUY' ? 'buy' : 'sell';
-                    const typeText = order.transactionType === 'BUY' ? '매수' : '매도';
-                    
-                    let row = `<tr>
-                        <td>
-                            <span class="p-stock-name">${order.stockCode}</span>
-                            <span class="p-type ${typeClass}">${typeText}</span>
-                        </td>
-                        <td>
-                            <span class="p-price">${order.orderPrice.toLocaleString()}원</span>
-                            <span class="p-qty">${order.quantity}주</span>
-                        </td>
-                        <td><span class="p-status">대기</span></td>
-                        <td>
-                            <div class="p-btn-group">
-                                <button class="p-edit-btn" onclick="openEditModal(${order.orderId})">정정</button>
-                                <button class="p-cancel-btn" onclick="cancelOrder(${order.orderId})">취소</button>
-                            </div>
-                        </td>
-                    </tr>`;
-                    tbody.append(row);
-                });
+            if (!data || data.length === 0) {
+                tbody.append('<tr class="p-empty-row"><td colspan="5" class="p-empty-msg">미체결 내역이 없습니다.</td></tr>');
+                return;
             }
-        },
-        error: function(err) {
-            console.error("대기 목록 로드 실패:", err);
-            tbody.html('<tr><td colspan="4">데이터를 불러오지 못했습니다.</td></tr>');
+            data.forEach(order => {
+                const typeClass = order.transactionType === 'BUY' ? 'buy' : 'sell';
+                
+                let timeStr = "";
+                if (Array.isArray(order.createdAt)) {
+                    timeStr = order.createdAt[3].toString().padStart(2, '0') + ":" + 
+                              order.createdAt[4].toString().padStart(2, '0');
+                } else {
+                    const d = new Date(order.createdAt);
+                    timeStr = isNaN(d.getTime()) ? "--:--" : 
+                              d.getHours().toString().padStart(2, '0') + ":" + 
+                              d.getMinutes().toString().padStart(2, '0');
+                }
+                
+                let row = `<tr>
+                    <td class="p-time">${timeStr}</td>
+                    <td>
+                        <span class="p-stock-name">${order.stockName}</span>
+                        <span class="p-type ${typeClass}">${order.transactionType === 'BUY' ? '매수' : '매도'}</span>
+                    </td>
+                    <td>
+                        <div class="p-price">${order.orderPrice.toLocaleString()}원</div>
+                        <div class="p-qty">${order.quantity}주</div>
+                    </td>
+                    <td class="p-unexecuted">${order.quantity}주</td>
+                    <td>
+                        <div class="p-btn-group">
+                            <button class="p-edit-btn" onclick="openEditModal(${order.orderId}, ${order.orderPrice}, ${order.quantity})">정정</button>
+                            <button class="p-cancel-btn" onclick="cancelOrder(${order.orderId})">취소</button>
+                        </div>
+                    </td>
+                </tr>`;
+                tbody.append(row);
+            });
         }
     });
 }

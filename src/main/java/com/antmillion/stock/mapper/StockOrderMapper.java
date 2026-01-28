@@ -26,9 +26,11 @@ public interface StockOrderMapper {
     /**
      * 특정 계좌의 대기(WAIT) 주문 목록 조회
      */
-    @Select("SELECT * FROM stock_order " +
-            "WHERE account_id = #{accountId} AND status = 'WAIT' " +
-            "ORDER BY created_at DESC")
+    @Select("SELECT o.*, s.stock_name " +
+            "FROM stock_order o " +
+            "JOIN stock s ON o.stock_code = s.stock_code " +
+            "WHERE o.account_id = #{accountId} AND o.status = 'WAIT' " +
+            "ORDER BY o.created_at DESC")
     List<StockOrderDTO> selectWaitOrders(@Param("accountId") Long accountId);
     
     /**

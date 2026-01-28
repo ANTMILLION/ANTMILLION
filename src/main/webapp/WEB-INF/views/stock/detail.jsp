@@ -109,10 +109,11 @@
 							<table class="detail-pending-table">
 								<thead>
 									<tr>
-										<th>종목/구분</th>
-										<th>단가/수량</th>
-										<th>상태</th>
-										<th>관리</th>
+										<th>주문시간</th>
+								        <th>종목/구분</th>
+								        <th>단가/수량</th>
+								        <th>미체결</th>
+								        <th>관리</th>
 									</tr>
 								</thead>
 								<tbody id="pending-tbody">
