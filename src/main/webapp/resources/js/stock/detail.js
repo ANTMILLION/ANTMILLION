@@ -777,6 +777,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const imgUrl = contextPath + '/resources/images/stock/' + stockCode + '.png';
     const logoImg = document.getElementById('detail-stock-image');
     logoImg.src = imgUrl;
+    logoImg.onerror = function () {
+        this.src = contextPath + '/resources/images/icontmp.png';
+    }
+
     scheduleMarketClose();
 
     initPriceTypeEvents();

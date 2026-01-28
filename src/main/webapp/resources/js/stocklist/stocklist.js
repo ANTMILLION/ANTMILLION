@@ -225,7 +225,8 @@ function createStockItemHTML(stock, index, isFavorite) {
             </div>
             <div class="stocklist-info">
                 <div class="stocklist-logo">
-                    <img src="${imgUrl}" alt="${stock.hts_kor_isnm}">
+                    <img src="${imgUrl}" alt="${stock.hts_kor_isnm}" 
+                        onerror="this.src='${contextPath}/resources/images/icontmp.png'">
                 </div>
                 <span class="stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
