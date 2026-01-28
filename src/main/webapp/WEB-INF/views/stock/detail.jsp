@@ -19,7 +19,7 @@
 			<div class="detail-stock-container">
 				<div class="detail-left-panel">
 					<section class="detail-stock-header">
-						<img src="" alt="">
+						<img id="detail-stock-image" src="" alt="">
 						<div class="detail-text-col">
 							<div>
 								<h2 class="detail-stock-name">
@@ -110,10 +110,10 @@
 								<thead>
 									<tr>
 										<th>주문시간</th>
-								        <th>종목/구분</th>
-								        <th>단가/수량</th>
-								        <th>미체결</th>
-								        <th>관리</th>
+										<th>종목/구분</th>
+										<th>단가/수량</th>
+										<th>미체결</th>
+										<th>관리</th>
 									</tr>
 								</thead>
 								<tbody id="pending-tbody">
@@ -200,13 +200,88 @@
 	</div>
 
 
-<!-- SockJS 라이브러리 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 
-<!-- STOMP 라이브러리 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-<!-- Adding the standalone version of Lightweight charts -->
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-<script src="${cpath}/resources/js/stock/detail.js"></script>
+	<div class="detail-order-result">
+		<div class="detail-row">
+			<span id="available-label">구매 가능 금액</span> <span
+				class="detail-big-price">0원</span>
+		</div>
+		<div class="detail-total-row">
+			<span>주문금액</span> <span class="detail-total-money" id="total-money">0원</span>
+		</div>
+	</div>
+	<div class="detail-sentiment-section">
+		<div class="detail-sentiment-text">
+			<span>장 시간에 확인할 수 있어요</span>
+		</div>
+		<div class="detail-percent-labels">
+			<div style="width: 50%;" id="buy-percent"></div>
+			<div style="width: 50%;" id="sell-percent"></div>
+		</div>
+		<div>
+			<div class="detail-progress-bar">
+				<div class="detail-fill-buy detail-sentiment-inactive"
+					style="width: 50%;" id="buy-bar"></div>
+				<div class="detail-fill-sell detail-sentiment-inactive"
+					style="width: 50%;" id="sell-bar"></div>
+			</div>
+		</div>
+	</div>
+	<button class="detail-btn-submit" id="submit-btn">매수</button>
+	</aside>
+	</div>
+	</main>
+	</div>
+
+	<!-- 주문 확인 팝업 -->
+	<div class="detail-order-modal" id="order-modal">
+		<div class="detail-modal-content">
+			<div class="detail-modal-header">
+				<h3 class="detail-modal-title" id="modal-title">매수 주문 확인</h3>
+				<button class="detail-modal-close" id="modal-close">×</button>
+			</div>
+			<div class="detail-modal-body">
+				<div class="detail-modal-info-row">
+					<span class="detail-modal-label">종목명</span> <span
+						class="detail-modal-value" id="modal-stock-name">삼성전자</span>
+				</div>
+				<div class="detail-modal-info-row">
+					<span class="detail-modal-label">주문유형</span> <span
+						class="detail-modal-value" id="modal-order-type">지정가</span>
+				</div>
+				<div class="detail-modal-info-row" id="modal-price-row">
+					<span class="detail-modal-label">주문가격</span> <span
+						class="detail-modal-value" id="modal-price">129,300원</span>
+				</div>
+				<div class="detail-modal-info-row">
+					<span class="detail-modal-label">주문수량</span> <span
+						class="detail-modal-value" id="modal-quantity">10주</span>
+				</div>
+				<div class="detail-modal-total">
+					<span class="detail-modal-total-label">총 주문금액</span> <span
+						class="detail-modal-total-value buy" id="modal-total">1,293,000원</span>
+				</div>
+			</div>
+			<div class="detail-modal-actions">
+				<button class="detail-modal-btn detail-modal-btn-cancel"
+					id="modal-cancel">취소</button>
+				<button class="detail-modal-btn detail-modal-btn-confirm"
+					id="modal-confirm">매수</button>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- SockJS 라이브러리 -->
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+
+	<!-- STOMP 라이브러리 -->
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	<!-- Adding the standalone version of Lightweight charts -->
+	<script
+		src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+	<script src="${cpath}/resources/js/stock/detail.js"></script>
 </body>
 </html>
