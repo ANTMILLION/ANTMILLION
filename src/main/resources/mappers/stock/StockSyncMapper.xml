@@ -10,7 +10,7 @@
 
     <insert id="insertTempStock">
         INSERT IGNORE INTO temp_stock(stock_code, stock_name)
-        VALUES(#{code}, #{name})
+        VALUES(#{stockCode}, #{stockName})
         ON DUPLICATE KEY UPDATE stock_name = VALUES(stock_name)
     </insert>
 
