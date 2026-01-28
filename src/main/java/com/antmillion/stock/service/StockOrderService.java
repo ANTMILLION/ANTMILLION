@@ -132,9 +132,6 @@ public class StockOrderService {
 	    
 	    orderRequest.setAccountId(original.getAccountId());
 	    
-	    if (orderRequest.getQuantity() > original.getQuantity()) {
-	        throw new IllegalArgumentException("기존 수량(" + original.getQuantity() + "주) 이하로만 수정 가능!");
-	    }
 	    return stockOrderMapper.updateOrder(orderRequest) > 0;
 	}
 }

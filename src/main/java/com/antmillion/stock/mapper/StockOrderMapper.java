@@ -47,8 +47,7 @@ public interface StockOrderMapper {
             "    updated_at = NOW() " +
             "WHERE order_id = #{orderId} " +
             "  AND status = 'WAIT' " +
-            "  AND account_id = #{accountId} " +
-            "  AND #{quantity} <= quantity") 
+            "  AND account_id = #{accountId} ")
     int updateOrder(StockOrderDTO order);
     
     /**
