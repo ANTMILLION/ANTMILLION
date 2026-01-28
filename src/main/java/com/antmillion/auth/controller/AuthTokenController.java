@@ -24,50 +24,43 @@ import io.jsonwebtoken.Claims;
 @RequestMapping("/auth")
 public class AuthTokenController {
 
-    private final JwtProvider jwtProvider;
-    private final RefreshTokenStore refreshTokenStore;
-    private final SignService signService;
+	private final JwtProvider jwtProvider;
+	private final RefreshTokenStore refreshTokenStore;
+	private final SignService signService;
 
-    public AuthTokenController(JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore, SignService signService) {
-        this.jwtProvider = jwtProvider;
-        this.refreshTokenStore = refreshTokenStore;
-        this.signService = signService;
-    }
+	public AuthTokenController(JwtProvider jwtProvider, RefreshTokenStore refreshTokenStore, SignService signService) {
+		this.jwtProvider = jwtProvider;
+		this.refreshTokenStore = refreshTokenStore;
+		this.signService = signService;
+	}
 
-    @PostMapping("/refresh")
-    public ResponseEntity<Map<String, Object>> refresh(HttpServletRequest req, HttpServletResponse res) {
-        String rt = CookieUtil.getCookieValue(req, "RT");
-        if (rt == null || rt.isBlank() || !jwtProvider.isValid(rt)) {
-            CookieUtil.deleteCookie(res, "RT");
-            CookieUtil.deleteCookie(res, "AT");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("ok", false, "message", "NO_REFRESH"));
-        }
+	@PostMapping("/refresh")
+	public ResponseEntity<Map<String, Object>> refresh(HttpServletRequest req, HttpServletResponse res) {
+		String rt = CookieUtil.getCookieValue(req, "RT");
+		if (rt == null || rt.isBlank() || !jwtProvider.isValid(rt)) {
+			CookieUtil.deleteCookie(res, "RT");
+			CookieUtil.deleteCookie(res, "AT");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("ok", false, "message", "NO_REFRESH"));
+		}
 
-        Claims claims = jwtProvider.parseClaims(rt);
-        long userId = Long.parseLong(claims.getSubject());
+		Claims claims = jwtProvider.parseClaims(rt);
+		long userId = Long.parseLong(claims.getSubject());
 
-        String saved = refreshTokenStore.get(userId);
-        if (saved == null || !saved.equals(rt)) {
-            CookieUtil.deleteCookie(res, "RT");
-            CookieUtil.deleteCookie(res, "AT");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("ok", false, "message", "REFRESH_MISMATCH"));
-        }
+		String saved = refreshTokenStore.get(userId);
+		if (saved == null || !saved.equals(rt)) {
+			CookieUtil.deleteCookie(res, "RT");
+			CookieUtil.deleteCookie(res, "AT");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("ok", false, "message", "REFRESH_MISMATCH"));
+		}
 
-        TokenPair tokens = signService.issueTokensByUserId(userId);
+		TokenPair tokens = signService.issueTokensByUserId(userId);
 
-        // RT/AT 둘 다 쿠키로 갱신
-        CookieUtil.addHttpOnlyCookie(res, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
-        CookieUtil.addHttpOnlyCookie(res, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
+		// RT/AT 둘 다 쿠키로 갱신
+		CookieUtil.addHttpOnlyCookie(res, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
+		CookieUtil.addHttpOnlyCookie(res, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
 
-        // JS가 헤더로도 쓰고 싶으면 내려준다
-        res.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken());
-
-        return ResponseEntity.ok(Map.of(
-                "ok", true,
-                "accessToken", tokens.getAccessToken(),
-                "accessTtlSeconds", tokens.getAccessTtlSeconds()
-        ));
-    }
+		return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken()).body(Map.of(
+				"ok", true, "accessToken", tokens.getAccessToken(), "accessTtlSeconds", tokens.getAccessTtlSeconds()));
+	}
 }

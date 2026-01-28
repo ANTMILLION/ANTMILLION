@@ -18,13 +18,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.antmillion.auth.dto.SignUpRequest;
 import com.antmillion.auth.jwt.CookieUtil;
-import com.antmillion.auth.jwt.JwtProvider;
 import com.antmillion.auth.service.SignService;
 import com.antmillion.auth.service.SignService.SignUpResult;
 import com.antmillion.auth.service.SignService.TokenPair;
 import com.antmillion.auth.support.SignupSessionKeys;
 import com.antmillion.auth.terms.TermsProvider;
-import com.antmillion.auth.token.RefreshTokenStore;
 import com.antmillion.kakao.token.KakaoSignupStore;
 import com.antmillion.mail.service.EmailVerificationService;
 
@@ -245,7 +243,10 @@ public class SignController {
 			}
 
 			// 혹시 남아있는 카카오 진행 흔적이 있으면 정리
-			clearKakaoSignupIfExists(session);
+			String kakaoKey = (String) session.getAttribute(SignupSessionKeys.KAKAO_SIGNUP_KEY);
+			if (kakaoKey != null) {
+			    kakaoSignupStore.delete(kakaoKey);
+			}
 
 			// step 완료 후 세션 제거
 			cleanupSignupSession(session);
