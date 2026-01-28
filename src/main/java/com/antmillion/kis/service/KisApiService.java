@@ -6,6 +6,7 @@ import com.antmillion.kis.constant.KisApiConstant;
 import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
 import com.antmillion.kis.repository.KisChartRedisRepository;
+import com.antmillion.kis.repository.KisFrgnOrgnRedisRepository;
 import com.antmillion.kis.repository.KisMarketIndexChartRedisRepository;
 import com.antmillion.kis.repository.KisStockVolumeRankRedisRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class KisApiService {
     private final KisChartRedisRepository kisChartRedisRepository;
     private final KisMarketIndexChartRedisRepository kisMarketIndexChartRepository;
     private final KisStockVolumeRankRedisRepository kisStockVolumeRankRedisRepository;
+    private final KisFrgnOrgnRedisRepository kisFrgnOrgnRedisRepository;
 
     /**
      * KIS 액세스 토큰 조회/발급
@@ -428,17 +430,23 @@ public class KisApiService {
         }
         throw new RuntimeException("현재가 조회 실패");
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * 외인기관 추정가집계 데이터 조회 (데이터 원본 반환)
      * @param stockCode 종목코드 (MKSC_SHRN_ISCD)
      * @return 외인/기관 가집계 리스트 (ForeignerOrganization 목록)
      */
     public ForeignerOrganization getForeignerOrganizationData(String stockCode) {
-        log.info("한국투자증권 외인/기관 추정가집계 api 호출: {}", stockCode);
+        Optional<ForeignerOrganization> cached = kisFrgnOrgnRedisRepository.getKisFrgnorgnNtby(stockCode);
+        if (cached.isPresent()) {
+            log.info("외인/기관 수량(가집계) 재사용");
+            return cached.get();
+        }
         
         // 1. API 호출 (패턴 준수)
+    	log.info("한국투자증권 외인/기관 추정가집계 api 호출: {}", stockCode);
         KisForeignerOrganizationResponse response = foreignerOrganizationAPI(stockCode);
+        kisFrgnOrgnRedisRepository.save(stockCode, response.getOutput2().get(0));
         
         // 2. 응답 데이터 반환
         return response.getOutput2().get(0);
