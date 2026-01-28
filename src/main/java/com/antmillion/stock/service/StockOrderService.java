@@ -66,31 +66,28 @@ public class StockOrderService {
         
         // 4. 잔액 및 자산 업데이트
         if ("BUY".equals(transactionType)) {
-            // 매수: 잔액 차감
+            // [자산 업데이트]
+            assetMapper.upsertAssetBuy(accountId, stockCode, quantity, orderPrice, totalPrice);
+            
+            // [잔액 업데이트]
             long newBalance = account.getBalance() - totalPrice;
-            accountMapper.updateBalance(accountId, newBalance);
-            log.info("잔액 차감: {} → {}", account.getBalance(), newBalance);
+            accountMapper.updateBalance(accountId, newBalance); 
             
-            // 자산 추가
-            assetMapper.insertAsset(accountId, stockCode, quantity, orderPrice, totalPrice);
-            log.info("자산 추가: {} 종목 {} 주 매수", stockCode, quantity);
-            
+            log.info("매수 완료: 잔액 {} → {}", account.getBalance(), newBalance);
+
         } else if ("SELL".equals(transactionType)) {
-            // 매도: 잔액 증가
+            // [자산 업데이트]
+            int rows = assetMapper.updateAssetSell(accountId, stockCode, quantity);
+            
+            if (rows == 0) {
+                throw new IllegalArgumentException("보유 수량이 부족하여 매도할 수 없습니다.");
+            }
+            
+            // [잔액 업데이트]
             long newBalance = account.getBalance() + totalPrice;
             accountMapper.updateBalance(accountId, newBalance);
-            log.info("잔액 증가: {} → {}", account.getBalance(), newBalance);
             
-            // 자산 차감
-            int remaining = quantity;
-            while (remaining > 0) {
-                int decreased = assetMapper.decreaseAssetQuantity(accountId, stockCode, remaining);
-                if (decreased == 0) {
-                    break; // 더 이상 차감할 자산 없음
-                }
-                remaining -= decreased;
-            }
-            log.info("자산 차감: {} 종목 {} 주 매도", stockCode, quantity);
+            log.info("매도 완료: 잔액 {} → {}", account.getBalance(), newBalance);
         }
         
         return result > 0;
