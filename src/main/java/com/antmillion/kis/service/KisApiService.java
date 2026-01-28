@@ -10,6 +10,8 @@ import com.antmillion.kis.repository.KisMarketIndexChartRedisRepository;
 import com.antmillion.kis.repository.KisStockVolumeRankRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,6 +29,7 @@ import java.util.Optional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,6 +44,8 @@ public class KisApiService {
     private final KisMarketIndexChartRedisRepository kisMarketIndexChartRepository;
     private final KisStockVolumeRankRedisRepository kisStockVolumeRankRedisRepository;
 
+    private final RedissonClient redissonClient;
+
     /**
      * KIS 액세스 토큰 조회/발급
      * Redis에 유효한 토큰이 있으면 반환, 없으면 신규 발급 후 Redis에 저장
@@ -53,17 +58,54 @@ public class KisApiService {
             return saved.get();
         }
 
-        // 신규 발급
-        log.info("토큰 신규 발급");
-        KisAccessTokenResponse response = issueAccessTokenAPI();
+        // 분산 락 획득
+        RLock lock = redissonClient.getLock("kis:token:lock");
 
-        // Redis 저장 (TTL 자동 설정)
-        kisAccessTokenRedisRepository.save(
-                response.getAccessToken(),
-                response.getExpiresIn()
-        );
+        try {
+            // 락 획득 시도: 최대 5초 대기, 획득 후 10초간 유지
+            boolean isLocked = lock.tryLock(5, 10, TimeUnit.SECONDS);
 
-        return response.getAccessToken();
+            if (!isLocked) {
+                log.warn("토큰 발급 락 획득 실패 - 다른 스레드가 발급 중");
+                // 락 획득 실패 시 재시도 (다른 스레드가 발급 완료 후 저장했을 가능성)
+                Thread.sleep(100); // 짧은 대기
+                Optional<String> retried = kisAccessTokenRedisRepository.findAccessToken();
+                if (retried.isPresent()) {
+                    log.info("다른 스레드가 발급한 토큰 사용");
+                    return retried.get();
+                }
+                throw new RuntimeException("토큰 발급 락 획득 실패");
+            }
+
+            // 2차 체크: 락 획득 후 다시 한 번 Redis 확인 (Double-Checked Locking)
+            Optional<String> doubleChecked = kisAccessTokenRedisRepository.findAccessToken();
+            if (doubleChecked.isPresent()) {
+                log.info("락 획득 후 확인: 기존 토큰 재사용");
+                return doubleChecked.get();
+            }
+
+            // 신규 발급
+            log.info("토큰 신규 발급");
+            KisAccessTokenResponse response = issueAccessTokenAPI();
+
+            // Redis 저장 (TTL 자동 설정)
+            kisAccessTokenRedisRepository.save(
+                    response.getAccessToken(),
+                    response.getExpiresIn()
+            );
+            log.info("토큰 신규 발급 완료 및 저장");
+            return response.getAccessToken();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("토큰 발급 중 인터럽트 발생", e);
+            throw new RuntimeException("토큰 발급 중 인터럽트 발생", e);
+        } finally {
+            // 락 해제
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+                log.info("토큰 발급 락 해제");
+            }
+        }
     }
 
     /**
