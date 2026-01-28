@@ -672,6 +672,22 @@ body {
     height: 100% !important;
 }
 
+/* 신호등 기본 램프 디자인 */
+.main-signal-lamp {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #E5E7EB; /* 데이터 로딩 전 기본색 */
+    flex-shrink: 0;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+/* 수급 상태별 클래스 (JS에서 추가됨) */
+.main-signal-lamp.GREEN  { background-color: #22c55e !important; box-shadow: 0 0 5px #22c55e; }
+.main-signal-lamp.RED    { background-color: #ef4444 !important; box-shadow: 0 0 5px #ef4444; }
+.main-signal-lamp.YELLOW { background-color: #f59e0b !important; box-shadow: 0 0 5px #f59e0b; }
+
 @keyframes main-fadeInUp {
     from {
         opacity: 0;
