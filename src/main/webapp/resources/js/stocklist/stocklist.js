@@ -228,6 +228,7 @@ function createStockItemHTML(stock, index, isFavorite) {
                     <img src="${imgUrl}" alt="${stock.hts_kor_isnm}" 
                         onerror="this.src='${contextPath}/resources/images/icontmp.png'">
                 </div>
+                <div class="main-signal-lamp" id="signal-${stock.mksc_shrn_iscd}"></div>
                 <span class="stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
             <div class="stocklist-price">${currentPrice}</div>
@@ -270,6 +271,8 @@ function renderAllStocks() {
                     }).join('');
 
                     container.innerHTML = html;
+                    
+                    updateAllTrafficSignals();
 
                     // 페이지네이션 렌더링
                     renderPagination();
@@ -324,6 +327,8 @@ function renderFavoriteStocks() {
                     }).join('');
 
                     container.innerHTML = html;
+                    
+                    updateAllTrafficSignals();
 
                     // 관심종목 탭에서는 페이지네이션 숨기기
                     document.getElementById('pagination-container')?.remove();
@@ -660,4 +665,30 @@ function scheduleMarketClose() {
     } else {
         console.log('[stocklist.js] 오늘 20:00은 이미 지났습니다.');
     }
+}
+
+//모든 종목의 신호등 상태를 서버에서 가져와 업데이트하는 함수
+function updateAllTrafficSignals() {
+    // [수정 1] 대상 선택자 변경: .main-stocklist-item -> .stocklist-item
+    const stockItems = document.querySelectorAll('.stocklist-item');
+    
+    stockItems.forEach(item => {
+        // [수정 2] 속성명 변경: data-id -> data-code (HTML 생성시 data-code를 사용함)
+        const stockCode = item.getAttribute('data-code'); 
+        
+        if (!stockCode) return;
+
+        fetch(`${contextPath}/api/kis/ddddforeigner-organization/${stockCode}`)
+            .then(res => res.json())
+            .then(data => {
+                const lamp = document.getElementById(`signal-${stockCode}`);
+                if (lamp && data.signalColor) {
+                    // 기존 색상 클래스 모두 제거 후 새 색상 추가
+                    lamp.classList.remove('GREEN', 'RED', 'YELLOW');
+                    lamp.classList.add(data.signalColor);
+                    console.log(`[Signal Success] ${stockCode} : ${data.signalColor}`);
+                }
+            })
+            .catch(err => console.log(`[Signal Error] ${stockCode} 통신 실패`));
+    });
 }

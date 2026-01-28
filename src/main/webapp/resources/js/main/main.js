@@ -905,7 +905,7 @@ function updateAllTrafficSignals() {
         
         if (!stockCode) return;
 
-        fetch(`${contextPath}/api/kis/traffic-signal/${stockCode}`)
+        fetch(`${contextPath}/api/kis/ddddforeigner-organization/${stockCode}`)
             .then(res => res.json())
             .then(data => {
                 const lamp = document.getElementById(`signal-${stockCode}`);
