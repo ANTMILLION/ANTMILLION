@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antmillion.news.mapper.NewsMapper">
+
+    <select id="existsTodayLog" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM news_log
+        WHERE user_id = #{userId}
+          AND news_url = #{newsUrl}
+          AND DATE(news_read_at) = CURDATE()
+    </select>
+
+    <insert id="insertNewsLog" parameterType="com.antmillion.news.dto.NewsLogDTO">
+        INSERT INTO news_log (user_id, news_url, news_read_at)
+        VALUES (#{userId}, #{newsUrl}, NOW())
+    </insert>
+
+    <select id="countTodayNewsRead" resultType="int">
+        SELECT COUNT(*)
+        FROM news_log
+        WHERE user_id = #{userId}
+          AND DATE(news_read_at) = CURDATE()
+    </select>
+
+    <select id="selectTodayReadUrls" resultType="string">
+        SELECT news_url
+        FROM news_log
+        WHERE user_id = #{userId}
+          AND DATE(news_read_at) = CURDATE()
+    </select>
+
+</mapper>

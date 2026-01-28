@@ -1,5 +1,9 @@
+// 전역 변수로 읽은 목록 저장
+let readUrls = [];
+
 $(document).ready(function() {
     loadNews();
+    loadMissionProgress();
 });
 
 function loadNews() {
@@ -8,6 +12,7 @@ function loadNews() {
         method: 'GET',
         dataType: 'json',
         success: function(response) {
+            readUrls = response.readList || [];
             displayNews(response.articles);
         },
         error: function(error) {
@@ -44,12 +49,21 @@ function createNewsCard(article, index) {
 
     // 날짜 포맷팅
     const formattedDate = formatDate(article.pubDate);
+    const safeLink = article.link.replace(/'/g, "\\'");
+
+    const isRead = readUrls.includes(article.link);
+
+    // 읽었으면 'read-badge' 클래스와 텍스트 표시
+    const readBadgeHtml = isRead
+        ? `<span class="news-read-badge">읽음</span>`
+        : ``;
 
     return `
-        <div class="news-card" onclick="openNews('${article.link}')">
+        <div class="news-card" onclick="handleNewsClick('${safeLink}', this)">
             <div class="news-card-header">
                 <span class="news-source">네이버 뉴스</span>
                 <span class="news-card-date">${formattedDate}</span>
+                ${readBadgeHtml}
             </div>
             <h2 class="news-card-title">${cleanTitle}</h2>
             <p class="news-card-description">${cleanDescription}</p>
@@ -57,8 +71,62 @@ function createNewsCard(article, index) {
     `;
 }
 
-function openNews(link) {
-    window.open(link, '_blank');
+// 뉴스 클릭 핸들러
+function handleNewsClick(url, cardElement) {
+    // 새 창으로 뉴스 띄우기
+    window.open(url, '_blank');
+    const $card = $(cardElement);
+
+    // 서버에 읽음 기록 요청
+    $.ajax({
+        url: `${cpath}/api/news/read`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ newsUrl: url }),
+        success: function(data) {
+            // 성공일 경우 읽음 처리 (중복 추가 방지)
+            if (!$card.hasClass('read')) {
+                $card.addClass('read');
+                // 헤더 영역을 찾아서 날짜 뒤에 배지 추가
+                $card.find('.news-card-header').append('<span class="news-read-badge">읽음</span>');
+            }
+            // 달성률 업데이트
+            updateProgressBar(data.progress);
+        },
+        error: function(xhr, status, error) {
+            if (xhr.status === 401) {
+                console.log("비로그인 상태입니다. 기록되지 않습니다.");
+            } else {
+                console.error("서버 오류:", error);
+            }
+        }
+    });
+}
+
+// 미션 진행률 로딩
+function loadMissionProgress() {
+    $.ajax({
+        url: `${cpath}/api/news/progress`,
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            updateProgressBar(data.progress);
+        },
+        error: function(xhr, status, error) {
+            console.log("진행률 로딩 실패: ", error);
+        }
+    });
+}
+
+// 업데이트 함수
+function updateProgressBar(percent) {
+    const bar = document.getElementById('news-progressBar');
+    const text = document.getElementById('news-progressStatus');
+
+    if(bar && text) {
+        bar.style.width = percent + '%';
+        text.innerText = percent + '% 달성!';
+    }
 }
 
 function stripHtml(html) {
@@ -82,7 +150,6 @@ function displayError() {
     container.html(`
         <div class="news-error">
             <h2 class="news-error-title">뉴스를 불러올 수 없습니다</h2>
-            <p class="news-error-message">네트워크 연결을 확인해주세요.</p>
         </div>
     `);
 }
