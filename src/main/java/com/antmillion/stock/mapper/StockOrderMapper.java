@@ -37,4 +37,23 @@ public interface StockOrderMapper {
     @Update("UPDATE stock_order SET status = 'CANCEL', updated_at = NOW() " +
             "WHERE order_id = #{orderId} AND status = 'WAIT' AND account_id = #{accountId}")
     int cancelOrder(@Param("orderId") Long orderId, @Param("accountId") Long accountId);
+    
+    /**
+     * 주문 정정
+     */
+    @Update("UPDATE stock_order " +
+            "SET order_price = #{orderPrice}, " +
+            "    quantity = #{quantity}, " +
+            "    updated_at = NOW() " +
+            "WHERE order_id = #{orderId} " +
+            "  AND status = 'WAIT' " +
+            "  AND account_id = #{accountId} " +
+            "  AND #{quantity} <= quantity") 
+    int updateOrder(StockOrderDTO order);
+    
+    /**
+     * 주문 아이디로 단일 주문 정보 조회 (정정/취소 검증용)
+     */
+    @Select("SELECT * FROM stock_order WHERE order_id = #{orderId}")
+    StockOrderDTO getOrderByOrderId(@Param("orderId") Long orderId);
 }

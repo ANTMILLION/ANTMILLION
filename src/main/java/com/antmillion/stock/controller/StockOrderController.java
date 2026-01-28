@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.antmillion.stock.dto.StockOrderDTO;
@@ -109,4 +110,24 @@ public class StockOrderController {
         return ResponseEntity.ok(response);
     }
     
+    /**
+     * 주문 정정 API
+     */
+    @PostMapping("/modify")
+    @ResponseBody
+    public Map<String, Object> modifyOrder(@RequestBody StockOrderDTO orderRequest) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            boolean result = stockOrderService.modifyOrder(orderRequest);
+            response.put("success", result);
+            response.put("message", result ? "정정이 완료되었습니다." : "정정 실패");
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "알 수 없는 오류 발생");
+        }
+        return response;
+    }
 }

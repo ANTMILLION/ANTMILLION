@@ -124,4 +124,17 @@ public class StockOrderService {
 	    int result = stockOrderMapper.cancelOrder(orderId, accountId);
 	    return result > 0;
 	}
+	
+	// 주문 정정
+	@Transactional
+	public boolean modifyOrder(StockOrderDTO orderRequest) {
+	    StockOrderDTO original = stockOrderMapper.getOrderByOrderId(orderRequest.getOrderId());
+	    
+	    orderRequest.setAccountId(original.getAccountId());
+	    
+	    if (orderRequest.getQuantity() > original.getQuantity()) {
+	        throw new IllegalArgumentException("기존 수량(" + original.getQuantity() + "주) 이하로만 수정 가능!");
+	    }
+	    return stockOrderMapper.updateOrder(orderRequest) > 0;
+	}
 }

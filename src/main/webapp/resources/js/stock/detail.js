@@ -1144,6 +1144,36 @@ function cancelOrder(orderId) {
     });
 }
 
+// 주문 정정 팝업
+function openEditModal(orderId, currentPrice, currentQty) {
+    const newPrice = prompt("정정할 가격을 입력하세요", currentPrice);
+    const newQty = prompt("정정할 수량을 입력하세요", currentQty);
+
+    if (newPrice && newQty) {
+        const orderData = {
+            orderId: orderId,
+            orderPrice: parseInt(newPrice),
+            quantity: parseInt(newQty)
+        };
+
+        $.ajax({
+            url: contextPath + '/api/stock/modify',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(orderData),
+            success: function(res) {
+                alert(res.message);
+                if (res.success) loadPendingOrders();
+            },
+            error: function(xhr) {
+                alert("통신 에러 발생");
+            }
+        });
+    }
+}
+
+
+
 
 // 페이지 로드 시 관심종목 상태 확인
 function checkFavoriteStatus() {
