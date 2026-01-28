@@ -100,6 +100,11 @@ function subscribeStockTopic(stockCode) {
 
         // 화면 업데이트
         updateStockRealtimePrice(stockCode, tradeData);
+        
+        // FOMO 실시간 체크
+        const changeRate = parseFloat(tradeData.prdyCtrt || 0);
+        window.lastFomoChangeRate = changeRate;
+        checkFomoInRealtime(changeRate);
     });
 
     subscribedTopics[stockCode] = subscription;
@@ -426,11 +431,11 @@ async function checkSunkCostAlert(stockCode) {
 }
 
 // FOMO 체크 함수
-async function checkFomoAlert(stockCode) {
-    console.log('[FOMO API 호출] stockCode:', stockCode);
+async function checkFomoAlert(stockCode, changeRate) {
+    console.log('[FOMO API 호출] stockCode:', stockCode, 'changeRate:', changeRate);
     
     try {
-        const url = contextPath + '/api/bias-alert/check-fomo?stockCode=' + stockCode;
+        const url = contextPath + '/api/bias-alert/check-fomo?stockCode=' + stockCode + '&changeRate=' + changeRate;
         console.log('[FOMO API URL]', url);
         
         const response = await fetch(url);
@@ -854,7 +859,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             const lossData = await checkLossAversionAlert(stockCode);
             
             // 우선순위 4: FOMO
-            const fomoData = await checkFomoAlert(stockCode);
+            // FOMO는 WebSocket 데이터 수신 대기 (0.5초)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
             
             // 우선순위에 따라 표시 (매몰비용 > 손실회피 > FOMO)
             if (sunkCostData && sunkCostData.hasAlert) {
@@ -959,7 +966,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                         const lossData = await checkLossAversionAlert(stockCode);
                         
                         // 우선순위 4: FOMO
-                        const fomoData = await checkFomoAlert(stockCode);
+                        // FOMO는 WebSocket 데이터 수신 대기 (0.5초)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
                         
                         if (sunkCostData && sunkCostData.hasAlert) {
                             console.log('[매수 탭] 매몰비용 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
@@ -993,6 +1002,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                             }
                         } else {
                             console.log('[매수 탭] 편향 조건 미달');
+                        }
+                        
+                        // ✅ 실시간 체크도 활성화 (이미 20% 이상이면 표시)
+                        if (window.lastFomoChangeRate >= 20 && !fomoAlertShown) {
+                            console.log('[매수 탭] 실시간 등락률 20% 이상 - 경고 표시');
+                            checkFomoInRealtime(window.lastFomoChangeRate);
                         }
                     } catch (error) {
                         console.error('[매수 탭] 편향 체크 에러:', error);
@@ -1834,5 +1849,42 @@ function scheduleMarketClose() {
         }, msUntil2000);
     } else {
         console.log('오늘 20:00은 이미 지났습니다.');
+    }
+}
+
+
+// FOMO 실시간 체크
+let fomoAlertShown = false;
+let fomoConditionMet = false;
+let fomoCheckTimeout = null;
+
+async function checkFomoInRealtime(changeRate) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stockCode = urlParams.get('code');
+    if (!stockCode) return;
+    
+    if (changeRate >= 20) {
+        fomoConditionMet = true;
+        const buyTab = document.querySelector('[data-type="buy"]');
+        const isBuyTab = buyTab && buyTab.classList.contains('detail-tab-active');
+        
+        if (!fomoAlertShown && isBuyTab) {
+            if (fomoCheckTimeout) clearTimeout(fomoCheckTimeout);
+            fomoCheckTimeout = setTimeout(async () => {
+                const data = await checkFomoAlert(stockCode, changeRate);
+                if (data && data.hasAlert) {
+                    if (typeof showBiasAlert === 'function') {
+                        showBiasAlert('FOMO');
+                        fomoAlertShown = true;
+                    }
+                    if (typeof checkUnreadAlerts === 'function') {
+                        setTimeout(() => { checkUnreadAlerts(); }, 0);
+                    }
+                }
+            }, 500);
+        }
+    } else {
+        fomoConditionMet = false;
+        fomoAlertShown = false;
     }
 }
