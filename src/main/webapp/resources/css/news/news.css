@@ -186,6 +186,44 @@ body {
     border-radius: 8px;
 }
 
+.news-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.news-pagination-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.news-pagination-btn:hover {
+    background: var(--accent-blue);
+    border-color: #2970ff;
+}
+
+.news-pagination-btn.active {
+    background: #2970ff;
+    color: white;
+    border-color: #2970ff;
+}
+
+.news-pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .news-read-badge {
     font-size: 14px;
     font-weight: 600;
