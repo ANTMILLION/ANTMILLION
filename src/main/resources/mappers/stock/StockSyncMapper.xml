@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.antmillion.stock.mapper.StockSyncMapper">
+
+    <update id="truncateTemp">
+        TRUNCATE temp_stock
+    </update>
+
+    <insert id="insertTempStock">
+        INSERT IGNORE INTO temp_stock(stock_code, stock_name)
+        VALUES(#{code}, #{name})
+        ON DUPLICATE KEY UPDATE stock_name = VALUES(stock_name)
+    </insert>
+
+    <insert id="insertNewStocks">
+        INSERT INTO stock(stock_code, stock_name)
+        SELECT t.stock_code, t.stock_name
+        FROM temp_stock t
+                 LEFT JOIN stock s ON t.stock_code = s.stock_code
+        WHERE s.stock_code IS NULL
+    </insert>
+
+    <delete id="deleteOldStocks">
+        DELETE s
+        FROM stock s
+                 LEFT JOIN temp_stock t ON s.stock_code = t.stock_code
+        WHERE t.stock_code IS NULL
+    </delete>
+
+    <select id="countStock" resultType="int">
+        SELECT COUNT(*) FROM stock
+    </select>
+
+</mapper>
