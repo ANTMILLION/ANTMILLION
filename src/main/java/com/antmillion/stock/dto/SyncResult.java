@@ -6,6 +6,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class SyncResult {
-    private int added;
-    private int deleted;
+    private int beforeCount;
+    private int afterCount;
+    private int insertedCount;
+    private int deletedCount;
+    private int totalDownloaded;
 }
