@@ -2,6 +2,8 @@
    메인 페이지 JavaScript (com.antmillion.main.js)
    =========================== */
 
+
+
 var subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
 
 // STOMP 연결 (수정 버전)
@@ -37,6 +39,22 @@ function createMainStockItemHTML(stock, index) {
     const favoriteIcon = stock.isFavorite ? '♥' : '♡';
     const favoriteClass = stock.isFavorite ? 'active' : '';
     const currentPrice = Number(stock.stck_prpr).toLocaleString('ko-KR') + '원';
+    const imgUrl = contextPath + '/resources/images/stock/' + stock.mksc_shrn_iscd + '.png';
+    let changeText = '0.00%';
+    let changeClass = '';
+
+    if (stock.prdy_ctrt) {
+        const changeValue = parseFloat(stock.prdy_ctrt);
+        if (changeValue > 0) {
+            changeText = '+' + changeValue + '%';
+            changeClass = 'positive';
+        } else if (changeValue < 0) {
+            changeText = changeValue + '%';
+            changeClass = 'negative';
+        } else {
+            changeText = changeValue + '%';
+        }
+    }
 
     return `
         <div class="main-stocklist-item" data-id="${stock.mksc_shrn_iscd}">
@@ -46,20 +64,20 @@ function createMainStockItemHTML(stock, index) {
             </div>
             <div class="main-stocklist-info">
                 <div class="main-stocklist-logo">
-                    <img src="" alt="${stock.hts_kor_isnm}">
+                    <img src="${imgUrl}" alt="${stock.hts_kor_isnm}">
                 </div>
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
             <div class="main-stocklist-price">${currentPrice}</div>
-            <div class="main-stocklist-change">0.00%</div>
+            <div class="main-stocklist-change ${changeClass}">${changeText}</div>
             <div class="main-stocklist-sentiment">
                 <div class="main-stocklist-sentiment-bar">
-                    <div class="main-stocklist-sentiment-buy" style="width: 50%;"></div>
-                    <div class="main-stocklist-sentiment-sell" style="width: 50%;"></div>
+                    <div class="main-stocklist-sentiment-buy main-sentiment-inactive" style="width: 50%;"></div>
+                    <div class="main-stocklist-sentiment-sell main-sentiment-inactive" style="width: 50%;"></div>
                 </div>
                 <div class="main-stocklist-sentiment-labels">
-                    <span class="main-stocklist-sentiment-buy-label">50</span>
-                    <span class="main-stocklist-sentiment-sell-label">50</span>
+                    <span class="main-stocklist-sentiment-buy-label"></span>
+                    <span class="main-stocklist-sentiment-sell-label"></span>
                 </div>
             </div>
         </div>
@@ -202,6 +220,7 @@ function attachMainStockItemListeners() {
 
 // DOM이 로드되면 초기화
 document.addEventListener('DOMContentLoaded', function() {
+    scheduleMarketClose();
     initializeMainPage();
 });
 
@@ -340,6 +359,9 @@ function initializeMissionButton() {
 // 일별 분봉 조회 - 차트
 let stockChart = null;
 let candleSeries = null;
+let currentCandleData = null; // 추가: 현재 진행 중인 캔들
+let lastCandleUpdateTime = null; // 추가: 마지막 캔들 업데이트 시간
+let currentChartStockCode = null; // 추가: 현재 차트에 표시 중인 종목 코드
 
 // 시간 포맷 변환 함수
 function formatToTimestamp(dateStr, timeStr) {
@@ -360,6 +382,11 @@ function drawStockMinuteChart(stockCode) {
     const chartContainer = document.getElementById('main-stockChart');
     if (!chartContainer) return;
     chartContainer.innerHTML = ''; // 기존 차트가 있다면 삭제
+
+    currentChartStockCode = stockCode;
+
+    currentCandleData = null;
+    lastCandleUpdateTime = null;
 
     stockChart = LightweightCharts.createChart(chartContainer, {
         width: chartContainer.clientWidth,
@@ -432,10 +459,58 @@ function drawStockMinuteChart(stockCode) {
         
         if (chartData.length > 0) {
             candleSeries.setData(chartData);
+
+            currentCandleData = chartData[chartData.length - 1];
+            lastCandleUpdateTime = currentCandleData.time;
+
             stockChart.timeScale().fitContent();
         }
     })
     .catch(err => console.error("API 호출 에러:", err));
+}
+
+// ========== 실시간 현재가로 차트 캔들 업데이트 ==========
+function updateMainChartRealtime(currentPrice) {
+    // 차트가 없거나, 초기 캔들 데이터가 없으면 종료
+    if (!candleSeries || !currentCandleData) return;
+
+    const currentTimestamp = getCurrentMinuteTimestamp();
+
+    // 새로운 분이 시작되면 새 캔들 생성
+    if (currentTimestamp !== lastCandleUpdateTime) {
+        console.log('새로운 분 시작 - 새 캔들 생성');
+
+        currentCandleData = {
+            time: currentTimestamp,
+            open: currentPrice,
+            high: currentPrice,
+            low: currentPrice,
+            close: currentPrice
+        };
+        lastCandleUpdateTime = currentTimestamp;
+
+        // 새 캔들 추가
+        candleSeries.update(currentCandleData);
+    }
+    // 같은 분 내에서는 기존 캔들 업데이트
+    else {
+        currentCandleData.close = currentPrice;
+        currentCandleData.high = Math.max(currentCandleData.high, currentPrice);
+        currentCandleData.low = Math.min(currentCandleData.low, currentPrice);
+
+        // 기존 캔들 업데이트
+        candleSeries.update(currentCandleData);
+    }
+}
+
+// ========== 현재 분의 timestamp 계산 ==========
+function getCurrentMinuteTimestamp() {
+    const now = new Date();
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    const offsetInSeconds = now.getTimezoneOffset() * 60;
+    return Math.floor(now.getTime() / 1000) - offsetInSeconds;
 }
 
 // 마우스 오버 이벤트
@@ -453,6 +528,11 @@ document.addEventListener('mouseover', (e) => {
             if (codeEl.textContent !== stockCode) {
                 nameEl.textContent = stockName;
                 codeEl.textContent = stockCode;
+
+                // 차트 전환 시 캔들 데이터 초기화
+                currentCandleData = null;
+                lastCandleUpdateTime = null;
+
                 drawStockMinuteChart(stockCode);
             }
         }
@@ -531,10 +611,15 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     if (!stockItem) return;
 
     // 현재가 업데이트
+    const currentPrice = Number(tradeData.stckPrpr);
     const priceElement = stockItem.querySelector('.main-stocklist-price');
     if (priceElement) {
-        const price = Number(tradeData.stckPrpr).toLocaleString('ko-KR') + '원';
+        const price = currentPrice.toLocaleString('ko-KR') + '원';
         priceElement.textContent = price;
+    }
+
+    if (currentChartStockCode === stockCode) {
+        updateMainChartRealtime(currentPrice);
     }
 
     // 등락률 업데이트 (main-stocklist-change가 등락률을 표시한다고 가정)
@@ -575,6 +660,9 @@ function updateStockRealtimePrice(stockCode, tradeData) {
         const sellLabel = stockItem.querySelector('.main-stocklist-sentiment-sell-label');
 
         if (buyBar && sellBar) {
+            buyBar.classList.remove('main-sentiment-inactive');
+            sellBar.classList.remove('main-sentiment-inactive');
+
             buyBar.style.width = buyRate + '%';
             sellBar.style.width = sellRate + '%';
         }
@@ -741,3 +829,62 @@ function disableMockMode() {
 // 브라우저 콘솔에서 사용 가능하도록 전역으로 노출
 window.enableMockMode = enableMockMode;
 window.disableMockMode = disableMockMode;
+
+// ========== 거래 비율 초기 상태로 복원 ==========
+function resetSentimentToDefault() {
+    console.log('[main.js] 모든 종목의 거래 비율을 초기 상태로 복원');
+
+    const stockItems = document.querySelectorAll('.main-stocklist-item');
+
+    stockItems.forEach(item => {
+        const buyBar = item.querySelector('.main-stocklist-sentiment-buy');
+        const sellBar = item.querySelector('.main-stocklist-sentiment-sell');
+        const buyLabel = item.querySelector('.main-stocklist-sentiment-buy-label');
+        const sellLabel = item.querySelector('.main-stocklist-sentiment-sell-label');
+
+        if (buyBar && sellBar) {
+            buyBar.classList.add('main-sentiment-inactive');
+            sellBar.classList.add('main-sentiment-inactive');
+            buyBar.style.width = '50%';
+            sellBar.style.width = '50%';
+        }
+
+        if (buyLabel) buyLabel.textContent = '';
+        if (sellLabel) sellLabel.textContent = '';
+    });
+}
+
+// ========== 15:30, 20:00에 자동 실행 예약 ==========
+function scheduleMarketClose() {
+    const now = new Date();
+
+    // 15:30 예약
+    const today1530 = new Date(now);
+    today1530.setHours(15, 30, 0, 0);
+    const msUntil1530 = today1530 - now;
+
+    if (msUntil1530 > 0) {
+        console.log(`[main.js] 15:30까지 ${Math.floor(msUntil1530 / 1000 / 60)}분 남음`);
+        setTimeout(() => {
+            console.log('[main.js] 15:30 정규장 마감 - 기본값으로 전환');
+            resetSentimentToDefault();
+        }, msUntil1530);
+    } else {
+        console.log('[main.js] 오늘 15:30은 이미 지났습니다.');
+    }
+
+    // 20:00 예약
+    const today2000 = new Date(now);
+    today2000.setHours(20, 0, 0, 0);
+    const msUntil2000 = today2000 - now;
+
+    if (msUntil2000 > 0) {
+        console.log(`[main.js] 20:00까지 ${Math.floor(msUntil2000 / 1000 / 60)}분 남음`);
+        setTimeout(() => {
+            console.log('[main.js] 20:00 시간외 마감 - 기본값으로 전환');
+            resetSentimentToDefault();
+        }, msUntil2000);
+    } else {
+        console.log('[main.js] 오늘 20:00은 이미 지났습니다.');
+    }
+}

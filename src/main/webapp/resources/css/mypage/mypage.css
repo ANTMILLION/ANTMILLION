@@ -35,6 +35,14 @@ body {
 /* ===========================
    레이아웃
    =========================== */
+/* 데이터 없음 스타일 */
+.no-data {
+    padding: 60px 0 !important; /* 상하 여백을 주어 너무 빽빽하지 않게 함 */
+    text-align: center;
+    color: var(--text-tertiary); /* 연한 회색으로 처리 */
+    font-size: 15px;
+    background-color: var(--secondary-bg);
+}
 
 .mypage-app-container {
     display: flex;
@@ -117,7 +125,9 @@ body {
 /* 탭 콘텐츠 */
 .mypage-tab-content {
     padding: 28px;
-    max-height: calc(100vh - 250px);
+    padding-bottom: 60px;
+    /* max-height: calc(100vh - 250px); */
+    max-height: calc(100vh - 180px);
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -255,10 +265,22 @@ body {
     font-weight: 500;
 }
 
+.mypage-content-container {
+    /* 박스 형태를 만드는 핵심 속성 */
+    padding: 20px;            /* 박스 내부 여백 */
+    background-color: #fff;   /* 박스 배경색 (흰색) */
+    border: 1px solid #eee;   /* 연한 테두리 */
+    border-radius: 12px;      /* 모서리를 둥글게 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05); /* 은은한 그림자 */
+    
+    /* 추가적인 배치 스타일 */
+    margin-bottom: 24px;      /* 아래 요소와의 간격 */
+    width: 100%;              /* 너비 꽉 차게 */
+}
+
 /* ===========================
    주식잔고 카드
    =========================== */
-
 .mypage-stock-list {
     display: flex;
     flex-direction: column;
@@ -362,7 +384,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 5px;
 }
 
 .mypage-realized-date {
@@ -413,7 +435,6 @@ body {
 /* ===========================
    체결내역
    =========================== */
-
 .mypage-sub-tab-menu {
     display: flex;
     gap: 8px;

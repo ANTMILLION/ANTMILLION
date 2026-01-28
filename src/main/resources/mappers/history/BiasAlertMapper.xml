@@ -13,20 +13,21 @@
         <result property="holdingDays" column="holdingDays"/>
     </resultMap>
 
-    <!-- 특정 종목의 보유 정보 조회 -->
     <select id="selectAssetForBiasCheck" resultMap="BiasAlertResultMap">
         SELECT 
             a.stock_code AS stockCode,
             s.stock_name AS stockName,
-            a.quantity,
-            a.avg_price AS avgPrice,
-            a.updated_at AS purchaseDate,
-            DATEDIFF(NOW(), a.updated_at) AS holdingDays
+            SUM(a.quantity) AS quantity,
+            AVG(a.avg_price) AS avgPrice,
+            MAX(a.updated_at) AS purchaseDate,
+            DATEDIFF(NOW(), MAX(a.updated_at)) AS holdingDays
         FROM asset a
         JOIN stock s ON a.stock_code = s.stock_code
         WHERE a.account_id = #{accountId}
           AND a.stock_code = #{stockCode}
           AND a.quantity > 0
+        GROUP BY a.stock_code, s.stock_name
+        LIMIT 1
     </select>
     
     <!-- 현재가 조회 -->
@@ -54,7 +55,8 @@
           AND status = 'COMPLETED'
           AND created_at >= DATE_SUB(NOW(), INTERVAL 5 DAY)
     </select>
-       <!-- 당일 등락률 조회 (FOMO용) -->
+    
+    <!-- 당일 등락률 조회 (FOMO용) -->
     <select id="selectDailyChangeRate" resultType="java.math.BigDecimal">
         SELECT 
             CASE 

@@ -15,16 +15,20 @@
             <span>메인</span>
         </a>
         <a href="${cpath}/stocklist" class="sidebar-menu-item" data-path="/stock">
-            <span><img src="${cpath}/resources/images/icon/assert.png" class="sidebar-menu-icon" alt="종목"></span>
+            <span><img src="${cpath}/resources/images/icon/stock.png" class="sidebar-menu-icon" alt="종목"></span>
             <span>종목</span>
         </a>
         <a href="${cpath}/mypage" class="sidebar-menu-item" data-path="/mypage">
             <span><img src="${cpath}/resources/images/icon/my.png" class="sidebar-menu-icon" alt="마이"></span>
             <span>마이페이지</span>
         </a>
-        <a href="${cpath}/mission" class="sidebar-menu-item active" data-path="/mission">
+        <a href="${cpath}/mission" class="sidebar-menu-item" data-path="/mission">
             <span><img src="${cpath}/resources/images/icon/mission.png" class="sidebar-menu-icon" alt="미션"></span>
             <span>미션</span>
+        </a>
+        <a href="${cpath}/news" class="sidebar-menu-item" data-path="/news">
+            <span><img src="${cpath}/resources/images/icon/news.png" class="sidebar-menu-icon" alt="뉴스"></span>
+            <span>뉴스</span>
         </a>
     </nav>
 </aside>

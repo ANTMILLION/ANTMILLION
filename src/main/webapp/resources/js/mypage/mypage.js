@@ -814,7 +814,7 @@ function renderRealizedProfit(data) {
                         
                         
                         return `
-                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
                                 <div class="mypage-realized-stock" style="font-weight: bold; font-size: 15px; margin-bottom: 5px;">
                                     ${item.name}
                                 </div>
@@ -878,7 +878,7 @@ function renderExecutedOrders(filter) {
     }
 
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">내역이 없습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">해당 기간 또는 조건에 일치하는 체결내역이 없습니다.</td></tr>';
         return;
     }
 
