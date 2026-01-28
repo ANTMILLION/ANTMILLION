@@ -493,6 +493,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 초기 렌더링
     renderStocks();
+    
+    // 10분마다 신호등 상태만 별도로 업데이트
+    setInterval(function() {
+        console.log('[Auto Update] 신호등 상태 갱신');
+        updateAllTrafficSignals();
+    }, 600000);
 });
 
 // ========== Mock 데이터 제어 함수 ==========
@@ -678,7 +684,7 @@ function updateAllTrafficSignals() {
         
         if (!stockCode) return;
 
-        fetch(`${contextPath}/api/kis/ddddforeigner-organization/${stockCode}`)
+        fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`)
             .then(res => res.json())
             .then(data => {
                 const lamp = document.getElementById(`signal-${stockCode}`);
