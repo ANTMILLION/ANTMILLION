@@ -186,6 +186,15 @@ body {
     border-radius: 8px;
 }
 
+.news-read-badge {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #2970ff;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
 .news-card-title {
     font-size: 20px;
     font-weight: 700;
