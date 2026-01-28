@@ -229,6 +229,20 @@ body {
     text-decoration: underline;
 }
 
+.detail-hoga-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.detail-hoga-placeholder span {
+    font-size: 14px;
+    color: var(--text-tertiary); /* 회색 */
+    font-weight: 500;
+}
+
 /* 탭 그룹 */
 .detail-tab-group {
     display: flex;

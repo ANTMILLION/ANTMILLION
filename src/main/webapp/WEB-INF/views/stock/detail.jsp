@@ -48,6 +48,9 @@
                     </section>
                     <section class="detail-bottom-split">
                         <section class="detail-hoga-box">
+                            <div class="detail-hoga-placeholder">
+                                <span>호가는 장 시간에 볼 수 있어요</span>
+                            </div>
                         </section>
                         <section class="detail-community-box">
                             <div class="detail-strong">

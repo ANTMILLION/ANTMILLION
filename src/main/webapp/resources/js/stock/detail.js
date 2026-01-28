@@ -1806,6 +1806,20 @@ function resetSentimentToDefault() {
     if (sellPercent) sellPercent.textContent = '';
 }
 
+// ========== 호가 초기 상태로 복원 ==========
+function resetHogaToDefault() {
+    console.log('호가를 초기 상태로 복원');
+
+    const hogaBox = document.querySelector('.detail-hoga-box');
+    if (hogaBox) {
+        hogaBox.innerHTML = `
+            <div class="detail-hoga-placeholder">
+                <span>호가는 장 시간에 볼 수 있어요</span>
+            </div>
+        `;
+    }
+}
+
 // ========== 특정 시간에 자동 실행 예약 ==========
 function scheduleMarketClose() {
     const now = new Date();
@@ -1820,6 +1834,7 @@ function scheduleMarketClose() {
         setTimeout(() => {
             console.log('15:30 정규장 마감 - 기본값으로 전환');
             resetSentimentToDefault();
+            resetHogaToDefault();
         }, msUntil1530);
     } else {
         console.log('오늘 15:30은 이미 지났습니다.');
@@ -1835,6 +1850,7 @@ function scheduleMarketClose() {
         setTimeout(() => {
             console.log('20:00 시간외 마감 - 기본값으로 전환');
             resetSentimentToDefault();
+            resetHogaToDefault();
         }, msUntil2000);
     } else {
         console.log('오늘 20:00은 이미 지났습니다.');
