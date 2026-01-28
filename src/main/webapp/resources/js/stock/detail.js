@@ -774,6 +774,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code'); // ?code=005930 에서 005930 추출
 
+    const imgUrl = contextPath + '/resources/images/stock/' + stockCode + '.png';
+    const logoImg = document.getElementById('detail-stock-image');
+    logoImg.src = imgUrl;
     scheduleMarketClose();
 
     initPriceTypeEvents();

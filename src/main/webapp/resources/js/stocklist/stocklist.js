@@ -214,6 +214,8 @@ function createStockItemHTML(stock, index, isFavorite) {
         }
     }
 
+    const imgUrl = contextPath + '/resources/images/stock/' + stock.mksc_shrn_iscd + '.png';
+
     return `
         <div class="stocklist-item" data-code="${stock.mksc_shrn_iscd}">
             <div class="stocklist-favorite">
@@ -223,7 +225,7 @@ function createStockItemHTML(stock, index, isFavorite) {
             </div>
             <div class="stocklist-info">
                 <div class="stocklist-logo">
-                    <img src="" alt="${stock.hts_kor_isnm}">
+                    <img src="${imgUrl}" alt="${stock.hts_kor_isnm}">
                 </div>
                 <span class="stocklist-name">${stock.hts_kor_isnm}</span>
             </div>
