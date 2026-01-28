@@ -16,4 +16,5 @@ public class StockOrderDTO {
     private String status; 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String stockName;
 }

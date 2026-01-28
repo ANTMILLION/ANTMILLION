@@ -777,6 +777,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const imgUrl = contextPath + '/resources/images/stock/' + stockCode + '.png';
     const logoImg = document.getElementById('detail-stock-image');
     logoImg.src = imgUrl;
+    logoImg.onerror = function () {
+        this.src = contextPath + '/resources/images/icontmp.png';
+    }
+
     scheduleMarketClose();
 
     initPriceTypeEvents();
@@ -910,11 +914,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             const type = this.dataset.type;
             console.log('[탭 클릭]', type);
             
-            if (type === 'pending') { 
-                alert('대기 주문 기능은 준비 중입니다.'); 
-                return; 
-            }
-            
             // 모든 탭에서 active 클래스 제거
             document.querySelectorAll('.detail-tab, .detail-tab-active').forEach(function(t) {
                 t.classList.remove('detail-tab-active');
@@ -926,15 +925,47 @@ document.addEventListener('DOMContentLoaded', async function() {
             this.classList.add('detail-tab-active');
             
             const btn = document.getElementById('submit-btn');
+            const inputCard = document.querySelector('.detail-input-card');
+            const resultArea = document.querySelector('.detail-order-result');
+            const sentimentSection = document.querySelector('.detail-sentiment-section');
+            const pendingArea = document.getElementById('pending-list-area');
+            
             const totalMoney = document.getElementById('total-money');
             const availableLabel = document.getElementById('available-label');
             const sentimentDir = document.getElementById('sentiment-direction');
-            const sentimentPercent = document.getElementById('sentiment-percent');
+    		const sentimentPercent = document.getElementById('sentiment-percent');
             const buyPercent = document.getElementById('buy-percent');
             const sellPercent = document.getElementById('sell-percent');
             const buyBar = document.getElementById('buy-bar');
             const sellBar = document.getElementById('sell-bar');
             
+            // 1. 대기(Pending) 탭 처리
+            if (type === 'pending') {
+                console.log('[UI 변경] 대기 목록 모드');
+                // 매수/매도 관련 UI 숨기기
+                if(inputCard) inputCard.style.display = 'none';
+                if(resultArea) resultArea.style.display = 'none';
+                if(sentimentSection) sentimentSection.style.display = 'none';
+                if(btn) btn.style.display = 'none';
+                
+                // 대기 리스트 영역 보이기
+                if(pendingArea) {
+                    pendingArea.style.display = 'flex';
+                }
+    
+                // AJAX 데이터 로드 함수 호출
+                loadPendingOrders(); 
+                return; // 대기 탭일 경우 아래 매수/매도 로직 실행 방지
+            }
+    
+            // 2. 매수/매도 탭 공통 처리 (대기 영역 숨기기)
+            if(pendingArea) pendingArea.style.display = 'none';
+            if(inputCard) inputCard.style.display = 'flex';
+            if(resultArea) resultArea.style.display = 'flex';
+            if(sentimentSection) sentimentSection.style.display = 'block';
+            if(btn) btn.style.display = 'block';
+    
+            // 3. 매수(Buy) 모드 로직
             if (type === 'buy') {
                 console.log('[UI 변경] 매수 모드');
                 btn.textContent = '매수';
@@ -943,7 +974,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 availableLabel.textContent = '구매 가능 금액';
                 sentimentDir.textContent = '매수';
                 sentimentDir.className = 'detail-red-text';
-
+                
                 
                 // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > 손실회피 > FOMO)
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1048,6 +1079,110 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 });
+
+// 대기 목록 로드 함수
+function loadPendingOrders() {
+    const tbody = $('#pending-tbody');
+    $.ajax({
+        url: contextPath + '/api/stock/pending-list',
+        type: 'GET',
+        success: function(data) {
+            tbody.empty();
+            if (!data || data.length === 0) {
+                tbody.append('<tr class="p-empty-row"><td colspan="5" class="p-empty-msg">미체결 내역이 없습니다.</td></tr>');
+                return;
+            }
+            data.forEach(order => {
+                const typeClass = order.transactionType === 'BUY' ? 'buy' : 'sell';
+                
+                let timeStr = "";
+                if (Array.isArray(order.createdAt)) {
+                    timeStr = order.createdAt[3].toString().padStart(2, '0') + ":" + 
+                              order.createdAt[4].toString().padStart(2, '0');
+                } else {
+                    const d = new Date(order.createdAt);
+                    timeStr = isNaN(d.getTime()) ? "--:--" : 
+                              d.getHours().toString().padStart(2, '0') + ":" + 
+                              d.getMinutes().toString().padStart(2, '0');
+                }
+                
+                let row = `<tr>
+                    <td class="p-time">${timeStr}</td>
+                    <td>
+                        <span class="p-stock-name">${order.stockName}</span>
+                        <span class="p-type ${typeClass}">${order.transactionType === 'BUY' ? '매수' : '매도'}</span>
+                    </td>
+                    <td>
+                        <div class="p-price">${order.orderPrice.toLocaleString()}원</div>
+                        <div class="p-qty">${order.quantity}주</div>
+                    </td>
+                    <td class="p-unexecuted">${order.quantity}주</td>
+                    <td>
+                        <div class="p-btn-group">
+                            <button class="p-edit-btn" onclick="openEditModal(${order.orderId}, ${order.orderPrice}, ${order.quantity})">정정</button>
+                            <button class="p-cancel-btn" onclick="cancelOrder(${order.orderId})">취소</button>
+                        </div>
+                    </td>
+                </tr>`;
+                tbody.append(row);
+            });
+        }
+    });
+}
+
+// 주문 취소 함수
+function cancelOrder(orderId) {
+    if (!confirm('정말 이 주문을 취소하시겠습니까?')) return;
+
+    $.ajax({
+        url: contextPath + '/api/stock/cancel',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ orderId: orderId }),
+        success: function(res) {
+            if (res.success) {
+                alert(res.message);
+                loadPendingOrders(); // 리스트 새로고침
+            } else {
+                alert(res.message);
+            }
+        },
+        error: function() {
+            alert('취소 처리 중 오류가 발생했습니다.');
+        }
+    });
+}
+
+// 주문 정정 팝업
+function openEditModal(orderId, currentPrice, currentQty) {
+    const newPrice = prompt("정정할 가격을 입력하세요", currentPrice);
+    const newQty = prompt("정정할 수량을 입력하세요", currentQty);
+
+    if (newPrice && newQty) {
+        const orderData = {
+            orderId: orderId,
+            orderPrice: parseInt(newPrice),
+            quantity: parseInt(newQty)
+        };
+
+        $.ajax({
+            url: contextPath + '/api/stock/modify',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(orderData),
+            success: function(res) {
+                alert(res.message);
+                if (res.success) loadPendingOrders();
+            },
+            error: function(xhr) {
+                alert("통신 에러 발생");
+            }
+        });
+    }
+}
+
+
+
 
 // 페이지 로드 시 관심종목 상태 확인
 function checkFavoriteStatus() {
@@ -1802,6 +1937,20 @@ function resetSentimentToDefault() {
     if (sellPercent) sellPercent.textContent = '';
 }
 
+// ========== 호가 초기 상태로 복원 ==========
+function resetHogaToDefault() {
+    console.log('호가를 초기 상태로 복원');
+
+    const hogaBox = document.querySelector('.detail-hoga-box');
+    if (hogaBox) {
+        hogaBox.innerHTML = `
+            <div class="detail-hoga-placeholder">
+                <span>호가는 장 시간에 볼 수 있어요</span>
+            </div>
+        `;
+    }
+}
+
 // ========== 특정 시간에 자동 실행 예약 ==========
 function scheduleMarketClose() {
     const now = new Date();
@@ -1816,6 +1965,7 @@ function scheduleMarketClose() {
         setTimeout(() => {
             console.log('15:30 정규장 마감 - 기본값으로 전환');
             resetSentimentToDefault();
+            resetHogaToDefault();
         }, msUntil1530);
     } else {
         console.log('오늘 15:30은 이미 지났습니다.');
@@ -1831,6 +1981,7 @@ function scheduleMarketClose() {
         setTimeout(() => {
             console.log('20:00 시간외 마감 - 기본값으로 전환');
             resetSentimentToDefault();
+            resetHogaToDefault();
         }, msUntil2000);
     } else {
         console.log('오늘 20:00은 이미 지났습니다.');

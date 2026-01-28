@@ -64,7 +64,8 @@ function createMainStockItemHTML(stock, index) {
             </div>
             <div class="main-stocklist-info">
                 <div class="main-stocklist-logo">
-                    <img src="${imgUrl}" alt="${stock.hts_kor_isnm}">
+                    <img src="${imgUrl}" alt="${stock.hts_kor_isnm}"
+                        onerror="this.src='${contextPath}/resources/images/icontmp.png'">
                 </div>
                 <div class="main-signal-lamp" id="signal-${stock.mksc_shrn_iscd}"></div>
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>

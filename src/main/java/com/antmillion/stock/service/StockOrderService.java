@@ -1,6 +1,8 @@
 package com.antmillion.stock.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StockOrderService {
 
-    private final StockOrderMapper stockOrderMapper;
-    private final AccountMapper accountMapper;
-    private final AssetMapper assetMapper;
+	private final StockOrderMapper stockOrderMapper;
+	private final AccountMapper accountMapper;
+	private final AssetMapper assetMapper;
 
+	// 주문 생성
     @Transactional
     public boolean createOrder(Long accountId, String stockCode, String transactionType, 
                                String orderType, Integer quantity, Integer orderPrice) {
@@ -66,33 +69,52 @@ public class StockOrderService {
         
         // 4. 잔액 및 자산 업데이트
         if ("BUY".equals(transactionType)) {
-            // 매수: 잔액 차감
+            // [자산 업데이트]
+            assetMapper.upsertAssetBuy(accountId, stockCode, quantity, orderPrice, totalPrice);
+            
+            // [잔액 업데이트]
             long newBalance = account.getBalance() - totalPrice;
-            accountMapper.updateBalance(accountId, newBalance);
-            log.info("잔액 차감: {} → {}", account.getBalance(), newBalance);
+            accountMapper.updateBalance(accountId, newBalance); 
             
-            // 자산 추가
-            assetMapper.insertAsset(accountId, stockCode, quantity, orderPrice, totalPrice);
-            log.info("자산 추가: {} 종목 {} 주 매수", stockCode, quantity);
-            
+            log.info("매수 완료: 잔액 {} → {}", account.getBalance(), newBalance);
+
         } else if ("SELL".equals(transactionType)) {
-            // 매도: 잔액 증가
+            // [자산 업데이트]
+            int rows = assetMapper.updateAssetSell(accountId, stockCode, quantity);
+            
+            if (rows == 0) {
+                throw new IllegalArgumentException("보유 수량이 부족하여 매도할 수 없습니다.");
+            }
+            
+            // [잔액 업데이트]
             long newBalance = account.getBalance() + totalPrice;
             accountMapper.updateBalance(accountId, newBalance);
-            log.info("잔액 증가: {} → {}", account.getBalance(), newBalance);
             
-            // 자산 차감
-            int remaining = quantity;
-            while (remaining > 0) {
-                int decreased = assetMapper.decreaseAssetQuantity(accountId, stockCode, remaining);
-                if (decreased == 0) {
-                    break; // 더 이상 차감할 자산 없음
-                }
-                remaining -= decreased;
-            }
-            log.info("자산 차감: {} 종목 {} 주 매도", stockCode, quantity);
+            log.info("매도 완료: 잔액 {} → {}", account.getBalance(), newBalance);
         }
         
         return result > 0;
     }
+
+	// 주문 대기 조회
+	public List<StockOrderDTO> getWaitOrders(Long accountId) {
+		return stockOrderMapper.selectWaitOrders(accountId);
+	}
+	
+	// 주문 취소
+	@Transactional
+	public boolean cancelOrder(Long orderId, Long accountId) {
+	    int result = stockOrderMapper.cancelOrder(orderId, accountId);
+	    return result > 0;
+	}
+	
+	// 주문 정정
+	@Transactional
+	public boolean modifyOrder(StockOrderDTO orderRequest) {
+	    StockOrderDTO original = stockOrderMapper.getOrderByOrderId(orderRequest.getOrderId());
+	    
+	    orderRequest.setAccountId(original.getAccountId());
+	    
+	    return stockOrderMapper.updateOrder(orderRequest) > 0;
+	}
 }
