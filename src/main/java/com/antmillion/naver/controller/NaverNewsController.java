@@ -1,14 +1,13 @@
 package com.antmillion.naver.controller;
 
 import com.antmillion.mission.service.MissionService;
-import com.antmillion.naver.dto.NewsSearchResponseDTO;
+import com.antmillion.naver.dto.PagedNewsResponseDTO;
 import com.antmillion.naver.service.NaverNewsService;
 import com.antmillion.news.service.NewsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +23,12 @@ public class NaverNewsController {
     private final MissionService missionService;
 
     @GetMapping
-    public Map<String, Object> getNews() {
+    public ResponseEntity<Map<String, Object>> getNews (
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size
+    ){
         // 네이버 뉴스 가져오기
-        NewsSearchResponseDTO newsResponse = naverNewsService.getNews();
+        PagedNewsResponseDTO newsResponse = naverNewsService.getNews(page, size);
 
         // 사용자 아이디 가져오기
         Long userId = missionService.getCurrentUserId();
@@ -37,8 +39,11 @@ public class NaverNewsController {
         // 합쳐서 보내기
         Map<String, Object> response = new HashMap<>();
         response.put("articles", newsResponse.getArticles()); // 네이버 뉴스 리스트
+        response.put("totalCount", newsResponse.getTotalCount()); // 전체 뉴스 개수
+        response.put("currentPage", newsResponse.getCurrentPage()); // 조회중인 페이지 번호
+        response.put("maxPage", newsResponse.getMaxPage());   // 마지막 페이지 번호
         response.put("readList", readList);                   // 내가 읽은 URL 리스트 (String 배열)
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     // 뉴스 읽기 및 포인트 적립
