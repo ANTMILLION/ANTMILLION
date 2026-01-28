@@ -319,6 +319,10 @@ body {
     white-space: nowrap;
 }
 
+.stocklist-sentiment-inactive {
+    background-color: #e0e0e0 !important;;
+}
+
 .stocklist-sentiment-bar {
     display: flex;
     width: 100px;

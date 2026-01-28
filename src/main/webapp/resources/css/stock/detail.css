@@ -329,6 +329,11 @@ body {
     text-align: center;
 }
 
+/* 거래 비율 비활성 상태 (회색) */
+.detail-sentiment-inactive {
+    background-color: #e0e0e0 !important;
+}
+
 .detail-red-text { color: var(--color-positive); }
 
 .detail-blue-text { color: var(--color-negative); }

@@ -588,6 +588,10 @@ body {
     background-color: rgb(237, 244, 253);
 }
 
+.main-sentiment-inactive {
+    background-color: #e0e0e0 !important;
+}
+
 .main-stocklist-sentiment {
     display: flex;
     flex-direction: column;
