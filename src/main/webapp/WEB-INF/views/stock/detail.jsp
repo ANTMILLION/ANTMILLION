@@ -34,24 +34,27 @@
 							♡</button>
 					</section>
 
-					<section class="detail-chart-area">
-						<!-- 차트 기간 선택 버튼 추가 -->
-						<div class="detail-chart-period-buttons">
-							<button class="detail-period-btn detail-period-active"
-								data-period="minute">분</button>
-							<button class="detail-period-btn" data-period="D">일</button>
-							<button class="detail-period-btn" data-period="W">주</button>
-							<button class="detail-period-btn" data-period="M">월</button>
-							<button class="detail-period-btn" data-period="Y">년</button>
-						</div>
-						<div id="detail-stockChart" style="width: 100%; height: 280px;"></div>
-					</section>
-					<section class="detail-bottom-split">
-						<section class="detail-hoga-box"></section>
-						<section class="detail-community-box">
-							<div class="detail-strong">
-								<h3>커뮤니티</h3>
-							</div>
+                    <section class="detail-chart-area">
+                        <!-- 차트 기간 선택 버튼 추가 -->
+                        <div class="detail-chart-period-buttons">
+                            <button class="detail-period-btn detail-period-active" data-period="minute">분</button>
+                            <button class="detail-period-btn" data-period="D">일</button>
+                            <button class="detail-period-btn" data-period="W">주</button>
+                            <button class="detail-period-btn" data-period="M">월</button>
+                            <button class="detail-period-btn" data-period="Y">년</button>
+                        </div>
+                        <div id="detail-stockChart" style="width: 100%; height: 280px;"></div>
+                    </section>
+                    <section class="detail-bottom-split">
+                        <section class="detail-hoga-box">
+                            <div class="detail-hoga-placeholder">
+                                <span>호가는 장 시간에 볼 수 있어요</span>
+                            </div>
+                        </section>
+                        <section class="detail-community-box">
+                            <div class="detail-strong">
+                                <h3>커뮤니티</h3>
+                            </div>
 
 							<!-- 커뮤니티 내용 include -->
 							<%@ include file="/WEB-INF/views/stock/community.jsp"%>
