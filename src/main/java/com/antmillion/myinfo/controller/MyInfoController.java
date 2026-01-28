@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -53,16 +55,15 @@ public class MyInfoController {
 
     @PostMapping("/password")
     @ResponseBody
-    public Map<String, Object> changePassword(
+    public ResponseEntity<Map<String, Object>> changePassword(
             @RequestParam("currentPassword") String currentPassword,
             @RequestParam("newPassword") String newPassword,
-            @RequestParam("confirmPassword") String confirmPassword,
-            HttpServletResponse response) {
+            @RequestParam("confirmPassword") String confirmPassword) {
 
-    	Long userId = currentUserId();
+        Long userId = currentUserId();
         if (userId == null) {
-        	response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return Map.of("ok", false, "message", "로그인이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("ok", false, "message", "로그인이 필요합니다."));
         }
 
         currentPassword = n(currentPassword);
@@ -70,35 +71,40 @@ public class MyInfoController {
         confirmPassword = n(confirmPassword);
 
         if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-            return Map.of("ok", false, "message", "모든 항목을 입력해 주세요.");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", "비밀번호를 모두 입력하세요."));
         }
         if (!newPassword.equals(confirmPassword)) {
-            return Map.of("ok", false, "message", "새 비밀번호가 일치하지 않습니다.");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", "새 비밀번호가 일치하지 않습니다."));
         }
         if (!PW_RULE.matcher(newPassword).matches()) {
-            return Map.of("ok", false, "message", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다."));
         }
 
         try {
             myInfoService.changePassword(userId, currentPassword, newPassword);
-            return Map.of("ok", true, "message", "비밀번호가 변경되었습니다.");
+            return ResponseEntity.ok(Map.of("ok", true, "message", "비밀번호가 변경되었습니다."));
         } catch (IllegalStateException e) {
-            return Map.of("ok", false, "message", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", e.getMessage()));
         } catch (Exception e) {
-            return Map.of("ok", false, "message", "비밀번호 변경에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("ok", false, "message", "비밀번호 변경에 실패했습니다."));
         }
     }
 
     @PostMapping("/delete")
     @ResponseBody
-    public Map<String, Object> deleteAccount(
+    public ResponseEntity<Map<String, Object>> deleteAccount(
             @RequestParam(value = "password", required = false) String password,
             HttpServletResponse response) {
 
         Long userId = currentUserId();
         if (userId == null) {
-        	response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // ★ 핵심
-            return Map.of("ok", false, "message", "로그인이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("ok", false, "message", "로그인이 필요합니다."));
         }
 
         password = n(password);
@@ -106,18 +112,20 @@ public class MyInfoController {
         try {
             myInfoService.deleteAccount(userId, password);
 
-            // RT 쿠키 제거(클라이언트는 응답 성공 후 AT(sessionStorage) 제거)
             CookieUtil.deleteCookie(response, "RT");
             CookieUtil.deleteCookie(response, "AT");
             SecurityContextHolder.clearContext();
 
-            return Map.of("ok", true, "redirect", "/");
+            return ResponseEntity.ok(Map.of("ok", true, "redirect", "/"));
         } catch (IllegalStateException e) {
-            return Map.of("ok", false, "message", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", e.getMessage()));
         } catch (Exception e) {
-            return Map.of("ok", false, "message", "회원탈퇴에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("ok", false, "message", "회원탈퇴에 실패했습니다."));
         }
     }
+
 
     private static String n(String v) {
         return (v == null) ? "" : v.trim();
