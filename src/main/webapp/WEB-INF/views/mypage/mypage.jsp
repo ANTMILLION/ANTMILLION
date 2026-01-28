@@ -140,27 +140,28 @@
                         <!-- 계좌정보 탭 -->
                         <div class="mypage-tab-panel" id="account-panel">
 						    <h2 class="mypage-section-title">계좌정보</h2>
-						
-						    <div class="account-card" style="margin-top: 20px;">
-						        <h3 class="account-user-title" style="border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
-						            <!-- <span id="userNickname" class="negative" style="font-weight: bold;">로딩 중...</span>님의 계좌  -->
-						            <span id="userNickname" style="color: #2271e9; font-weight: 800; margin-right: 2px;">(로딩 중)</span><span style="font-size: 0.99em; color: #333;">님의 계좌</span>
-						        </h3>
-						        
-						        <div class="account-info-list" style="line-height: 2;">
-						            <div class="account-detail-row">
-						                <span class="label" style="width: 100px; display: inline-block; color: #666;">계좌번호</span>
-						                <span class="value" id="accNumber" style="font-weight: 500;">-</span>
-						            </div>
-						            <div class="account-detail-row">
-						                <span class="label" style="width: 100px; display: inline-block; color: #666;">잔고</span>
-						                <span class="value accent" style="font-weight: bold;"><span id="accBalance">0</span>원</span>
-						            </div>
-						            <div class="account-detail-row">
-						                <span class="label" style="width: 100px; display: inline-block; color: #666;">개설일</span>
-						                <span class="value" id="accCreateDate" style="color: #666;">-</span>
-						            </div>
-						        </div>
+						    <div class="mypage-content-container">
+							    <div class="account-card" style="margin-top: 20px;">
+							        <h3 class="account-user-title" style="border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+							            <!-- <span id="userNickname" class="negative" style="font-weight: bold;">로딩 중...</span>님의 계좌  -->
+							            <span id="userNickname" style="color: #2271e9; font-weight: 800; margin-right: 2px;">(로딩 중)</span><span style="font-size: 0.99em; color: #333;">님의 계좌</span>
+							        </h3>
+							        
+							        <div class="account-info-list" style="line-height: 2;">
+							            <div class="account-detail-row">
+							                <span class="label" style="width: 100px; display: inline-block; color: #666;">계좌번호</span>
+							                <span class="value" id="accNumber" style="font-weight: 500;">-</span>
+							            </div>
+							            <div class="account-detail-row">
+							                <span class="label" style="width: 100px; display: inline-block; color: #666;">잔고</span>
+							                <span class="value accent" style="font-weight: bold;"><span id="accBalance">0</span>원</span>
+							            </div>
+							            <div class="account-detail-row">
+							                <span class="label" style="width: 100px; display: inline-block; color: #666;">개설일</span>
+							                <span class="value" id="accCreateDate" style="color: #666;">-</span>
+							            </div>
+							        </div>
+							    </div>
 						    </div>
 						</div>
 						
