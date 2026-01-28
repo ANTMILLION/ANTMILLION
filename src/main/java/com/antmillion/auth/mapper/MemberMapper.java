@@ -6,7 +6,7 @@ import com.antmillion.user.dto.MemberDTO;
 
 public interface MemberMapper {
 
-    int insertMember(MemberDTO dto); // userId를 useGeneratedKeys로 받아올 예정
+    int insertMember(MemberDTO dto);
 
     int countByEmail(@Param("email") String email);
 

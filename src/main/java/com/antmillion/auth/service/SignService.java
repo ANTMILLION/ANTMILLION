@@ -50,7 +50,6 @@ public class SignService {
 	@Transactional
 	public SignUpResult signUpLocal(SignUpRequest req) {
 
-		// step2에서 nickname까지 채워져 들어오는 전제
 		if (req.getEmail() == null || req.getEmail().trim().isEmpty()) {
 			throw new IllegalStateException("이메일이 비어있습니다.");
 		}
@@ -61,7 +60,7 @@ public class SignService {
 			throw new IllegalStateException("닉네임이 비어있습니다.");
 		}
 
-		// 1) 중복 체크 (DB에도 UNIQUE 권장)
+		// 중복 체크
 		if (memberMapper.countByEmail(req.getEmail()) > 0) {
 			throw new IllegalStateException("이미 사용 중인 이메일입니다.");
 		}
@@ -69,7 +68,7 @@ public class SignService {
 			throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
 		}
 
-		// 2) member insert
+		// member insert
 		MemberDTO member = new MemberDTO();
 		member.setRankId(1);
 		member.setPoint(0);
@@ -85,7 +84,7 @@ public class SignService {
 			throw new IllegalStateException("회원가입에 실패했습니다. (userId 생성 실패)");
 		}
 
-		// 3) account insert (초기 잔고 5천만)
+		// account insert
 		AccountDTO account = new AccountDTO();
 		account.setUserId(userId);
 		account.setBalance(50_000_000L);
@@ -97,7 +96,7 @@ public class SignService {
 
 				return new SignUpResult(userId, account.getAccountNumber(), account.getBalance());
 			} catch (DuplicateKeyException e) {
-				// account_number UNIQUE인 경우 중복 발생 가능 → 재생성 재시도
+				// account_number 중복 발생 → 재생성 재시도
 			}
 		}
 
@@ -113,13 +112,13 @@ public class SignService {
 		if (memberMapper.countByNickname(nickname) > 0) {
 			throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
 		}
-		// 혹시 동시성 대비: 이미 소셜로 가입된 카카오ID면 막기
+		// 이미 소셜로 가입된 카카오ID면 막기
 		Long existsUserId = socialMapper.selectUserIdByKakaoId(kakaoId);
 		if (existsUserId != null) {
 			throw new IllegalStateException("이미 가입된 카카오 계정입니다.");
 		}
 
-		// 1) member insert (email/password NULL 허용 전제)
+		// member insert
 		MemberDTO member = new MemberDTO();
 		member.setRankId(1);
 		member.setPoint(0);
@@ -134,7 +133,7 @@ public class SignService {
 		if (userId == null)
 			throw new IllegalStateException("회원가입 실패(userId 생성 실패)");
 
-		// 2) account insert (초기 5천만)
+		// account insert
 		AccountDTO account = new AccountDTO();
 		account.setUserId(userId);
 		account.setBalance(50_000_000L);
@@ -144,7 +143,6 @@ public class SignService {
 				account.setAccountNumber(generateAccountNumber());
 				accountMapper.insertAccount(account);
 
-				// account 성공했으니 social까지 저장하고 종료
 				socialMapper.insertSocial(kakaoId, userId);
 				return new SignUpResult(userId, account.getAccountNumber(), account.getBalance());
 

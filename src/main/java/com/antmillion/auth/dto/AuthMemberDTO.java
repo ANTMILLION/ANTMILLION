@@ -9,7 +9,7 @@ import lombok.ToString;
 public class AuthMemberDTO {
   private long userId;
   private String email;
-  private String password;  // bcrypt 해시
+  private String password;
   private String nickname;
   private Integer rankId;
   private Integer point;

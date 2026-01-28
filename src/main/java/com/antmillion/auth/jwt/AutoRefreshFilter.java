@@ -33,19 +33,16 @@ public class AutoRefreshFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest req) {
-    	// "페이지 이동"에서만 자동갱신을 태운다 (API는 JS Silent Refresh가 담당)
+    	// "페이지 이동"에서만 자동갱신
         if (!"GET".equalsIgnoreCase(req.getMethod())) return true;
 
         String uri = req.getRequestURI();
         String cpath = req.getContextPath();
         String path = (cpath != null && !cpath.isEmpty()) ? uri.substring(cpath.length()) : uri;
 
-        // 정적/소켓/인증 엔드포인트 제외
         if (path.startsWith("/resources/")) return true;
         if (path.startsWith("/ws-stomp/")) return true;
         if (path.startsWith("/auth/")) return true;
-
-        // API는 JS에서 401 감지 후 /auth/refresh로 처리
         if (path.startsWith("/api/")) return true;
 
         return false;
@@ -61,7 +58,7 @@ public class AutoRefreshFilter extends OncePerRequestFilter {
             return;
         }
 
-        // AT가 이미 유효하면(헤더/쿠키) -> JwtAuthFilter가 처리하게 통과
+        // AT가 이미 유효하면 -> JwtAuthFilter가 처리하게 통과
         String at = TokenResolver.resolveAccessToken(req);
         if (at != null && jwtProvider.isValid(at)) {
             chain.doFilter(req, res);
@@ -89,14 +86,13 @@ public class AutoRefreshFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // RT가 유효/일치 -> 토큰 재발급(회전)
+            // RT가 유효/일치 -> 토큰 재발급
             TokenPair tokens = signService.issueTokensByUserId(userId);
 
             // 쿠키 갱신(AT/RT)
             CookieUtil.addHttpOnlyCookie(res, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
             CookieUtil.addHttpOnlyCookie(res, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
-
-            // 이번 요청에서도 인증이 성립하도록 SecurityContext 세팅
+            
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
