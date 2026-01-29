@@ -23,7 +23,7 @@
                 <button class="stocklist-tab-btn">관심종목</button>
             </div>
             <div class="stocklist-header">
-                <div class="stocklist-time">거래대금 순위·오늘 <%= new java.text.SimpleDateFormat("HH:mm").format(new java.util.Date()) %> 기준</div>
+                <div class="stocklist-time" id="stocklist-sort-label">거래대금 순위·오늘 <%= new java.text.SimpleDateFormat("HH:mm").format(new java.util.Date()) %> 기준</div>
                 <div class="stocklist-view-options">
                     <span class="stocklist-help-icon">?</span>
                 </div>

@@ -330,7 +330,7 @@ function subscribeStockHoga(stockCode) {
 
     const subscription = stompClient.subscribe(topic, function(message) {
         const askBidData = JSON.parse(message.body);
-        console.log('[호가 실시간 데이터 수신]', askBidData);
+        //console.log('[호가 실시간 데이터 수신]', askBidData);
         updateHogaUI(askBidData);
     });
 

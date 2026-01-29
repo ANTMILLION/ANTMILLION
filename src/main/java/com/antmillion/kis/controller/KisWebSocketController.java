@@ -3,12 +3,14 @@ package com.antmillion.kis.controller;
 import com.antmillion.kis.constant.KisWebSocketTrId;
 import com.antmillion.kis.manager.KisWebSocketManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/kis/websocket")
 @RequiredArgsConstructor
@@ -34,9 +36,15 @@ public class KisWebSocketController {
             } else {
                 actualTrId = KisWebSocketTrId.getCurrentAskBidTrId();
             }
-            for (String stockCode : stockCodes) {
-                kisWebSocketManager.subscribe(stockCode, actualTrId);
-            }
+            // 병렬 처리로 변경
+            stockCodes.parallelStream().forEach(stockCode -> {
+                try {
+                    kisWebSocketManager.subscribe(stockCode, actualTrId);
+                } catch (Exception e) {
+                    log.error("종목 {} 구독 실패: {}", stockCode, e.getMessage());
+                }
+            });
+
             response.put("success", true);
             response.put("count", stockCodes.size());
         } catch (Exception e) {

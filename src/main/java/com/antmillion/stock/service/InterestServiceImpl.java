@@ -1,5 +1,7 @@
 package com.antmillion.stock.service;
 
+import com.antmillion.kis.dto.CurrentPrice;
+import com.antmillion.kis.service.KisApiService;
 import com.antmillion.stock.dto.InterestDTO;
 import com.antmillion.stock.mapper.InterestMapper;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import java.util.List;
 public class InterestServiceImpl implements InterestService {
 
     private final InterestMapper interestMapper;
+    private final KisApiService  kisApiService;
 
     @Override
     @Transactional
@@ -55,4 +58,5 @@ public class InterestServiceImpl implements InterestService {
     public boolean isInterest(String stockCode, Long accountId) {
         return interestMapper.countInterest(stockCode, accountId) > 0;
     }
+
 }
