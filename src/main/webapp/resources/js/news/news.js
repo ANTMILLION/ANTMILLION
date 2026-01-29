@@ -59,20 +59,25 @@ function createNewsCard(article, index) {
     // 날짜 포맷팅
     const formattedDate = formatDate(article.pubDate);
     const safeLink = article.link.replace(/'/g, "\\'");
-
+    const readIndex = readUrls.indexOf(article.link);
     const isRead = readUrls.includes(article.link);
 
-    // 읽었으면 'read-badge' 클래스와 텍스트 표시
-    const readBadgeHtml = isRead
-        ? `<span class="news-read-badge">읽음</span>`
-        : ``;
+    const isPointEarned = isRead && readIndex < 5;
+    let badgesHtml = '';
 
+    if (isRead) {
+        badgesHtml += `<span class="news-read-badge">읽음</span>`;
+        // 포인트 획득 대상이면 뱃지 영구 표시
+        if (isPointEarned) {
+            badgesHtml += `<span class="news-points-badge">+100P</span>`;
+        }
+    }
     return `
         <div class="news-card" onclick="handleNewsClick('${safeLink}', this)">
             <div class="news-card-header">
                 <span class="news-source">네이버 뉴스</span>
                 <span class="news-card-date">${formattedDate}</span>
-                ${readBadgeHtml}
+                ${badgesHtml}
             </div>
             <h2 class="news-card-title">${cleanTitle}</h2>
             <p class="news-card-description">${cleanDescription}</p>
@@ -85,6 +90,7 @@ function handleNewsClick(url, cardElement) {
     // 새 창으로 뉴스 띄우기
     window.open(url, '_blank');
     const $card = $(cardElement);
+    const $header = $card.find('.news-card-header');
 
     // 화면에서 즉시 읽음 처리
     if (!$card.hasClass('read')) {
@@ -106,6 +112,12 @@ function handleNewsClick(url, cardElement) {
         contentType: 'application/json',
         data: JSON.stringify({ newsUrl: url }),
         success: function(data) {
+            if (data.earnedPoint && data.earnedPoint > 0) {
+                // 이미 포인트 뱃지가 있는지 확인 (중복 추가 방지)
+                if ($header.find('.news-points-badge').length === 0) {
+                    $header.append(`<span class="news-points-badge">+${data.earnedPoint}P</span>`);
+                }
+            }
             // 달성률 업데이트
             updateProgressBar(data.progress);
         },
