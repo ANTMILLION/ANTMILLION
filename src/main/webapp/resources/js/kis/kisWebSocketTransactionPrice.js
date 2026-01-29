@@ -16,7 +16,7 @@ function connect() {
 
             // 전달받은 데이터를 JSON으로 파싱
             var tradeData = JSON.parse(response.body);
-                console.log("수신 데이터:", tradeData);
+                //console.log("수신 데이터:", tradeData);
             // 화면 갱신 함수 호출
             updateUI(tradeData);
         });
