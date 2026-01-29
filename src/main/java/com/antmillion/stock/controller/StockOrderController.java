@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.antmillion.stock.dto.StockOrderDTO;
+import com.antmillion.stock.dto.StockOrderResponseDTO;
 import com.antmillion.stock.service.StockOrderService;
 import com.antmillion.user.dto.AccountDTO;
 
@@ -84,11 +85,11 @@ public class StockOrderController {
      * 주문 대기 API
      */
     @GetMapping("/pending-list")
-    public ResponseEntity<List<StockOrderDTO>> getPendingList(HttpSession session) {
+    public ResponseEntity<List<StockOrderResponseDTO>> getPendingList(HttpSession session) {
         AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
         Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
 
-        List<StockOrderDTO> list = stockOrderService.getWaitOrders(accountId);
+        List<StockOrderResponseDTO> list = stockOrderService.getWaitOrders(accountId);
         return ResponseEntity.ok(list);
     }
     

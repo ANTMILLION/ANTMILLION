@@ -1116,10 +1116,10 @@ function loadPendingOrders() {
                         <div class="p-price">${order.orderPrice.toLocaleString()}원</div>
                         <div class="p-qty">${order.quantity}주</div>
                     </td>
-                    <td class="p-unexecuted">${order.quantity}주</td>
+                    <td class="p-unexecuted">${order.remainedQuantity}주</td>
                     <td>
                         <div class="p-btn-group">
-                            <button class="p-edit-btn" onclick="openEditModal(${order.orderId}, ${order.orderPrice}, ${order.quantity})">정정</button>
+                            <button class="p-edit-btn" onclick="openEditModal(${order.orderId}, ${order.orderPrice}, ${order.remainedQuantity})">정정</button>
                             <button class="p-cancel-btn" onclick="cancelOrder(${order.orderId})">취소</button>
                         </div>
                     </td>
@@ -1129,6 +1129,7 @@ function loadPendingOrders() {
         }
     });
 }
+setInterval(loadPendingOrders, 3000); // 3초마다 대기 목록 새로고침
 
 // 주문 취소 함수
 function cancelOrder(orderId) {
