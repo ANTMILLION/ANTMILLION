@@ -351,7 +351,7 @@ function initializeMissionButton() {
             
             // 실제로는 다음과 같이 페이지 이동
             setTimeout(() => {
-                // window.location.href = 'mission.jsp';
+                // window.location.href = 'quiz.jsp';
             }, 1000);
         });
     }
