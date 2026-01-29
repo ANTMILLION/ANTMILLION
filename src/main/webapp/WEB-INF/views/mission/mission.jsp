@@ -36,7 +36,9 @@
                 <!-- 미션 1: 경제 퀴즈 풀기 -->
                 <div class="mission-card" id="mission-card-quiz">
                     <div class="mission-card-header">
-                        <h3 class="mission-card-title">미션 1. 오늘의 경제 퀴즈 풀기</h3>
+                        <h3 class="mission-card-title">미션 1. 오늘의 경제 퀴즈 풀기
+                            <span id="quiz-count-text" style="color: #2970ff; font-size: 0.9em;">(0/2)</span>
+                        </h3>
                     </div>
                     <div class="mission-card-body">
                         <p class="mission-card-description">매일 2문제, 정답을 맞히면 <b>문제당 100P!</b><br>
@@ -50,10 +52,12 @@
                 <!-- 미션 2: 경제 뉴스 읽기 -->
                 <div class="mission-card" id="mission-card-news">
                     <div class="mission-card-header">
-                        <h3 class="mission-card-title">미션 2. 오늘의 증권 뉴스 읽기</h3>
+                        <h3 class="mission-card-title">미션 2. 오늘의 증권 뉴스 읽기
+                            <span id="news-count-text" style="color: #2970ff; font-size: 0.9em;">(0/5)</span>
+                        </h3>
                     </div>
                     <div class="mission-card-body">
-                        <p class="mission-card-description">최신 증권 뉴스를 확인하고 <b>기사당 20P</b> 획득!<br>
+                        <p class="mission-card-description">최신 증권 뉴스를 확인하고 <b>기사당 100P</b> 획득!<br>
                             하루 5번, 시장의 흐름을 읽으면 포인트가 쌓입니다.</p>
                     </div>
                     <div class="mission-card-footer">

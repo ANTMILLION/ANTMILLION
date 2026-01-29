@@ -27,17 +27,42 @@ function checkMissionStatus() {
         url: cpath + '/mission/today-status',
         method: 'GET',
         success: function(data) {
-            const solvedCount = data.solvedCount || 0;
-            const progressPercent = (solvedCount / 2) * 100;
+            // 전체 진행률 업데이트 (서버에서 계산된 totalProgress 사용)
+            const progress = data.totalProgress || 0;
 
-            $('#mission-progressBar').css('width', progressPercent + '%');
-            $('#mission-progressStatus').text(Math.round(progressPercent) + '% 달성!');
+            $('#mission-progressBar').css('width', progress + '%');
+            $('#mission-progressStatus').text(progress + '% 달성!');
 
-            // 퀴즈 완료 상태 표시
-            if (solvedCount > 1) {
-                $('#mission-card-quiz').addClass('completed');
-                $('#quiz-start-btn').text('완료됨');
-                $('#quiz-start-btn').removeAttr('onclick');
+            // 퀴즈: (푼 개수 / 2)
+            const quizCount = data.quizCount || 0;
+            $('#quiz-count-text').text(`(${quizCount}/2)`);
+
+            // 뉴스: (읽은 개수 / 5)
+            const newsCount = data.newsCount || 0;
+            $('#news-count-text').text(`(${newsCount}/5)`);
+
+            // 퀴즈 미션 카드 상태 업데이트
+            if (data.isQuizCompleted) {
+                const $quizCard = $('#mission-card-quiz');
+                $quizCard.addClass('completed');
+
+                // 버튼 비활성화 및 텍스트 변경
+                const $quizBtn = $('#quiz-start-btn');
+                $quizBtn.text('완료됨');
+                $quizBtn.prop('disabled', true);
+                $quizBtn.removeAttr('onclick'); // 클릭 이벤트 제거
+            }
+
+            // 뉴스 미션 카드 상태 업데이트
+            if (data.isNewsCompleted) {
+                const $newsCard = $('#mission-card-news');
+                $newsCard.addClass('completed');
+
+                // 버튼 비활성화 및 텍스트 변경
+                const $newsBtn = $('#news-start-btn');
+                $newsBtn.text('완료됨');
+                $newsBtn.prop('disabled', true);
+                $newsBtn.removeAttr('onclick');
             }
         },
         error: function(err) {
