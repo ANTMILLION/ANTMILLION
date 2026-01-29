@@ -41,7 +41,7 @@ body {
     grid-template-columns: 1fr 2fr;
     grid-auto-rows: auto;
     gap: 28px;
-    max-width: 1800px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
@@ -671,6 +671,121 @@ body {
     width: 100% !important;
     height: 100% !important;
 }
+
+.question-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text-tertiary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.question-icon:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-secondary);
+}
+
+/* 아이콘과 말풍선을 감싸는 컨테이너 */
+.question-wrap {
+    display: inline-block;
+    position: relative;
+    margin-left: 12px;
+    vertical-align: middle;
+}
+
+/* 말풍선 본체 */
+.tooltip-box {
+    position: absolute;
+    top: calc(100% + 10px); /* 아이콘 아래로 배치 (이미지처럼 위로 하려면 bottom: 125%) */
+    left: 50%;
+    transform: translateX(-70%);
+    width: 260px;
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    
+    /* 기본 상태는 숨김 */
+    display: none; 
+    pointer-events: none;
+    
+    text-align: left;
+}
+
+/* 마우스 호버 시 표시 */
+.question-wrap:hover .tooltip-box {
+    display: block;
+}
+
+/* 말풍선 화살표 (삼각형) */
+/* .tooltip-box::before {
+    content: "";
+    position: absolute;
+    top: -8px; 위쪽에 화살표 배치
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #ffffff;
+} */
+
+/* 내부 텍스트 및 신호등 스타일 */
+.tooltip-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.tooltip-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tooltip-list li {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+
+/* 말풍선 안의 작은 신호등 점 */
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+}
+.dot.green { background-color: #4ADE80; }
+.dot.yellow { background-color: #FACC15; }
+.dot.red { background-color: #F87171; }
+
+/* 신호등 기본 램프 디자인 */
+.main-signal-lamp {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #E5E7EB; /* 데이터 로딩 전 기본색 */
+    flex-shrink: 0;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+/* 수급 상태별 클래스 (JS에서 추가됨) */
+.main-signal-lamp.GREEN  { background-color: #90FF7A !important; box-shadow: 0 0 5px #90FF7A; }
+.main-signal-lamp.RED    { background-color: #FF8C8E !important; box-shadow: 0 0 5px #FF8C8E; }
+.main-signal-lamp.YELLOW { background-color: #FCFF50 !important; box-shadow: 0 0 5px #FCFF50; }
 
 @keyframes main-fadeInUp {
     from {

@@ -22,8 +22,9 @@
 						<img id="detail-stock-image" src="" alt="">
 						<div class="detail-text-col">
 							<div>
-								<h2 class="detail-stock-name">
+								<h2 class="detail-stock-name">								
 									${stock.stockName} <span class="stock-code">${stock.stockCode}</span>
+									                   <span class="main-signal-lamp" id="signal-${stock.stockCode}"></span>
 								</h2>
 							</div>
 							<div class="detail-current-price">
@@ -131,38 +132,7 @@
 					</div>
 
 
-					<div class="detail-order-result">
-						<div class="detail-row">
-							<span id="available-label">구매 가능 금액</span> <span
-								class="detail-big-price">0원</span>
-						</div>
-						<div class="detail-total-row">
-							<span>주문금액</span> <span class="detail-total-money"
-								id="total-money">0원</span>
-						</div>
-					</div>
-					<div class="detail-sentiment-section">
-						<div class="detail-sentiment-text">
-							🔥 현재 투자자 <span id="sentiment-percent">50</span>%가 <span
-								class="detail-red-text" id="sentiment-direction">매수</span>쪽으로
-							몰려요!
-						</div>
-						<div class="detail-percent-labels">
-							<div style="width: 50%;" id="buy-percent">50%</div>
-							<div style="width: 50%;" id="sell-percent">50%</div>
-						</div>
-						<div>
-							<div class="detail-progress-bar">
-								<div class="detail-fill-buy" style="width: 50%;" id="buy-bar"></div>
-								<div class="detail-fill-sell" style="width: 50%;" id="sell-bar"></div>
-							</div>
-						</div>
-					</div>
-					<button class="detail-btn-submit" id="submit-btn">매수</button>
-				</aside>
-			</div>
-		</main>
-	</div>
+
 
 	<!-- 주문 확인 팝업 -->
 	<div class="detail-order-modal" id="order-modal">

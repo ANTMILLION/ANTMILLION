@@ -61,7 +61,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 28px;
-    max-width: 1800px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
