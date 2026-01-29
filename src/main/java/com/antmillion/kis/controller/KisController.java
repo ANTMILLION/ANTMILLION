@@ -136,9 +136,9 @@ public class KisController {
                 .screenCode("20171") //고정
                 .inputCode("0000") //고정 : 종목코드 전체
                 .divClassCode("0") //고정 : 전체 (보통주, 우선주)
-                .blngClassCode("0") //고정 : 평균거래량
+                .blngClassCode("3") //고정 : 거래대금액순
                 .targetClassCode("111111111") //고정
-                .targetExlsClassCode("0000001100") //고정 : ETF, ETN 제외
+                .targetExlsClassCode("0000000000") //고정
                 .inputPrice1("0") //고정 : 전체 가격 대상
                 .inputPrice2("0") //고정 : 전체 가격 대상
                 .volumeCount("0") //고정 : 전체 거래량 대상
