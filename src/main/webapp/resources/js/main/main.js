@@ -67,7 +67,9 @@ function createMainStockItemHTML(stock, index) {
                     <img src="${imgUrl}" alt="${stock.hts_kor_isnm}"
                         onerror="this.src='${contextPath}/resources/images/icontmp.png'">
                 </div>
+                <div class="main-signal-lamp" id="signal-${stock.mksc_shrn_iscd}"></div>
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
+                
             </div>
             <div class="main-stocklist-price">${currentPrice}</div>
             <div class="main-stocklist-change ${changeClass}">${changeText}</div>
@@ -105,6 +107,9 @@ function renderMainStocks() {
                             return createMainStockItemHTML(stock, index);
                         }).join('');
                     container.innerHTML = html;
+                    
+                    //신호등
+                    updateAllTrafficSignals();
 
                     // 이벤트 리스너 재등록
                     attachMainFavoriteListeners();
@@ -223,6 +228,12 @@ function attachMainStockItemListeners() {
 document.addEventListener('DOMContentLoaded', function() {
     scheduleMarketClose();
     initializeMainPage();
+    
+    // 10분마다 신호등 상태만 별도로 업데이트
+    setInterval(function() {
+        console.log('[Auto Update] 신호등 상태 갱신');
+        updateAllTrafficSignals();
+    }, 600000);
 });
 
 function initializeMainPage() {
@@ -888,4 +899,28 @@ function scheduleMarketClose() {
     } else {
         console.log('[main.js] 오늘 20:00은 이미 지났습니다.');
     }
+    
+}
+
+//모든 종목의 신호등 상태를 서버에서 가져와 업데이트하는 함수
+function updateAllTrafficSignals() {
+    const stockItems = document.querySelectorAll('.main-stocklist-item');
+    
+    stockItems.forEach(item => {
+        const stockCode = item.getAttribute('data-id'); // HTML에서 설정한 data-id 가져오기
+        
+        if (!stockCode) return;
+
+        fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`)
+            .then(res => res.json())
+            .then(data => {
+                const lamp = document.getElementById(`signal-${stockCode}`);
+                if (lamp && data.signalColor) {
+                    // 기존 색상 클래스 모두 제거 후 새 색상 추가
+                    lamp.classList.remove('GREEN', 'RED', 'YELLOW');
+                    lamp.classList.add(data.signalColor);
+                }
+            })
+            .catch(err => console.log(`[Signal Error] ${stockCode} 통신 실패`));
+    });
 }
