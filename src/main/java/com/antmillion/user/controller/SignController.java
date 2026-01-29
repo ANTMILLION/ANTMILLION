@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -274,8 +276,18 @@ public class SignController {
     }
 
 	@GetMapping("/signup/complete")
-	public String signupComplete() {
-		return "login/signup_complete";
+	public String signupComplete(Model model, Authentication authentication) {
+		boolean hasPayload = model.asMap().containsKey("signupType")
+	            && model.asMap().containsKey("accountNumber")
+	            && model.asMap().containsKey("balance");
+
+	    if (!hasPayload) {
+	    	// 새로고침하면
+	        // 카카오 가입은 가입과 동시에 로그인 상태(인증됨) -> 메인으로
+	        // 로컬 가입은 미로그인 상태 -> 로그인 화면으로
+	        return isAuthenticated(authentication) ? "redirect:/" : "redirect:/login";
+	    }
+	    return "login/signup_complete";
 	}
 
 	@PostMapping("/signup/complete")
@@ -316,5 +328,11 @@ public class SignController {
 		session.removeAttribute(SignupSessionKeys.KAKAO_SIGNUP_KEY);
 		session.removeAttribute(SignupSessionKeys.EMAIL_VERIFIED_EMAIL);
 		session.removeAttribute(SignupSessionKeys.EMAIL_VERIFIED_AT);
+	}
+	
+	private static boolean isAuthenticated(Authentication authentication) {
+	    return authentication != null
+	            && authentication.isAuthenticated()
+	            && !(authentication instanceof AnonymousAuthenticationToken);
 	}
 }
