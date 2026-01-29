@@ -17,6 +17,9 @@ import com.antmillion.history.mapper.HistoryMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.antmillion.kis.dto.CurrentPriceRequest;
+import com.antmillion.kis.service.KisApiService;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class BiasAlertService {
 
 	    private final BiasAlertMapper biasAlertMapper;
 	    private final HistoryMapper historyMapper;
+	    private final KisApiService kisApiService;
 
     // 위험회피 편향 기준
     private static final BigDecimal RISK_AVERSION_PROFIT_THRESHOLD = new BigDecimal("3.0");
@@ -54,8 +58,13 @@ public class BiasAlertService {
             return null;
         }
 
-        // 2. 현재가 조회
-        BigDecimal currentPrice = biasAlertMapper.selectCurrentPrice(stockCode);
+        // 2. 현재가 조회 (실시간)
+        CurrentPriceRequest priceRequest = CurrentPriceRequest.builder()
+                .marketCode("J")
+                .stockCode(stockCode)
+                .build();
+        long currentPriceRaw = kisApiService.getCurrentPrice(priceRequest);
+        BigDecimal currentPrice = BigDecimal.valueOf(currentPriceRaw);
 
         // 3. 수익률 계산
         BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
@@ -105,8 +114,13 @@ public class BiasAlertService {
             return null;
         }
 
-        // 2. 현재가 조회
-        BigDecimal currentPrice = biasAlertMapper.selectCurrentPrice(stockCode);
+        // 2. 현재가 조회 (실시간)
+        CurrentPriceRequest priceRequest = CurrentPriceRequest.builder()
+                .marketCode("J")
+                .stockCode(stockCode)
+                .build();
+        long currentPriceRaw = kisApiService.getCurrentPrice(priceRequest);
+        BigDecimal currentPrice = BigDecimal.valueOf(currentPriceRaw);
 
         // 3. 수익률 계산
         BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
@@ -160,8 +174,13 @@ public class BiasAlertService {
             return null;
         }
 
-        // 2. 현재가 조회
-        BigDecimal currentPrice = biasAlertMapper.selectCurrentPrice(stockCode);
+        // 2. 현재가 조회 (실시간)
+        CurrentPriceRequest priceRequest = CurrentPriceRequest.builder()
+                .marketCode("J")
+                .stockCode(stockCode)
+                .build();
+        long currentPriceRaw = kisApiService.getCurrentPrice(priceRequest);
+        BigDecimal currentPrice = BigDecimal.valueOf(currentPriceRaw);
 
         // 3. 수익률 계산
         BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
@@ -201,15 +220,24 @@ public class BiasAlertService {
      * 조건: 당일 등락률 +20% 이상
      * 타이밍: 페이지 로드(상시) + 매수 탭 전환 시
      */
-    public BiasAlertDTO checkFomoBias(Long accountId, String stockCode, Long userId) {
-        log.info("FOMO 체크 시작 - accountId={}, stockCode={}, userId={}", accountId, stockCode, userId);
+    public BiasAlertDTO checkFomoBias(Long accountId, String stockCode, Long userId, BigDecimal changeRate) {
+        log.info("FOMO 체크 시작 - accountId={}, stockCode={}, userId={}, changeRate={}", accountId, stockCode, userId, changeRate);
 
-        // 1. 당일 등락률 조회
-        BigDecimal changeRate = biasAlertMapper.selectDailyChangeRate(stockCode);
-        log.info("당일 등락률: {}%", changeRate);
+        // 1. 등락률 확인 (파라미터가 없으면 DB에서 조회)
+        if (changeRate == null) {
+            changeRate = biasAlertMapper.selectDailyChangeRate(stockCode);
+            log.info("DB에서 등락률 조회: {}%", changeRate);
+        } else {
+            log.info("프론트에서 전달받은 등락률: {}%", changeRate);
+        }
 
-        // 2. 현재가 조회 (종목명 표시용)
-        BigDecimal currentPrice = biasAlertMapper.selectCurrentPrice(stockCode);
+        // 2. 현재가 조회 (실시간)
+        CurrentPriceRequest priceRequest = CurrentPriceRequest.builder()
+                .marketCode("J")
+                .stockCode(stockCode)
+                .build();
+        long currentPriceRaw = kisApiService.getCurrentPrice(priceRequest);
+        BigDecimal currentPrice = BigDecimal.valueOf(currentPriceRaw);
 
         // 3. 편향 조건 체크: 등락률 +20% 이상
         boolean hasAlert = changeRate.compareTo(FOMO_SURGE_THRESHOLD) >= 0;

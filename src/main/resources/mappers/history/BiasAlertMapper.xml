@@ -13,6 +13,7 @@
         <result property="holdingDays" column="holdingDays"/>
     </resultMap>
 
+    <!-- asset 테이블에서 보유 주식 조회 -->
     <select id="selectAssetForBiasCheck" resultMap="BiasAlertResultMap">
         SELECT 
             a.stock_code AS stockCode,
@@ -30,17 +31,6 @@
         LIMIT 1
     </select>
     
-    <!-- 현재가 조회 -->
-    <select id="selectCurrentPrice" resultType="java.math.BigDecimal">
-        SELECT 
-            CASE 
-                WHEN #{stockCode} = '005930' THEN 72100.00
-                WHEN #{stockCode} = '000660' THEN 47430.00
-                WHEN #{stockCode} = '035720' THEN 47430.00
-                ELSE 50000.00
-            END AS currentPrice
-    </select>
-    
     <!-- 최근 5거래일간 매도 이력 체크 (손실회피용) -->
     <select id="checkRecentSellHistory" resultType="boolean">
         SELECT 
@@ -54,18 +44,6 @@
           AND transaction_type = 'SELL'
           AND status = 'COMPLETED'
           AND created_at >= DATE_SUB(NOW(), INTERVAL 5 DAY)
-    </select>
-    
-    <!-- 당일 등락률 조회 (FOMO용) -->
-    <select id="selectDailyChangeRate" resultType="java.math.BigDecimal">
-        SELECT 
-            CASE 
-                WHEN #{stockCode} = '005930' THEN 2.5
-                WHEN #{stockCode} = '000660' THEN -3.2
-                WHEN #{stockCode} = '035720' THEN -5.1
-                WHEN #{stockCode} = '005380' THEN 25.5
-                ELSE 0.0
-            END AS changeRate
     </select>
         
 </mapper>

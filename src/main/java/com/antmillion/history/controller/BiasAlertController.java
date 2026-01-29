@@ -100,11 +100,12 @@ public class BiasAlertController {
     public ResponseEntity<BiasAlertDTO> checkFomo(
             @RequestParam(required = false, defaultValue = "1") Long accountId,
             @RequestParam(required = false, defaultValue = "1") Long userId,
-            @RequestParam String stockCode) {
+            @RequestParam String stockCode,
+            @RequestParam(required = false) java.math.BigDecimal changeRate) {
 
-        System.out.println("BiasAlertController: FOMO 체크 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode);
+        System.out.println("BiasAlertController: FOMO 체크 - accountId=" + accountId + ", userId=" + userId + ", stockCode=" + stockCode + ", changeRate=" + changeRate);
 
-        BiasAlertDTO result = biasAlertService.checkFomoBias(accountId, stockCode, userId);
+        BiasAlertDTO result = biasAlertService.checkFomoBias(accountId, stockCode, userId, changeRate);
 
         if (result == null) {
             System.out.println("결과: 조회 실패 (204 No Content)");
