@@ -260,55 +260,56 @@ function renderAllStocks() {
 
     fetch(`${contextPath}/api/kis/volumeRank/paged?page=${currentPage}&size=${itemsPerPage}`)
         .then(res => res.json())
-        .then(responseData => {
+        .then(async responseData => { // async 추가
             const stocks = responseData.data;
             totalPages = responseData.totalPages;
-
-            // 현재 화면의 종목 코드들 저장
             currentStockCodes = stocks.map(stock => stock.mksc_shrn_iscd);
 
-            // 관심종목 목록 가져오기
-            return fetch(`${contextPath}/api/interest/list`)
-                .then(res => res.json())
-                .then(interestCodes => {
-                    const startIndex = (currentPage - 1) * itemsPerPage;
-                    const html = stocks.map((stock, index) => {
-                        const isFavorite = interestCodes.includes(stock.mksc_shrn_iscd);
-                        return createStockItemHTML(stock, startIndex + index, isFavorite);
-                    }).join('');
+            const interestCodes = await fetch(`${contextPath}/api/interest/list`).then(res => res.json());
 
-                    container.innerHTML = html;
-                    
-                    updateAllTrafficSignals();
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const html = stocks.map((stock, index) => {
+                const isFavorite = interestCodes.includes(stock.mksc_shrn_iscd);
+                return createStockItemHTML(stock, startIndex + index, isFavorite);
+            }).join('');
 
-                    // 페이지네이션 렌더링
-                    renderPagination();
+            // 1. 화면 먼저 렌더링
+            container.innerHTML = html;
+            
+            // 2. UI 이벤트 바인딩
+            renderPagination();
+            attachFavoriteListeners();
+            attachStockItemListeners();
 
-                    // 이벤트 리스너 재등록
-                    attachFavoriteListeners();
-                    attachStockItemListeners();
+            // 3. [중요] STOMP 구독을 먼저 실행 (거래비율 우선순위)
+            if (stompClient && stompClient.connected) {
+                console.log('[System] 실시간 구독 시작');
+                subscribeCurrentStocks();
+            }
 
-                    // STOMP 연결 확인 후 구독
-                    if (stompClient && stompClient.connected) {
-                        subscribeCurrentStocks();
-                    }
-                });
+            // 4. [해결책] 신호등 업데이트는 시차를 두고 실행 (0.5초 뒤)
+            // 네트워크 병목을 방지하기 위해 setTimeout 사용
+            setTimeout(() => {
+                console.log('[System] 신호등 상태 업데이트 시작');
+                updateAllTrafficSignals();
+            }, 500);
         })
         .catch(error => {
             console.error('종목 데이터 로드 실패:', error);
-            container.innerHTML = '<p>종목 데이터를 불러오는데 실패했습니다.</p>';
+            container.innerHTML = '<p>데이터를 불러오는 중 오류가 발생했습니다.</p>';
         });
 }
 
 // ========== 관심종목 렌더링 ==========
+// ========== 관심종목 렌더링 (페이징 적용 및 신호등 최적화) ==========
 function renderFavoriteStocks() {
     const container = document.getElementById('stocklist-Container');
 
-    // 페이징된 관심종목 상세 정보 API 호출
     fetch(`${contextPath}/api/interest/details/paged?page=${favoritePage}&size=${itemsPerPage}`)
         .then(res => res.json())
-        .then(responseData => {
-            // 관심종목이 없는 경우
+        .then(async responseData => { // async 추가 (내부 await 사용을 위해)
+            
+            // 1. 관심종목이 없는 경우 예외 처리
             if (responseData.totalItems === 0) {
                 container.innerHTML = '<p style="text-align: center; padding: 40px; color: #9CA3AF;">관심종목이 없습니다.</p>';
                 document.getElementById('pagination-container')?.remove();
@@ -320,41 +321,46 @@ function renderFavoriteStocks() {
             const stocks = responseData.data;
             favoriteTotalPages = responseData.totalPages;
 
-            // 현재 페이지가 총 페이지보다 크면 마지막 페이지로 이동
+            // 2. 페이지 범위 초과 시 자동 조정
             if (favoritePage > favoriteTotalPages) {
                 favoritePage = favoriteTotalPages;
-                renderStocks();  // 다시 렌더링
+                renderStocks(); 
                 return;
             }
 
-            // 현재 화면의 종목 코드들 저장
+            // 3. 현재 화면의 종목 코드들 저장
             currentStockCodes = stocks.map(stock => stock.stockCode);
 
-            // HTML 생성
+            // 4. HTML 생성 및 즉시 렌더링
             const startIndex = (favoritePage - 1) * itemsPerPage;
             const html = stocks.map((stock, index) => {
                 return createFavoriteStockItemHTML(stock, startIndex + index);
             }).join('');
 
-                    container.innerHTML = html;
-                    
-                    updateAllTrafficSignals();
+            container.innerHTML = html;
 
-            // 관심종목 페이지네이션 렌더링
+            // 5. UI 부가 기능 실행 (페이지네이션 및 리스너)
             renderFavoritePagination();
-
-            // 이벤트 리스너 재등록
             attachFavoriteListeners();
             attachStockItemListeners();
 
-            // STOMP 연결 확인 후 구독
+            // 6. [핵심] STOMP 구독 우선 실행 (거래비율 실시간 확보)
             if (stompClient && stompClient.connected) {
+                console.log('[관심종목] STOMP 구독 시작');
                 subscribeCurrentStocks();
             }
+
+            // 7. [핵심] 신호등 업데이트 - 구독 후 시차를 두고 순차 호출
+            // 네트워크 병목 현상을 막기 위해 300ms 시차를 줍니다.
+            setTimeout(() => {
+                console.log('[관심종목] 신호등 상태 갱신 시작');
+                updateAllTrafficSignals(); 
+            }, 300);
+
         })
         .catch(error => {
             console.error('관심종목 데이터 로드 실패:', error);
-            container.innerHTML = '<p>관심종목 데이터를 불러오는데 실패했습니다.</p>';
+            container.innerHTML = '<p style="text-align: center; padding: 20px;">관심종목 데이터를 불러오는데 실패했습니다.</p>';
         });
 }
 
@@ -395,6 +401,7 @@ function createFavoriteStockItemHTML(stock, index) {
                     <img src="${imgUrl}" alt="${stock.stockName}" 
                         onerror="this.src='${contextPath}/resources/images/icontmp.png'">
                 </div>
+                <div class="main-signal-lamp" id="signal-${stock.stockCode}"></div>
                 <span class="stocklist-name">${stock.stockName}</span>
             </div>
             <div class="stocklist-price">${currentPrice}</div>
@@ -811,27 +818,24 @@ function scheduleMarketClose() {
 }
 
 //모든 종목의 신호등 상태를 서버에서 가져와 업데이트하는 함수
-function updateAllTrafficSignals() {
-    // [수정 1] 대상 선택자 변경: .main-stocklist-item -> .stocklist-item
+async function updateAllTrafficSignals() {
     const stockItems = document.querySelectorAll('.stocklist-item');
-    
-    stockItems.forEach(item => {
-        // [수정 2] 속성명 변경: data-id -> data-code (HTML 생성시 data-code를 사용함)
-        const stockCode = item.getAttribute('data-code'); 
-        
-        if (!stockCode) return;
+    for (const item of stockItems) {
+        const stockCode = item.getAttribute('data-code');
+        if (!stockCode) continue;
 
-        fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`)
-            .then(res => res.json())
-            .then(data => {
-                const lamp = document.getElementById(`signal-${stockCode}`);
-                if (lamp && data.signalColor) {
-                    // 기존 색상 클래스 모두 제거 후 새 색상 추가
-                    lamp.classList.remove('GREEN', 'RED', 'YELLOW');
-                    lamp.classList.add(data.signalColor);
-                    console.log(`[Signal Success] ${stockCode} : ${data.signalColor}`);
-                }
-            })
-            .catch(err => console.log(`[Signal Error] ${stockCode} 통신 실패`));
-    });
+        try {
+            const res = await fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`);
+            const data = await res.json();
+            const lamp = document.getElementById(`signal-${stockCode}`);
+            if (lamp && data.signalColor) {
+                lamp.classList.remove('GREEN', 'RED', 'YELLOW');
+                lamp.classList.add(data.signalColor);
+            }
+        } catch (e) {
+            console.error(stockCode + " 신호등 에러");
+        }
+        // 0.05초 대기 후 다음 종목 처리 (브라우저 부하 분산)
+        await new Promise(resolve => setTimeout(resolve, 50));
+    }
 }
