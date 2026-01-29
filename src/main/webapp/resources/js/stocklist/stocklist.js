@@ -577,9 +577,26 @@ document.querySelectorAll('.stocklist-tab-btn').forEach((btn, index) => {
         } else {
             favoritePage = 1;
         }
+        updateSortLabel();
         renderStocks();
     });
 });
+
+// ========== 정렬 라벨 업데이트 함수 ==========
+function updateSortLabel() {
+    const sortLabel = document.getElementById('stocklist-sort-label');
+
+    if (currentTab === 'all') {
+        // 전체 종목: 거래대금 순위 표시
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        sortLabel.textContent = `거래대금 순위·오늘 ${hours}:${minutes} 기준`;
+    } else {
+        // 관심 종목: 등록일순 표시
+        sortLabel.textContent = '등록일순';
+    }
+}
 
 // ========== 페이지 떠날 때 전체 구독 해제 ==========
 window.addEventListener('beforeunload', function(e) {
@@ -602,6 +619,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // STOMP 연결
     connectStomp();
+
+    // 초기 정렬 라벨 설정
+    updateSortLabel();
 
     // 초기 렌더링
     renderStocks();
