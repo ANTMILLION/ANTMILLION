@@ -7,6 +7,10 @@ let currentPage = 1;
 const itemsPerPage = 10;
 let totalPages = 1;
 
+// 관심종목 페이징 변수 추가
+let favoritePage = 1;
+let favoriteTotalPages = 1;
+
 // STOMP 관련 변수
 let stompClient = null;
 let subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
@@ -20,6 +24,9 @@ function connectStomp() {
     const url = contextPath + '/ws-stomp';
     const socket = new SockJS(url);
     stompClient = Stomp.over(socket);
+
+    // STOMP 디버그 로그 끄기
+    stompClient.debug = null;
 
     stompClient.connect({}, function (frame) {
         console.log('STOMP 연결 성공: ' + frame);
@@ -297,11 +304,12 @@ function renderAllStocks() {
 function renderFavoriteStocks() {
     const container = document.getElementById('stocklist-Container');
 
-    // 관심종목 코드 목록 가져오기
-    fetch(`${contextPath}/api/interest/list`)
+    // 페이징된 관심종목 상세 정보 API 호출
+    fetch(`${contextPath}/api/interest/details/paged?page=${favoritePage}&size=${itemsPerPage}`)
         .then(res => res.json())
-        .then(interestCodes => {
-            if (interestCodes.length === 0) {
+        .then(responseData => {
+            // 관심종목이 없는 경우
+            if (responseData.totalItems === 0) {
                 container.innerHTML = '<p style="text-align: center; padding: 40px; color: #9CA3AF;">관심종목이 없습니다.</p>';
                 document.getElementById('pagination-container')?.remove();
                 currentStockCodes = [];
@@ -309,44 +317,148 @@ function renderFavoriteStocks() {
                 return;
             }
 
-            // 현재 화면의 종목 코드들 저장
-            currentStockCodes = interestCodes;
+            const stocks = responseData.data;
+            favoriteTotalPages = responseData.totalPages;
 
-            // 관심종목 코드로 종목 정보 가져오기
-            return fetch(`${contextPath}/api/kis/stocksByCode`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ stockCodes: interestCodes })
-            })
-                .then(res => res.json())
-                .then(stocks => {
-                    const html = stocks.map((stock, index) => {
-                        return createStockItemHTML(stock, index, true);
-                    }).join('');
+            // 현재 페이지가 총 페이지보다 크면 마지막 페이지로 이동
+            if (favoritePage > favoriteTotalPages) {
+                favoritePage = favoriteTotalPages;
+                renderStocks();  // 다시 렌더링
+                return;
+            }
+
+            // 현재 화면의 종목 코드들 저장
+            currentStockCodes = stocks.map(stock => stock.stockCode);
+
+            // HTML 생성
+            const startIndex = (favoritePage - 1) * itemsPerPage;
+            const html = stocks.map((stock, index) => {
+                return createFavoriteStockItemHTML(stock, startIndex + index);
+            }).join('');
 
                     container.innerHTML = html;
                     
                     updateAllTrafficSignals();
 
-                    // 관심종목 탭에서는 페이지네이션 숨기기
-                    document.getElementById('pagination-container')?.remove();
+            // 관심종목 페이지네이션 렌더링
+            renderFavoritePagination();
 
-                    // 이벤트 리스너 재등록
-                    attachFavoriteListeners();
-                    attachStockItemListeners();
+            // 이벤트 리스너 재등록
+            attachFavoriteListeners();
+            attachStockItemListeners();
 
-                    // STOMP 연결 확인 후 구독
-                    if (stompClient && stompClient.connected) {
-                        subscribeCurrentStocks();
-                    }
-                });
+            // STOMP 연결 확인 후 구독
+            if (stompClient && stompClient.connected) {
+                subscribeCurrentStocks();
+            }
         })
         .catch(error => {
             console.error('관심종목 데이터 로드 실패:', error);
             container.innerHTML = '<p>관심종목 데이터를 불러오는데 실패했습니다.</p>';
         });
+}
+
+// ========== 관심종목용 HTML 생성 함수 ==========
+function createFavoriteStockItemHTML(stock, index) {
+    // 현재가 포맷팅
+    const currentPrice = Number(stock.stck_prpr || 0).toLocaleString('ko-KR') + '원';
+    console.log(stock.stockName);
+    console.log(stock);
+    // 등락률 계산
+    let changeText = '0.00%';
+    let changeClass = '';
+
+    if (stock.prdy_ctrt) {
+        const changeValue = parseFloat(stock.prdy_ctrt);
+        if (changeValue > 0) {
+            changeText = '+' + changeValue + '%';
+            changeClass = 'positive';
+        } else if (changeValue < 0) {
+            changeText = changeValue + '%';
+            changeClass = 'negative';
+        } else {
+            changeText = changeValue + '%';
+        }
+    }
+
+    const imgUrl = contextPath + '/resources/images/stock/' + stock.stockCode + '.png';
+
+    return `
+        <div class="stocklist-item" data-code="${stock.stockCode}">
+            <div class="stocklist-favorite">
+                <span class="stocklist-rank">${index + 1}</span>
+                <button class="stocklist-favorite-btn active" 
+                        data-code="${stock.stockCode}">♥</button>
+            </div>
+            <div class="stocklist-info">
+                <div class="stocklist-logo">
+                    <img src="${imgUrl}" alt="${stock.stockName}" 
+                        onerror="this.src='${contextPath}/resources/images/icontmp.png'">
+                </div>
+                <span class="stocklist-name">${stock.stockName}</span>
+            </div>
+            <div class="stocklist-price">${currentPrice}</div>
+            <div class="stocklist-change ${changeClass}">${changeText}</div>
+            <div class="stocklist-sentiment">
+                <div class="stocklist-sentiment-bar">
+                    <div class="stocklist-sentiment-buy stocklist-sentiment-inactive" style="width: 50%;"></div>
+                    <div class="stocklist-sentiment-sell stocklist-sentiment-inactive" style="width: 50%;"></div>
+                </div>
+                <div class="stocklist-sentiment-labels">
+                    <span class="stocklist-sentiment-buy-label"></span>
+                    <span class="stocklist-sentiment-sell-label"></span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ========== 관심종목 페이지네이션 렌더링 ==========
+function renderFavoritePagination() {
+    // 기존 페이지네이션 제거
+    const existingPagination = document.getElementById('pagination-container');
+    if (existingPagination) {
+        existingPagination.remove();
+    }
+
+    // 관심종목 탭이 아니거나 페이지가 1개 이하면 표시 안함
+    if (currentTab !== 'favorite' || favoriteTotalPages <= 1) {
+        return;
+    }
+
+    const stocklistCard = document.querySelector('.stocklist-card');
+    const paginationContainer = document.createElement('div');
+    paginationContainer.id = 'pagination-container';
+    paginationContainer.className = 'pagination-container';
+
+    let paginationHTML = '';
+
+    // 이전 버튼
+    if (favoritePage > 1) {
+        paginationHTML += `<button class="pagination-btn favorite-page-btn" data-page="${favoritePage - 1}">이전</button>`;
+    }
+
+    // 페이지 번호
+    for (let i = 1; i <= favoriteTotalPages; i++) {
+        const activeClass = i === favoritePage ? 'active' : '';
+        paginationHTML += `<button class="pagination-btn favorite-page-btn ${activeClass}" data-page="${i}">${i}</button>`;
+    }
+
+    // 다음 버튼
+    if (favoritePage < favoriteTotalPages) {
+        paginationHTML += `<button class="pagination-btn favorite-page-btn" data-page="${favoritePage + 1}">다음</button>`;
+    }
+
+    paginationContainer.innerHTML = paginationHTML;
+    stocklistCard.appendChild(paginationContainer);
+
+    // 관심종목 페이지네이션 버튼 이벤트 리스너
+    document.querySelectorAll('.favorite-page-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            favoritePage = parseInt(this.getAttribute('data-page'));
+            renderStocks();
+        });
+    });
 }
 
 // ========== 종목 리스트 렌더링 (탭에 따라 분기) ==========
@@ -464,10 +576,32 @@ document.querySelectorAll('.stocklist-tab-btn').forEach((btn, index) => {
 
         // 첫 번째 버튼: 전체종목, 두 번째 버튼: 관심종목
         currentTab = index === 0 ? 'all' : 'favorite';
-        currentPage = 1; // 탭 변경 시 페이지 초기화
+        // 탭 변경 시 각각의 페이지 초기화
+        if (currentTab === 'all') {
+            currentPage = 1;
+        } else {
+            favoritePage = 1;
+        }
+        updateSortLabel();
         renderStocks();
     });
 });
+
+// ========== 정렬 라벨 업데이트 함수 ==========
+function updateSortLabel() {
+    const sortLabel = document.getElementById('stocklist-sort-label');
+
+    if (currentTab === 'all') {
+        // 전체 종목: 거래대금 순위 표시
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        sortLabel.textContent = `거래대금 순위·오늘 ${hours}:${minutes} 기준`;
+    } else {
+        // 관심 종목: 등록일순 표시
+        sortLabel.textContent = '등록일순';
+    }
+}
 
 // ========== 페이지 떠날 때 전체 구독 해제 ==========
 window.addEventListener('beforeunload', function(e) {
@@ -490,6 +624,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // STOMP 연결
     connectStomp();
+
+    // 초기 정렬 라벨 설정
+    updateSortLabel();
 
     // 초기 렌더링
     renderStocks();

@@ -164,19 +164,10 @@ public class KisStockSyncService {
                     continue;
                 }
 
-                // 코스피: ST 그룹만 허용
-                if ("KOSPI".equals(marketType)) {
-                    String groupCode = part2.substring(0, 3).trim();
-                    if (!"ST".equals(groupCode)) {
-                        continue;
-                    }
-                }
-
-                // 코스닥: 스팩 제외
-                if ("KOSDAQ".equals(marketType)) {
-                    if (koreanName.contains("스팩") || koreanName.contains("SPAC")) {
-                        continue;
-                    }
+                // EW (ELW) 제외
+                String groupCode = part2.substring(0, 3).trim();
+                if ("EW".equals(groupCode)) {
+                    continue;
                 }
 
                 result.add(StockDTO.builder()

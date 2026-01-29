@@ -1,6 +1,9 @@
 package com.antmillion.stock.controller;
 
+import com.antmillion.kis.dto.CurrentPrice;
+import com.antmillion.kis.service.KisApiService;
 import com.antmillion.stock.service.InterestService;
+import com.antmillion.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,8 @@ import java.util.Map;
 public class InterestController {
 
     private final InterestService interestService;
+    private final KisApiService kisApiService;
+    private final StockService stockService;
 
     /**
      * 관심종목 토글 (추가/삭제)
@@ -52,6 +57,55 @@ public class InterestController {
 
         Map<String, Boolean> response = new HashMap<>();
         response.put("isInterest", isInterest);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // InterestController
+    @GetMapping("/details/paged")
+    public ResponseEntity<Map<String, Object>> getInterestDetailsPaged(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Long accountId = 3L;
+
+        // 1. 전체 관심종목 코드 조회
+        List<String> allStockCodes = interestService.getInterestStockCodes(accountId);
+
+        if (allStockCodes.isEmpty()) {
+            Map<String, Object> emptyResponse = new HashMap<>();
+            emptyResponse.put("data", List.of());
+            emptyResponse.put("currentPage", page);
+            emptyResponse.put("totalItems", 0);
+            emptyResponse.put("totalPages", 0);
+            return ResponseEntity.ok(emptyResponse);
+        }
+
+        // 2. 페이징 계산
+        int totalItems = allStockCodes.size();
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+        int startIndex = (page - 1) * size;
+        int endIndex = Math.min(startIndex + size, totalItems);
+
+        // 3. 현재 페이지 종목 코드만 추출
+        List<String> pagedStockCodes = allStockCodes.subList(startIndex, endIndex);
+
+        // 4. 페이징된 종목들만 API 조회
+        List<CurrentPrice> pagedPrices = kisApiService.getCurrentPricesDetail(pagedStockCodes);
+
+        // 5. stockCode 세팅 (순서 보장)
+        for (int i = 0; i < pagedPrices.size() && i < pagedStockCodes.size(); i++) {
+            String stockCode = pagedStockCodes.get(i);
+            pagedPrices.get(i).setStockCode(stockCode);
+            pagedPrices.get(i).setStockName(stockService.getStockByCode(stockCode).getStockName());
+        }
+
+        // 6. 응답 구성
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", pagedPrices);
+        response.put("currentPage", page);
+        response.put("totalItems", totalItems);
+        response.put("totalPages", totalPages);
 
         return ResponseEntity.ok(response);
     }

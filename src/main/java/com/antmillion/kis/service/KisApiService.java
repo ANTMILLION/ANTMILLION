@@ -26,11 +26,9 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -557,5 +555,42 @@ public class KisApiService {
     
     
     
+
+    public CurrentPrice getCurrentPriceDetail(CurrentPriceRequest request) {
+        String token = getKisAccessToken();
+        HttpHeaders headers = createApiHeader(token, "FHKST01010100");
+        URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PRESENT_PRICE);
+        String url = UriComponentsBuilder.fromUri(uri)
+                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                .queryParam("FID_INPUT_ISCD", request.getStockCode())
+                .build().toUriString();
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisCurrentPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisCurrentPriceResponse.class);
+        KisCurrentPriceResponse responseBody = response.getBody();
+        if(responseBody != null && responseBody.getOutput() != null) {
+            return responseBody.getOutput();
+        }
+        throw new RuntimeException("현재가 정보 조회 실패");
+    }
+
+    public List<CurrentPrice> getCurrentPricesDetail(List<String> stockCodes) {
+        return stockCodes.parallelStream()  // 병렬 처리
+                .map(stockCode -> {
+                    try {
+                        CurrentPriceRequest request = CurrentPriceRequest.builder()
+                                .marketCode("J")
+                                .stockCode(stockCode)
+                                .build();
+                        CurrentPrice price = getCurrentPriceDetail(request);
+                        price.setStockCode(stockCode);
+                        return price;
+                    } catch (Exception e) {
+                        log.error("종목 {} 현재가 조회 실패: {}", stockCode, e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 
 }

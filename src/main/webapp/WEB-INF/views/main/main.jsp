@@ -127,7 +127,7 @@
                 <!-- 주식 테이블 -->
                 <div class="main-stock-table-card">
                     <div class="main-stocklist-header">
-                        <div class="main-stocklist-time">거래량 순위·오늘 09:27 기준</div>
+                        <div class="main-stocklist-time">거래대금 순위·오늘 <%= new java.text.SimpleDateFormat("HH:mm").format(new java.util.Date()) %> 기준</div>
                     </div>
                     <div class="main-stocklist-table-header">
                         <div class="main-stocklist-header-cell"></div>
