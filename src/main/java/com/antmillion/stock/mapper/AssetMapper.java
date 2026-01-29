@@ -11,14 +11,14 @@ import org.apache.ibatis.annotations.Update;
 public interface AssetMapper {
 
 	/**
-	 * 특정 계좌의 특정 종목 보유 수량 조회 (합산)
+	 * 특정 계좌의 특정 종목 보유 수량 조회
 	 */
 	@Select("SELECT COALESCE(SUM(quantity), 0) " + "FROM asset "
 			+ "WHERE account_id = #{accountId} AND stock_code = #{stockCode}")
 	Integer getQuantityByAccountAndStock(@Param("accountId") Long accountId, @Param("stockCode") String stockCode);
 
 	/**
-	 * [매수 정합성] UPSERT: 수량 증가, 평균 단가 계산 및 갱신
+	 * 매수: 수량 증가, 평균 단가 계산 및 갱신
 	 */
 	@Insert("INSERT INTO asset (account_id, stock_code, quantity, purchase_amount, avg_price, updated_at) "
 			+ "VALUES (#{accountId}, #{stockCode}, #{quantity}, #{purchaseAmount}, #{avgPrice}, NOW()) "
@@ -31,7 +31,7 @@ public interface AssetMapper {
 			@Param("purchaseAmount") Long purchaseAmount);
 
 	/**
-	 * [매도 정합성] UPDATE: 수량 감소, 총액 감소, 평균 단가는 유지됨
+	 * 매도: 수량 감소, 총액 감소, 평균 단가는 유지됨
 	 */
 	@Update("UPDATE asset SET " + "   quantity = quantity - #{quantity}, "
 			+ "   purchase_amount = purchase_amount - (avg_price * #{quantity}), " + "   updated_at = NOW() "

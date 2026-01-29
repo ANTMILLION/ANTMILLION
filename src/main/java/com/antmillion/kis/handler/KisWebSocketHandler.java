@@ -22,7 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 웹소켓 통로를 통해 데이터(메시지) 처리
  * 
- * afterConnectionEstablished: KIS 서버에게 구독 메시지 보냄 handleTextMessage: KIS 서버가 정보를
+ * afterConnectionEstablished: KIS 서버에게 구독 메시지 보냄 
+ * handleTextMessage: KIS 서버가 정보를
  * 보낼 때마다 자동으로 실행되는 메서드
  *
  * KIS 서버 → JSON 메시지 → ObjectMapper → DTO(자바 객체) → 메모리 저장 → STOMP 전송
