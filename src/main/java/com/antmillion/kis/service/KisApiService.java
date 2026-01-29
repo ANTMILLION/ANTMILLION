@@ -446,6 +446,9 @@ public class KisApiService {
         // 1. API 호출 (패턴 준수)
     	log.info("한국투자증권 외인/기관 추정가집계 api 호출: {}", stockCode);
         KisForeignerOrganizationResponse response = foreignerOrganizationAPI(stockCode);
+        if(response.getOutput2().size() ==0){
+        	return new ForeignerOrganization();
+        }
         kisFrgnOrgnRedisRepository.save(stockCode, response.getOutput2().get(0));
         
         // 2. 응답 데이터 반환
@@ -492,7 +495,9 @@ public class KisApiService {
 
 	public FrgnOrgnTrafficSignal getTrafficSignal(String stockCode) {
 		ForeignerOrganization data = getForeignerOrganizationData(stockCode);
-		
+		if(data.getForeignNetQty()==null || data.getOrganizationNetQty() ==null) {
+			return new FrgnOrgnTrafficSignal();
+		}
 		long fqty = Long.parseLong(data.getForeignNetQty());
 		long oqty = Long.parseLong(data.getOrganizationNetQty());
 		
