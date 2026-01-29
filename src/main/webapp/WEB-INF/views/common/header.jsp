@@ -207,8 +207,15 @@
         }
     });
 
+    const IS_LOGGED_IN = ${not empty userRank ? 'true' : 'false'};
 // 페이지 로드 시 안 읽은 알림 확인
 async function checkUnreadAlerts() {
+	if (!IS_LOGGED_IN) {
+        const notifBtn = document.querySelector('.header-notification-btn');
+        if (notifBtn) notifBtn.classList.remove('has-unread');
+        sessionStorage.removeItem('hasUnreadAlert');
+        return;
+    }
     try {
         const response = await fetch('/antmillion/api/history/unread-count?userId=1');
         const count = await response.json();
@@ -376,6 +383,12 @@ async function loadNotifications() {
         console.log('[알림] API 응답:', notifications);  // 디버깅
         
         const notificationList = document.getElementById('notificationList');
+        
+        if (!IS_LOGGED_IN) {
+            notificationList.innerHTML =
+              '<div style="padding: 40px; text-align: center; color: #999;">로그인이 필요합니다</div>';
+            return;
+        }
         
         if (!notifications || notifications.length === 0) {
             notificationList.innerHTML = '<div style="padding: 40px; text-align: center; color: #999;">알림이 없습니다</div>';

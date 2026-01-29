@@ -3,6 +3,7 @@ package com.antmillion.user.controller;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -171,9 +172,12 @@ public class SignController {
 	@PostMapping("/signup/step2")
 	public String signupStep2Submit(@RequestParam("nickname") String nickname,
 			@RequestParam(value = "agreeTerms", required = false) String agreeTerms,
-			@RequestParam(value = "agreePrivacy", required = false) String agreePrivacy, HttpSession session,
+			@RequestParam(value = "agreePrivacy", required = false) String agreePrivacy, HttpServletRequest request,
 			Model model, RedirectAttributes ra, HttpServletResponse response) {
 		try {
+			HttpSession session = request.getSession(false);
+	        if (session == null) return "redirect:/signup";
+			
 			SignUpRequest sessionForm = (SignUpRequest) session.getAttribute(SignupSessionKeys.SIGNUP_FORM);
 			if (sessionForm == null)
 				return "redirect:/signup";
@@ -212,7 +216,7 @@ public class SignController {
 			if (isKakao) {
 				Long kakaoId = kakaoSignupStore.get(kakaoSignupKey);
 				if (kakaoId == null) {
-					cleanupSignupSession(session);
+					cleanupSignupSession(request);
 					throw new IllegalStateException("카카오 가입 시간이 만료되었습니다. 다시 카카오 로그인을 진행하세요.");
 				}
 
@@ -225,7 +229,6 @@ public class SignController {
 
 				// 임시 데이터 정리
 				kakaoSignupStore.delete(kakaoSignupKey);
-				cleanupSignupSession(session);
 
 				ra.addFlashAttribute("signupType", "KAKAO");
 				ra.addFlashAttribute("accountNumber", result.getAccountNumber());
@@ -251,9 +254,6 @@ public class SignController {
 			ra.addFlashAttribute("signupType", "LOCAL");
 			ra.addFlashAttribute("accountNumber", result.getAccountNumber());
 			ra.addFlashAttribute("balance", result.getBalance());
-			
-			// step 완료 후 세션 제거
-			cleanupSignupSession(session);
 
 			return "redirect:/signup/complete";
 
@@ -276,7 +276,7 @@ public class SignController {
     }
 
 	@GetMapping("/signup/complete")
-	public String signupComplete(Model model, Authentication authentication) {
+	public String signupComplete(Model model, Authentication authentication, HttpServletRequest request) {
 		boolean hasPayload = model.asMap().containsKey("signupType")
 	            && model.asMap().containsKey("accountNumber")
 	            && model.asMap().containsKey("balance");
@@ -287,6 +287,7 @@ public class SignController {
 	        // 로컬 가입은 미로그인 상태 -> 로그인 화면으로
 	        return isAuthenticated(authentication) ? "redirect:/" : "redirect:/login";
 	    }
+	    cleanupSignupSession(request);
 	    return "login/signup_complete";
 	}
 
@@ -323,11 +324,11 @@ public class SignController {
 		}
 	}
 
-	private static void cleanupSignupSession(HttpSession session) {
-		session.removeAttribute(SignupSessionKeys.SIGNUP_FORM);
-		session.removeAttribute(SignupSessionKeys.KAKAO_SIGNUP_KEY);
-		session.removeAttribute(SignupSessionKeys.EMAIL_VERIFIED_EMAIL);
-		session.removeAttribute(SignupSessionKeys.EMAIL_VERIFIED_AT);
+	private static void cleanupSignupSession(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+	        try { session.invalidate(); } catch (IllegalStateException ignore) {}
+	    }
 	}
 	
 	private static boolean isAuthenticated(Authentication authentication) {
