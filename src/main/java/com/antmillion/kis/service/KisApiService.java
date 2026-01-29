@@ -6,6 +6,7 @@ import com.antmillion.kis.constant.KisApiConstant;
 import com.antmillion.kis.dto.*;
 import com.antmillion.kis.repository.KisAccessTokenRedisRepository;
 import com.antmillion.kis.repository.KisChartRedisRepository;
+import com.antmillion.kis.repository.KisFrgnOrgnRedisRepository;
 import com.antmillion.kis.repository.KisMarketIndexChartRedisRepository;
 import com.antmillion.kis.repository.KisStockVolumeRankRedisRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class KisApiService {
     private final KisChartRedisRepository kisChartRedisRepository;
     private final KisMarketIndexChartRedisRepository kisMarketIndexChartRepository;
     private final KisStockVolumeRankRedisRepository kisStockVolumeRankRedisRepository;
+    private final KisFrgnOrgnRedisRepository kisFrgnOrgnRedisRepository;
 
     private final RedissonClient redissonClient;
 
@@ -468,6 +470,91 @@ public class KisApiService {
         }
         throw new RuntimeException("현재가 조회 실패");
     }
+
+    /**
+     * 외인기관 추정가집계 데이터 조회 (데이터 원본 반환)
+     * @param stockCode 종목코드 (MKSC_SHRN_ISCD)
+     * @return 외인/기관 가집계 리스트 (ForeignerOrganization 목록)
+     */
+    public ForeignerOrganization getForeignerOrganizationData(String stockCode) {
+        Optional<ForeignerOrganization> cached = kisFrgnOrgnRedisRepository.getKisFrgnorgnNtby(stockCode);
+        if (cached.isPresent()) {
+            log.info("외인/기관 수량(가집계) 재사용");
+            return cached.get();
+        }
+        
+        // 1. API 호출 (패턴 준수)
+    	log.info("한국투자증권 외인/기관 추정가집계 api 호출: {}", stockCode);
+        KisForeignerOrganizationResponse response = foreignerOrganizationAPI(stockCode);
+        if(response.getOutput2().size() ==0){
+        	return new ForeignerOrganization();
+        }
+        kisFrgnOrgnRedisRepository.save(stockCode, response.getOutput2().get(0));
+        
+        // 2. 응답 데이터 반환
+        return response.getOutput2().get(0);
+    }
+
+    /**
+     * 한국투자증권 외인기관 추정가집계 API 호출 (내부 메서드)
+     */
+    private KisForeignerOrganizationResponse foreignerOrganizationAPI(String stockCode) {
+        // 1. 접근 토큰 얻기
+        String token = getKisAccessToken();
+        
+        // 2. 헤더 설정 (이미지 명세 실전 TR ID: HHPTJ04160200)
+        HttpHeaders headers = createApiHeader(token, "HHPTJ04160200");
+        
+        // 3. URL 생성
+        String url = buildForeignerOrganizationUrl(stockCode);
+        
+        // 4. API 호출
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<KisForeignerOrganizationResponse> response = 
+            restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisForeignerOrganizationResponse.class);
+        
+        // 5. 응답 처리
+        KisForeignerOrganizationResponse responseBody = response.getBody();
+        if (responseBody != null && responseBody.getOutput2() != null) {
+            return responseBody;
+        }
+        
+        throw new RuntimeException("외인기관 가집계 데이터 조회 실패");
+    }
+
+    /**
+     * 외인기관 추정가집계용 URL 생성 (내부 메서드)
+     */
+    private String buildForeignerOrganizationUrl(String stockCode) {
+        final URI uri = URI.create(config.getBaseUrl() + KisApiConstant.FOREIGNER_ORGANIZATION_PATH);
+        return UriComponentsBuilder
+                .fromUri(uri)
+                .queryParam("MKSC_SHRN_ISCD", stockCode) // 종목코드 파라미터
+                .build().toUriString();
+    }
+
+	public FrgnOrgnTrafficSignal getTrafficSignal(String stockCode) {
+		ForeignerOrganization data = getForeignerOrganizationData(stockCode);
+		if(data.getForeignNetQty()==null || data.getOrganizationNetQty() ==null) {
+			return new FrgnOrgnTrafficSignal();
+		}
+		long fqty = Long.parseLong(data.getForeignNetQty());
+		long oqty = Long.parseLong(data.getOrganizationNetQty());
+		
+		String color;
+	    if (fqty > 0 && oqty > 0) {
+	        color = "GREEN"; // 동반 매수
+	    } else if (fqty < 0 && oqty < 0) {
+	        color = "RED";   // 동반 매도
+	    } else {
+	        color = "YELLOW"; // 혼조세
+	    }
+	    
+	    return new FrgnOrgnTrafficSignal(color);
+	}
+    
+    
+    
 
     public CurrentPrice getCurrentPriceDetail(CurrentPriceRequest request) {
         String token = getKisAccessToken();

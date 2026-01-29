@@ -45,7 +45,7 @@ body {
 .detail-stock-container {
     display: flex;
     gap: 20px;
-    max-width: 1440px;
+    max-width: 100%;
     margin: 0 auto; /* 상하 마진은 padding으로 대체 */
     align-items: flex-start; /* stretch 대신 start로 변경하여 높이 자연스럽게 */
 }
@@ -466,6 +466,24 @@ body {
 .ask-row .price-col { color: #2563eb; border-left: 1px solid #e5e7eb; }
 .bid-row .price-col { color: #e11d48; border-right: 1px solid #e5e7eb; }
 
+
+/* 신호등 기본 램프 디자인 */
+.main-signal-lamp {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #E5E7EB; /* 데이터 로딩 전 기본색 */
+    flex-shrink: 0;
+    display: inline-block;
+    transition: all 0.3s ease;
+    
+    margin-left: 6px;
+}
+
+/* 수급 상태별 클래스 (JS에서 추가됨) */
+.main-signal-lamp.GREEN  { background-color: #90FF7A !important; box-shadow: 0 0 5px #90FF7A; }
+.main-signal-lamp.RED    { background-color: #FF8C8E !important; box-shadow: 0 0 5px #FF8C8E; }
+.main-signal-lamp.YELLOW { background-color: #FCFF50 !important; box-shadow: 0 0 5px #FCFF50; }
 
 /* =========================================
    5. 반응형 미디어 쿼리 (Mission.css 기준)

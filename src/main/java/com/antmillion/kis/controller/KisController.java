@@ -214,5 +214,10 @@ public class KisController {
                 .filter(stock -> stockCodes.contains(stock.getStockCode()))
                 .collect(Collectors.toList());
     }
+    
+    @GetMapping("/foreigner-organization/{stockCode}")
+    public FrgnOrgnTrafficSignal getForeignerOrganization(@PathVariable("stockCode") String stockCode) {
+    	return kisApiService.getTrafficSignal(stockCode);
+    }
 
 }

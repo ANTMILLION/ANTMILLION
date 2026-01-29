@@ -787,6 +787,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     scheduleMarketClose();
+    
+    updateDetailTrafficSignal();
+    
+    setInterval(() => {
+        console.log('[Auto Update] 상세페이지 신호등 상태 갱신');
+        updateDetailTrafficSignal();
+    }, 600000);
 
     initPriceTypeEvents();
     if (stockCode) {
@@ -2039,4 +2046,26 @@ async function checkFomoInRealtime(changeRate) {
         fomoConditionMet = false;
         fomoAlertShown = false;
     }
+}
+
+// [상세페이지용] 단일 종목 신호등 상태 업데이트 함수
+function updateDetailTrafficSignal() {
+    // URL 파라미터에서 code 가져오기 (이미 detail.js에 유사한 로직이 있음)
+    const urlParams = new URLSearchParams(window.location.search);
+    const stockCode = urlParams.get('code');
+    
+    if (!stockCode) return;
+
+    fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`)
+        .then(res => res.json())
+        .then(data => {
+            const lamp = document.getElementById(`signal-${stockCode}`);
+            if (lamp && data.signalColor) {
+                // 기존 색상 클래스 제거 (서버에서 대문자로 올 경우 대응)
+                lamp.classList.remove('GREEN', 'RED', 'YELLOW', 'signal-green', 'signal-red', 'signal-yellow');
+                lamp.classList.add(data.signalColor); // 서버 데이터가 'RED'라면 클래스 'RED'가 추가됨
+                console.log(`[Detail Signal Success] ${stockCode} : ${data.signalColor}`);
+            }
+        })
+        .catch(err => console.log(`[Detail Signal Error] ${stockCode} 통신 실패`, err));
 }
