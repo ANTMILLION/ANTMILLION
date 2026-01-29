@@ -52,13 +52,7 @@ public class AutoRefreshFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        // 이미 인증된 요청이면 통과
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            chain.doFilter(req, res);
-            return;
-        }
-
-        // AT가 이미 유효하면 -> JwtAuthFilter가 처리하게 통과
+        // AT가 유효하면 -> JwtAuthFilter가 처리하게 통과
         String at = TokenResolver.resolveAccessToken(req);
         if (at != null && jwtProvider.isValid(at)) {
             chain.doFilter(req, res);

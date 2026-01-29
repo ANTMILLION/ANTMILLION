@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,7 +59,6 @@ public class AuthTokenController {
 		CookieUtil.addHttpOnlyCookie(res, "RT", tokens.getRefreshToken(), tokens.getRefreshTtlSeconds());
 		CookieUtil.addHttpOnlyCookie(res, "AT", tokens.getAccessToken(), tokens.getAccessTtlSeconds());
 
-		return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken()).body(Map.of(
-				"ok", true, "accessToken", tokens.getAccessToken(), "accessTtlSeconds", tokens.getAccessTtlSeconds()));
+		return ResponseEntity.ok().body(Map.of("ok", true));
 	}
 }

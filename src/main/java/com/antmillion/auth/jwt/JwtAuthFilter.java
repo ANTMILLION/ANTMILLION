@@ -27,12 +27,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-    	// 이미 인증된 요청이면 통과
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            chain.doFilter(req, res);
-            return;
-        }
-
         // AT 인증
         String token = TokenResolver.resolveAccessToken(req);
 
