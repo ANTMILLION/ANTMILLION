@@ -25,6 +25,11 @@ public class MissionController {
         return "mission/mission";
     }
 
+    @GetMapping("/quiz")
+    public String quizPage() {
+        return "mission/quiz";
+    }
+
     @GetMapping("/daily")
     @ResponseBody
     public List<QuizQuestionResponseDTO> getDailyQuizData() {
