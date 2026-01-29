@@ -39,6 +39,7 @@
                         <p class="news-loading-text">뉴스를 불러오는 중...</p>
                     </div>
                 </div>
+                <div id="newsPagination" class="news-pagination-container"></div>
             </div>
         </main>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
