@@ -1073,7 +1073,7 @@ body {
     background: #F9FAFB;
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    padding: 16px;
+    padding: 12px;
     height: 468px; 
     display: flex;
     flex-direction: column;
@@ -1094,7 +1094,6 @@ body {
 
 .detail-pending-table th, .detail-pending-table td {
     font-size: 12px;
-    padding: 10px 4px;
     text-align: center;
 }
 
