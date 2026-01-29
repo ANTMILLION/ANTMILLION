@@ -129,7 +129,7 @@ function renderPagination() {
         const activeClass = (i === currentPage) ? 'active' : '';
 
         pagination.append(`
-            <button class="news-page-btn ${activeClass}" onclick="changePage(${i})">
+            <button class="news-pagination-btn ${activeClass}" onclick="changePage(${i})">
                 ${i}
             </button>
         `);
