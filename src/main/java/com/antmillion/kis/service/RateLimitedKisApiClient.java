@@ -64,9 +64,39 @@ public class RateLimitedKisApiClient {
                 }
             }
 
-            // 캐시도 없음 → 429 예외 발생
+            // 캐시도 없음 → 재시도 로직
             long nanosToWait = probe.getNanosToWaitForRefill();
-            log.error("Rate limit exceeded and no cache available. Wait: {}ms", nanosToWait / 1_000_000);
+            long millisToWait = nanosToWait / 1_000_000;
+
+            // 대기 시간이 1초 이하면 재시도
+            if (millisToWait <= 1000) {
+                log.info("Rate limit exceeded but retrying after {}ms", millisToWait);
+
+                try {
+                    // 토큰 리필 대기
+                    Thread.sleep(millisToWait + 50); // 여유있게 50ms 추가
+
+                    // 재시도
+                    ConsumptionProbe retryProbe = bucket.tryConsumeAndReturnRemaining(1);
+                    if (retryProbe.isConsumed()) {
+                        log.info("Retry successful. Remaining tokens: {}", retryProbe.getRemainingTokens());
+                        T result = apiCall.get();
+
+                        // Redis 캐싱
+                        if (cacheKey != null && result != null) {
+                            redisTemplate.opsForValue().set(cacheKey, result, ttl, TimeUnit.SECONDS);
+                        }
+
+                        return result;
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.error("Retry interrupted", e);
+                }
+            }
+
+            // 재시도 실패 또는 대기 시간 너무 김 → 429 예외 발생
+            log.error("Rate limit exceeded and no cache available. Wait: {}ms", millisToWait);
             throw new RateLimitExceededException(nanosToWait);
         }
     }
@@ -86,7 +116,7 @@ public class RateLimitedKisApiClient {
         }
     }
 
-    // 남은 토큰 수 조회
+    // 남은 토큰 수 조회 - 모니터링용
     public long getAvailableTokens() {
         return bucket.getAvailableTokens();
     }
