@@ -22,8 +22,9 @@
 						<img id="detail-stock-image" src="" alt="">
 						<div class="detail-text-col">
 							<div>
-								<h2 class="detail-stock-name">
+								<h2 class="detail-stock-name">								
 									${stock.stockName} <span class="stock-code">${stock.stockCode}</span>
+									                   <span class="main-signal-lamp" id="signal-${stock.stockCode}"></span>
 								</h2>
 							</div>
 							<div class="detail-current-price">
