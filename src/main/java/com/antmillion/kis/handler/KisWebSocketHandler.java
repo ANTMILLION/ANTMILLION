@@ -51,11 +51,11 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         // 1. PINGPONG 처리
         if (payload.contains("PINGPONG")) {
         	manager.updateLastHeartbeatTime(); // 수신 시간 갱신
-            System.out.println("PINGPONG 수신 완료");
+            //System.out.println("PINGPONG 수신 완료");
             try {
             	// 한투 가이드: 받은 PINGPONG 메시지를 그대로 다시 보내야 연결이 유지됨
 				session.sendMessage(new TextMessage(payload));
-				System.out.println("PINGPONG 응답 완료");
+				//System.out.println("PINGPONG 응답 완료");
 			} catch (IOException e) {
 				System.err.println("PINGPONG 응답 전송 실패: " + e.getMessage());
 				manager.monitorHealth(); // 재연결
@@ -65,7 +65,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         
         // 2. JSON 응답 처리 (최초 구독 성공 알림 등)
         if (payload.startsWith("{")) {
-            System.out.println("시스템 메시지(JSON): " + payload);
+            //System.out.println("시스템 메시지(JSON): " + payload);
             return; 
         }
         
