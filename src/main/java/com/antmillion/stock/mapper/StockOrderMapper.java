@@ -72,4 +72,16 @@ public interface StockOrderMapper {
 	// 장 시작 전 대기 목록 일괄 취소 처리
 	@Update("UPDATE stock_order SET status = 'CANCEL' WHERE status IN ('WAIT', 'PARTIAL')")
 	int cancelRemainingOrders();
+	
+	// 주문수량-체결수량 합계
+	@Select("SELECT SUM(o.quantity - COALESCE(t.exec_sum, 0)) " +
+	        "FROM stock_order o " +
+	        "LEFT JOIN (SELECT order_id, SUM(trade_quantity) as exec_sum " +
+	        "           FROM trade_log GROUP BY order_id) t " +
+	        "ON o.order_id = t.order_id " +
+	        "WHERE o.account_id = #{accountId} " +
+	        "  AND o.stock_code = #{stockCode} " +
+	        "  AND o.transaction_type = #{type} " +
+	        "  AND o.status IN ('WAIT', 'PARTIAL')")
+	Integer getSumUnexecutedQty(@Param("accountId") Long accountId, @Param("stockCode") String stockCode, @Param("type") String type);
 }

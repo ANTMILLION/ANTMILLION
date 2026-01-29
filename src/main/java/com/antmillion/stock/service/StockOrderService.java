@@ -39,19 +39,22 @@ public class StockOrderService {
             throw new IllegalArgumentException("계좌를 찾을 수 없습니다.");
         }
         
-        long totalPrice = (long) orderPrice * quantity;
-        
         // 2. 매수/매도 검증(실제 차감 X)
         if ("BUY".equals(transactionType)) {
-            // 매수: 잔액 확인
-            if (account.getBalance() < totalPrice) {
-                throw new IllegalArgumentException("잔액이 부족합니다.");
-            }
+            long totalPrice = (long) orderPrice * quantity;
+            if (account.getBalance() < totalPrice) throw new IllegalArgumentException("잔액이 부족합니다.");
         } else if ("SELL".equals(transactionType)) {
-            // 매도: 보유 수량 확인
-            Integer ownedQuantity = assetMapper.getQuantityByAccountAndStock(accountId, stockCode);
-            if (ownedQuantity == null || ownedQuantity < quantity) {
-                throw new IllegalArgumentException("보유 수량이 부족합니다.");
+            // 보유 수량에서 현재 '매도 주문 중'인 미체결 수량을 빼고 계산해야 함
+            Integer ownedQty = assetMapper.getQuantityByAccountAndStock(accountId, stockCode);
+            if (ownedQty == null) ownedQty = 0;
+
+            // DB에서 해당 종목의 (주문수량 - 체결수량) 합계를 가져옴
+            Integer orderingQty = stockOrderMapper.getSumUnexecutedQty(accountId, stockCode, "SELL");
+            if (orderingQty == null) orderingQty = 0;
+
+            // 실제 팔 수 있는 수량 = 보유량 - 이미 주문 나간 양
+            if (ownedQty - orderingQty < quantity) {
+                throw new IllegalArgumentException("매도 가능 수량이 부족합니다.");
             }
         }
         
