@@ -51,7 +51,8 @@ public class SignController {
 
 	// 로그인 화면
 	@GetMapping("/login")
-	public String loginForm() {
+	public String loginForm(Authentication authentication) {
+		if (isAuthenticated(authentication)) return "redirect:/";
 		return "login/login";
 	}
 
@@ -87,7 +88,8 @@ public class SignController {
 
 	// 회원가입 1단계 화면
 	@GetMapping("/signup")
-	public String signupForm(Model model, HttpSession session) {
+	public String signupForm(Model model, HttpSession session, Authentication authentication) {
+		if (isAuthenticated(authentication)) return "redirect:/";
 		session.removeAttribute(SignupSessionKeys.EMAIL_VERIFIED_EMAIL);
 		session.removeAttribute(SignupSessionKeys.EMAIL_VERIFIED_AT);
 
@@ -156,7 +158,8 @@ public class SignController {
 	}
 
 	@GetMapping("/signup/step2")
-	public String signupStep2Form(HttpSession session, RedirectAttributes ra, Model model) {
+	public String signupStep2Form(HttpSession session, RedirectAttributes ra, Model model, Authentication authentication) {
+		if (isAuthenticated(authentication)) return "redirect:/";
 		SignUpRequest sessionForm = (SignUpRequest) session.getAttribute(SignupSessionKeys.SIGNUP_FORM);
 		if (sessionForm == null) {
 			ra.addFlashAttribute("error", "이메일이나 비밀번호 입력이 잘못되었습니다.");
