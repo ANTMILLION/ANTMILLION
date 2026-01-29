@@ -1,10 +1,10 @@
 package com.antmillion.kis.manager;
 
+import static com.antmillion.kis.constant.KisWebSocketTrId.isPresentPriceTrId;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -15,12 +15,11 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import com.antmillion.kis.dto.KisWebSocketTransactionPriceRequest;
 import com.antmillion.kis.handler.KisWebSocketHandler;
 import com.antmillion.kis.service.KisApiService;
+import com.antmillion.stock.service.TradingEngineService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import static com.antmillion.kis.constant.KisWebSocketTrId.isPresentPriceTrId;
 
 /**
  * 웹소켓 Connection 처리
@@ -41,14 +40,16 @@ public class KisWebSocketManager {
     private final String WS_URL = "ws://ops.koreainvestment.com:21000"; // 실전투자 기준
     private boolean isConnected = false; // 연결 상태 저장
     private String approvalKey;
+    private final TradingEngineService tradingEngineService;
 
     private final Set<String> presentSubscribedStocks = ConcurrentHashMap.newKeySet();
 
     private final Set<String> askBidSubscribedStocks = ConcurrentHashMap.newKeySet();
 
-    public KisWebSocketManager(KisApiService kisApiService, SimpMessagingTemplate messagingTemplate) {
+    public KisWebSocketManager(KisApiService kisApiService, SimpMessagingTemplate messagingTemplate, TradingEngineService tradingEngineService) {
         this.kisApiService = kisApiService;
         this.messagingTemplate = messagingTemplate;
+		this.tradingEngineService = tradingEngineService;
     }
 
 	// 웹소켓 연결
@@ -58,7 +59,7 @@ public class KisWebSocketManager {
 
         try {
         	approvalKey = kisApiService.getKisApprovalKey();
-            KisWebSocketHandler handler = new KisWebSocketHandler(this, approvalKey, messagingTemplate, objectMapper);
+            KisWebSocketHandler handler = new KisWebSocketHandler(this, approvalKey, messagingTemplate, objectMapper, tradingEngineService);
             StandardWebSocketClient client = new StandardWebSocketClient();
             
             session = client.doHandshake(handler, WS_URL).get();   

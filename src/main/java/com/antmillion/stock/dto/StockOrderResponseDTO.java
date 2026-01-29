@@ -5,6 +5,7 @@ import lombok.Setter;
 
 @Getter @Setter
 public class StockOrderResponseDTO extends StockOrderDTO {
+	private String stockName; // 종목명
     private Integer executedQuantity; // 지금까지 체결 완료된 총 수량
     private Integer remainedQuantity; // 남은 미체결량 (quantity - executedQuantity)
 
