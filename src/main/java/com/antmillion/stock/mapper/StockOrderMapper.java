@@ -68,4 +68,8 @@ public interface StockOrderMapper {
 	// 주문 상태 업데이트
 	@Update("UPDATE stock_order SET status = #{status}, updated_at = NOW() WHERE order_id = #{orderId}")
 	void updateOrderStatus(@Param("orderId") Long orderId, @Param("status") String status);
+	
+	// 장 시작 전 대기 목록 일괄 취소 처리
+	@Update("UPDATE stock_order SET status = 'CANCEL' WHERE status IN ('WAIT', 'PARTIAL')")
+	int cancelRemainingOrders();
 }

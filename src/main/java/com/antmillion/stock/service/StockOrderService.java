@@ -27,7 +27,7 @@ public class StockOrderService {
 	private final TradeLogMapper tradeLogMapper;
 	private final AccountMapper accountMapper;
 	private final AssetMapper assetMapper;
-
+	
 	// 주문 생성
     @Transactional
     public boolean createOrder(Long accountId, String stockCode, String transactionType, 
@@ -70,52 +70,6 @@ public class StockOrderService {
         return stockOrderMapper.insertOrder(order) > 0;
     }
     
-    @Transactional
-    public void executeTrade(StockOrderDTO order, int tradeQty, long currentPrice) {
-        // 체결된 수량만큼의 총액 계산
-        long totalPrice = (long) currentPrice * tradeQty;
-        Long accountId = order.getAccountId();
-        String stockCode = order.getStockCode();
-        Integer orderPrice = (int) currentPrice; // 실제 체결가 적용
-
-        // 체결 로그 기록
-        tradeLogMapper.insertTradeLog(order.getOrderId(), currentPrice, tradeQty);
-        
-        // 총 체결량 확인 및 주문 상태 업데이트
-        int totalExecuted = tradeLogMapper.getTotalExecutedQty(order.getOrderId());
-        String nextStatus = (totalExecuted >= order.getQuantity()) ? "COMPLETED" : "PARTIAL";
-        stockOrderMapper.updateOrderStatus(order.getOrderId(), nextStatus);
-
-        // 잔액 및 자산 업데이트
-        if ("BUY".equals(order.getTransactionType())) {
-            // [자산 업데이트]
-            assetMapper.upsertAssetBuy(accountId, stockCode, tradeQty, orderPrice, totalPrice);
-            
-            // [잔액 업데이트]
-            // account를 새로 조회해서 최신 잔액을 가져와야 함
-            AccountDTO account = accountMapper.selectByAccountId(accountId);
-            long newBalance = account.getBalance() - totalPrice;
-            accountMapper.updateBalance(accountId, newBalance); 
-            
-            log.info("매수 완료: 잔액 {} → {}", account.getBalance(), newBalance);
-
-        } else if ("SELL".equals(order.getTransactionType())) {
-            // [자산 업데이트]
-            int rows = assetMapper.updateAssetSell(accountId, stockCode, tradeQty);
-            
-            if (rows == 0) {
-                throw new IllegalArgumentException("보유 수량이 부족하여 매도할 수 없습니다.");
-            }
-            
-            // [잔액 업데이트]
-            AccountDTO account = accountMapper.selectByAccountId(accountId);
-            long newBalance = account.getBalance() + totalPrice;
-            accountMapper.updateBalance(accountId, newBalance);
-            
-            log.info("매도 완료: 잔액 {} → {}", account.getBalance(), newBalance);
-        }
-    }
-
 	// 주문 대기 조회
 	public List<StockOrderResponseDTO> getWaitOrders(Long accountId) {
 		return stockOrderMapper.selectWaitOrders(accountId);
