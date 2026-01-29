@@ -17,6 +17,13 @@
 		<jjwt.version>0.11.5</jjwt.version>
 	</properties>
 	<dependencies>
+		<!-- Redisson (Spring Legacy용) -->
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson</artifactId>
+			<version>3.23.5</version>
+		</dependency>
+
 	   <!-- WebSocket -->
 	    <dependency>
 		    <groupId>org.springframework</groupId>
