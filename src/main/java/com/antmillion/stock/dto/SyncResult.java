@@ -11,4 +11,5 @@ public class SyncResult {
     private int insertedCount;
     private int deletedCount;
     private int totalDownloaded;
+    private long executionTimeMs; // 소요 시간 (밀리초)
 }

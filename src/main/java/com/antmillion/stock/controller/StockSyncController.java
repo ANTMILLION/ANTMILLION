@@ -44,6 +44,8 @@ public class StockSyncController {
             response.put("insertedCount", result.getInsertedCount());
             response.put("deletedCount", result.getDeletedCount());
             response.put("totalDownloaded", result.getTotalDownloaded());
+            response.put("executionTimeMs", result.getExecutionTimeMs());
+            response.put("executionTimeSec", result.getExecutionTimeMs() / 1000.0);
 
             log.info("종목 동기화 완료: {}", result);
 

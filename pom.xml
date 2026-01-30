@@ -17,6 +17,12 @@
 		<jjwt.version>0.11.5</jjwt.version>
 	</properties>
 	<dependencies>
+		<!-- 외부 api(한국투자증권 api) 호출 유량 제한 -->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j-core</artifactId>
+			<version>8.7.0</version>
+		</dependency>
 		<!-- Redisson (Spring Legacy용) -->
 		<dependency>
 			<groupId>org.redisson</groupId>

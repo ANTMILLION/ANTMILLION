@@ -75,7 +75,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 			try {
 				// 한투 가이드: 받은 PINGPONG 메시지를 그대로 다시 보내야 연결이 유지됨
 				session.sendMessage(new TextMessage(payload));
-				System.out.println("PINGPONG 응답 완료");
+				//System.out.println("PINGPONG 응답 완료");
 			} catch (IOException e) {
 				System.err.println("PINGPONG 응답 전송 실패: " + e.getMessage());
 				manager.monitorHealth(); // 재연결
