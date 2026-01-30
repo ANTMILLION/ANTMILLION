@@ -71,7 +71,6 @@ public class MissionController {
     @ResponseBody
     public Map<String, Object> getTodayMissionStatus() {
         Long userId = missionService.getCurrentUserId();
-        int solvedCount = missionService.getTodaySolvedCount(userId);
-        return Map.of("solvedCount", solvedCount);
+        return missionService.getTodayMissionStatus(userId);
     }
 }

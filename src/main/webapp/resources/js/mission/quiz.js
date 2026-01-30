@@ -24,7 +24,7 @@ function getDailyQuiz() {
         type: 'GET',
         dataType: 'json',
         success: function (statusData) {
-            correctAnswers = statusData.solvedCount || 0;
+            correctAnswers = statusData.quizCount || 0;
             $.ajax({
                 url: cpath + '/mission/daily',
                 type: 'GET',
