@@ -44,7 +44,10 @@ public class KisApiService {
     private final KisStockVolumeRankRedisRepository kisStockVolumeRankRedisRepository;
     private final KisFrgnOrgnRedisRepository kisFrgnOrgnRedisRepository;
 
+    // Redisson 분산 락
     private final RedissonClient redissonClient;
+    // Bucket4j으로 한국투자증권 api 유량 제어
+    private final RateLimitedKisApiClient rateLimitedClient;
 
     /**
      * KIS 액세스 토큰 조회/발급
@@ -182,21 +185,28 @@ public class KisApiService {
      * @return 한국투자증권 API 반환값
      */
     private KisChartStockPriceResponse periodStockPricesAPI(ChartStockPriceRequest request) {
-        //1.접근 토큰 얻기
-        String token = getKisAccessToken();
-        //2.헤더 설정
-        HttpHeaders headers = createApiHeader(token, "FHKST03010100");
-        //3.URL 생성
-        String url = buildPeriodApiUrl(request);
-        //4.API 호출
-        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<KisChartStockPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisChartStockPriceResponse.class);
-        //5.응답 처리
-        KisChartStockPriceResponse responseBody = response.getBody();
-        if (responseBody != null && responseBody.getOutput2() != null) {
-            return responseBody;
-        }
-        throw new RuntimeException("기간별 차트 데이터 조회 실패");
+        // Rate Limit + 캐싱 적용
+        return rateLimitedClient.callWithCache(
+                null,
+                () -> {
+                    //1.접근 토큰 얻기
+                    String token = getKisAccessToken();
+                    //2.헤더 설정
+                    HttpHeaders headers = createApiHeader(token, "FHKST03010100");
+                    //3.URL 생성
+                    String url = buildPeriodApiUrl(request);
+                    //4.API 호출
+                    HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+                    ResponseEntity<KisChartStockPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisChartStockPriceResponse.class);
+                    //5.응답 처리
+                    KisChartStockPriceResponse responseBody = response.getBody();
+                    if (responseBody != null && responseBody.getOutput2() != null) {
+                        return responseBody;
+                    }
+                    throw new RuntimeException("기간별 차트 데이터 조회 실패");
+                },
+                60 // TTL 60초
+        );
     }
 
     /**
@@ -259,16 +269,22 @@ public class KisApiService {
      * @return 한국투자증권 api 반환값
      */
     private KisMarketIndexPriceResponse marketIndexPricesAPI(MarketIndexPriceRequest request) {
-        String token = getKisAccessToken();
-        HttpHeaders headers = createApiHeader(token, "FHPUP02120000");
-        String url = buildMarketIndexApiUrl(request);
-        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<KisMarketIndexPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisMarketIndexPriceResponse.class);
-        KisMarketIndexPriceResponse responseBody = response.getBody();
-        if (responseBody != null && responseBody.getOutput2() != null) {
-            return responseBody;
-        }
-        throw new RuntimeException("국내 시장 지수 차트 데이터 조회 실패");
+        return rateLimitedClient.callWithCache(
+                null,
+                () -> {
+                    String token = getKisAccessToken();
+                    HttpHeaders headers = createApiHeader(token, "FHPUP02120000");
+                    String url = buildMarketIndexApiUrl(request);
+                    HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+                    ResponseEntity<KisMarketIndexPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisMarketIndexPriceResponse.class);
+                    KisMarketIndexPriceResponse responseBody = response.getBody();
+                    if (responseBody != null && responseBody.getOutput2() != null) {
+                        return responseBody;
+                    }
+                    throw new RuntimeException("국내 시장 지수 차트 데이터 조회 실패");
+                },
+                60
+        );
     }
 
     /**
@@ -353,16 +369,22 @@ public class KisApiService {
     }
 
     private KisStockVolumeRankResponse stockVolumeRankAPI(StockVolumeRankRequest request) {
-        String token = getKisAccessToken();
-        HttpHeaders headers = createApiHeader(token, "FHPST01710000");
-        String url = buildStockVolumeRankUrl(request);
-        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<KisStockVolumeRankResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisStockVolumeRankResponse.class);
-        KisStockVolumeRankResponse responseBody = response.getBody();
-        if (responseBody != null) {
-            return responseBody;
-        }
-        throw new RuntimeException("거래량 순위 데이터 조회 실패");
+        return rateLimitedClient.callWithCache(
+                null,
+                () -> {
+                    String token = getKisAccessToken();
+                    HttpHeaders headers = createApiHeader(token, "FHPST01710000");
+                    String url = buildStockVolumeRankUrl(request);
+                    HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+                    ResponseEntity<KisStockVolumeRankResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisStockVolumeRankResponse.class);
+                    KisStockVolumeRankResponse responseBody = response.getBody();
+                    if (responseBody != null) {
+                        return responseBody;
+                    }
+                    throw new RuntimeException("거래량 순위 데이터 조회 실패");
+                },
+                60
+        );
     }
 
     private String buildStockVolumeRankUrl(StockVolumeRankRequest request) {
@@ -422,17 +444,23 @@ public class KisApiService {
      * 
      */
     private StreamMinutePriceResponse streamMinutePricesAPI(StreamMinutePriceRequest request) {
-    	String token = getKisAccessToken();
-        HttpHeaders headers = createApiHeader(token, "FHKST03010230");
-        headers.set("tr_cont", "N"); // 연속 거래 여부
-        String url = buildStreamMinuteApiUrl(request);
-        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<StreamMinutePriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, StreamMinutePriceResponse.class);
-        StreamMinutePriceResponse responseBody = response.getBody();
-        if(responseBody != null) {
-        	return responseBody;
-        }
-        throw new RuntimeException("국내 시장 일별 분봉 데이터 조회 실패");
+        return rateLimitedClient.callWithCache(
+                null,
+                () -> {
+                    String token = getKisAccessToken();
+                    HttpHeaders headers = createApiHeader(token, "FHKST03010230");
+                    headers.set("tr_cont", "N"); // 연속 거래 여부
+                    String url = buildStreamMinuteApiUrl(request);
+                    HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+                    ResponseEntity<StreamMinutePriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, StreamMinutePriceResponse.class);
+                    StreamMinutePriceResponse responseBody = response.getBody();
+                    if(responseBody != null) {
+                        return responseBody;
+                    }
+                    throw new RuntimeException("국내 시장 일별 분봉 데이터 조회 실패");
+                },
+                60
+        );
     }
     
     /**
@@ -455,20 +483,29 @@ public class KisApiService {
     }
 
     public Integer getCurrentPrice(CurrentPriceRequest request) {
-        String token = getKisAccessToken();
-        HttpHeaders headers = createApiHeader(token, "FHKST01010100");
-        URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PRESENT_PRICE);
-        String url = UriComponentsBuilder.fromUri(uri)
-                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
-                .queryParam("FID_INPUT_ISCD", request.getStockCode())
-                .build().toUriString();
-        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<KisCurrentPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisCurrentPriceResponse.class);
-        KisCurrentPriceResponse responseBody = response.getBody();
-        if(responseBody != null && responseBody.getOutput() != null) {
-            return Integer.parseInt(responseBody.getOutput().getCurrentPrice());
-        }
-        throw new RuntimeException("현재가 조회 실패");
+        // 현재가는 실시간성이 중요하므로 캐싱 TTL 짧게
+        String cacheKey = "current:price:" + request.getStockCode();
+
+        return rateLimitedClient.callWithCache(
+                cacheKey,
+                () -> {
+                    String token = getKisAccessToken();
+                    HttpHeaders headers = createApiHeader(token, "FHKST01010100");
+                    URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PRESENT_PRICE);
+                    String url = UriComponentsBuilder.fromUri(uri)
+                            .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                            .queryParam("FID_INPUT_ISCD", request.getStockCode())
+                            .build().toUriString();
+                    HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+                    ResponseEntity<KisCurrentPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisCurrentPriceResponse.class);
+                    KisCurrentPriceResponse responseBody = response.getBody();
+                    if(responseBody != null && responseBody.getOutput() != null) {
+                        return Integer.parseInt(responseBody.getOutput().getCurrentPrice());
+                    }
+                    throw new RuntimeException("현재가 조회 실패");
+                },
+                10
+        );
     }
 
     /**
@@ -557,20 +594,28 @@ public class KisApiService {
     
 
     public CurrentPrice getCurrentPriceDetail(CurrentPriceRequest request) {
-        String token = getKisAccessToken();
-        HttpHeaders headers = createApiHeader(token, "FHKST01010100");
-        URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PRESENT_PRICE);
-        String url = UriComponentsBuilder.fromUri(uri)
-                .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
-                .queryParam("FID_INPUT_ISCD", request.getStockCode())
-                .build().toUriString();
-        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<KisCurrentPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisCurrentPriceResponse.class);
-        KisCurrentPriceResponse responseBody = response.getBody();
-        if(responseBody != null && responseBody.getOutput() != null) {
-            return responseBody.getOutput();
-        }
-        throw new RuntimeException("현재가 정보 조회 실패");
+        String cacheKey = "current:price:detail:" + request.getStockCode();
+
+        return rateLimitedClient.callWithCache(
+                cacheKey,
+                () -> {
+                    String token = getKisAccessToken();
+                    HttpHeaders headers = createApiHeader(token, "FHKST01010100");
+                    URI uri = URI.create(config.getBaseUrl() + KisApiConstant.PRESENT_PRICE);
+                    String url = UriComponentsBuilder.fromUri(uri)
+                            .queryParam("FID_COND_MRKT_DIV_CODE", request.getMarketCode())
+                            .queryParam("FID_INPUT_ISCD", request.getStockCode())
+                            .build().toUriString();
+                    HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+                    ResponseEntity<KisCurrentPriceResponse> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisCurrentPriceResponse.class);
+                    KisCurrentPriceResponse responseBody = response.getBody();
+                    if(responseBody != null && responseBody.getOutput() != null) {
+                        return responseBody.getOutput();
+                    }
+                    throw new RuntimeException("현재가 정보 조회 실패");
+                },
+                10
+        );
     }
 
     public List<CurrentPrice> getCurrentPricesDetail(List<String> stockCodes) {

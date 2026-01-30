@@ -59,7 +59,10 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.deactivateDefaultTyping();
+        objectMapper.activateDefaultTyping(  // 이 부분으로 변경
+                objectMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         // 4. 직렬화 설정 (JSON 자동 변환)

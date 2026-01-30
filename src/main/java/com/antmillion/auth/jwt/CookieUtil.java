@@ -20,7 +20,7 @@ public class CookieUtil {
   public static void addHttpOnlyCookie(HttpServletResponse res, String name, String value, long maxAgeSeconds) {
     ResponseCookie cookie = ResponseCookie.from(name, value)
         .httpOnly(true)
-        .secure(false)          // 로컬 개발이면 false, HTTPS면 true
+        .secure(false)
         .path("/")
         .maxAge(maxAgeSeconds)
         .sameSite("Lax")

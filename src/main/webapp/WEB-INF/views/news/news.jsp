@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -17,6 +18,7 @@
         <%@ include file="../common/header.jsp"%>
         <main class="news-main-content">
             <!-- 진행률 카드 -->
+            <sec:authorize access="isAuthenticated()">
             <div class="news-progress-card">
                 <div class="news-progress-header">
                     <div class="news-progress-left">
@@ -29,6 +31,17 @@
                     <div class="news-progress-bar" id="news-progressBar" style="width: 0%"></div>
                 </div>
             </div>
+            </sec:authorize>
+            <sec:authorize access="isAnonymous()">
+  				<div class="news-progress-card news-progress-locked">
+      				<div class="news-progress-header">
+          				<div class="news-progress-left">
+              				<h2 class="news-progress-title">오늘의 증권 뉴스 달성률</h2>
+              				<p class="news-progress-subtitle">로그인이 필요한 기능입니다.</p>
+          				</div>
+      				</div>
+  				</div>
+			</sec:authorize>
             <div class="news-section-card">
                 <h2 class="news-section-title">오늘의 증권 뉴스</h2>
                 <!-- 뉴스 카드 컨테이너 -->
@@ -45,6 +58,9 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
             const cpath = "${pageContext.request.contextPath}";
+            window.__IS_AUTH__ =
+                <sec:authorize access="isAuthenticated()">true</sec:authorize>
+                <sec:authorize access="isAnonymous()">false</sec:authorize>;
         </script>
         <script src="${cpath}/resources/js/news/news.js"></script>
     </div>

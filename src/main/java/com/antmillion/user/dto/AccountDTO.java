@@ -1,5 +1,7 @@
 package com.antmillion.user.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,4 +19,5 @@ public class AccountDTO {
     private Long userId;
     private String accountNumber;
     private Long balance;
+    private LocalDateTime accountCreatedAt;
 }

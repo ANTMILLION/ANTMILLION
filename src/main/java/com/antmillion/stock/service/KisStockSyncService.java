@@ -1,5 +1,6 @@
 package com.antmillion.stock.service;
 
+import com.antmillion.stock.component.StockCache;
 import com.antmillion.stock.dto.StockDTO;
 import com.antmillion.stock.dto.SyncResult;
 import com.antmillion.stock.mapper.StockSyncMapper;
@@ -26,6 +27,7 @@ public class KisStockSyncService {
     private static final String KOSDAQ_URL = "https://new.real.download.dws.co.kr/common/master/kosdaq_code.mst.zip";
 
     private final StockSyncMapper stockSyncMapper;
+    private final StockCache stockCache;
 
     @Transactional
     public SyncResult syncAllStocks() throws Exception {
@@ -36,6 +38,7 @@ public class KisStockSyncService {
     // 코스피+코스닥 종목 정보를 다운로드하여 DB와 동기화
     @Transactional
     public SyncResult syncAllStocks(String baseDir) throws Exception {
+        long startTime = System.currentTimeMillis();
         log.info("=== 종목 동기화 시작 ===");
 
         // 1. temp_stock 테이블 초기화
@@ -54,17 +57,44 @@ public class KisStockSyncService {
         log.info("temp_stock에 종목 삽입 중... (코스피: {}, 코스닥: {})",
                 kospiStocks.size(), kosdaqStocks.size());
 
-        int totalInserted = 0;
-        for (StockDTO stock : kospiStocks) {
-            stockSyncMapper.insertTempStock(stock);
-            totalInserted++;
-        }
-        for (StockDTO stock : kosdaqStocks) {
-            stockSyncMapper.insertTempStock(stock);
-            totalInserted++;
+        long insertStartTime = System.currentTimeMillis();
+
+        // 배치 삽입으로 성능 개선
+        List<StockDTO> allStocks = new ArrayList<>();
+        allStocks.addAll(kospiStocks);
+        allStocks.addAll(kosdaqStocks);
+
+        // 500개씩 나눠서 배치 삽입 (한 번에 너무 많으면 쿼리가 길어질 수 있음)
+        int batchSize = 500;
+        for (int i = 0; i < allStocks.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, allStocks.size());
+            List<StockDTO> batch = allStocks.subList(i, end);
+            stockSyncMapper.insertTempStockBatch(batch);
         }
 
-        log.info("temp_stock에 {} 종목 삽입 완료", totalInserted);
+        int totalInserted = allStocks.size();
+        long insertEndTime = System.currentTimeMillis();
+        log.info("temp_stock에 {} 종목 삽입 완료 (소요 시간: {}ms)",
+                totalInserted, (insertEndTime - insertStartTime));
+
+//        log.info("temp_stock에 종목 삽입 중... (코스피: {}, 코스닥: {})",
+//                kospiStocks.size(), kosdaqStocks.size());
+//
+//        long insertStartTime = System.currentTimeMillis();
+//
+//        int totalInserted = 0;
+//        for (StockDTO stock : kospiStocks) {
+//            stockSyncMapper.insertTempStock(stock);
+//            totalInserted++;
+//        }
+//        for (StockDTO stock : kosdaqStocks) {
+//            stockSyncMapper.insertTempStock(stock);
+//            totalInserted++;
+//        }
+//
+//        long insertEndTime = System.currentTimeMillis();
+//        log.info("temp_stock에 {} 종목 삽입 완료 (소요 시간: {}ms)",
+//                totalInserted, (insertEndTime - insertStartTime));
 
         // 5. stock 테이블과 동기화
         log.info("stock 테이블 동기화 중...");
@@ -85,6 +115,17 @@ public class KisStockSyncService {
         int afterCount = stockSyncMapper.countStock();
         log.info("동기화 후 stock 테이블 종목 수: {}", afterCount);
 
+        // 6. 캐시 갱신
+        log.info("StockCache 갱신 중...");
+        long cacheStartTime = System.currentTimeMillis();
+        stockCache.refresh();
+        long cacheEndTime = System.currentTimeMillis();
+        log.info("StockCache 갱신 완료 (소요 시간: {}ms)", (cacheEndTime - cacheStartTime));
+
+        // 총 소요 시간 계산
+        long endTime = System.currentTimeMillis();
+        long totalTime = endTime - startTime;
+
         // 결과 반환
         SyncResult result = SyncResult.builder()
                 .beforeCount(beforeCount)
@@ -92,10 +133,12 @@ public class KisStockSyncService {
                 .insertedCount(insertedCount)
                 .deletedCount(deletedCount)
                 .totalDownloaded(totalInserted)
+                .executionTimeMs(totalTime)
                 .build();
-
+        
         log.info("=== 종목 동기화 완료 ===");
         log.info("결과: {}", result);
+        log.info("총 소요 시간: {}ms ({}초)", totalTime, totalTime / 1000.0);
 
         return result;
     }

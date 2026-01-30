@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.antmillion.myinfo.mapper.MyInfoMapper">
+
+    <select id="selectMyInfo" resultType="com.antmillion.myinfo.dto.MyInfoDTO">
+        SELECT
+            m.user_id AS userId,
+            m.nickname AS nickname,
+            m.email AS email,
+            m.provider AS provider,
+            a.account_created_at AS joinDate
+        FROM member m
+        LEFT JOIN account a ON a.user_id = m.user_id
+        WHERE m.user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <select id="selectAuthInfo" resultType="com.antmillion.myinfo.dto.MyAuthInfoDTO">
+        SELECT
+            user_id AS userId,
+            provider AS provider,
+            password AS password
+        FROM member
+        WHERE user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <update id="updatePassword">
+        UPDATE member
+        SET password = #{password}
+        WHERE user_id = #{userId}
+          AND provider = 'LOCAL'
+    </update>
+
+    <delete id="deleteMember">
+        DELETE FROM member
+        WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

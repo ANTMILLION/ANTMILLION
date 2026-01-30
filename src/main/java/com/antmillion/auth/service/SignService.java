@@ -14,6 +14,7 @@ import com.antmillion.auth.jwt.JwtProvider;
 import com.antmillion.auth.mapper.AccountMapper;
 import com.antmillion.auth.mapper.AuthMemberMapper;
 import com.antmillion.auth.mapper.MemberMapper;
+import com.antmillion.auth.mapper.SocialMapper;
 import com.antmillion.auth.token.RefreshTokenStore;
 import com.antmillion.user.dto.AccountDTO;
 import com.antmillion.user.dto.MemberDTO;
@@ -28,16 +29,19 @@ public class SignService {
 	private final AuthMemberMapper authMemberMapper;
 	private final MemberMapper memberMapper;
 	private final AccountMapper accountMapper;
+	private final SocialMapper socialMapper;
 
 	private final PasswordEncoder passwordEncoder;
 	private final JwtProvider jwtProvider;
 	private final RefreshTokenStore refreshStore;
 
 	public SignService(AuthMemberMapper authMemberMapper, MemberMapper memberMapper, AccountMapper accountMapper,
-			PasswordEncoder passwordEncoder, JwtProvider jwtProvider, RefreshTokenStore refreshStore) {
+			PasswordEncoder passwordEncoder, JwtProvider jwtProvider, RefreshTokenStore refreshStore,
+			SocialMapper socialMapper) {
 		this.authMemberMapper = authMemberMapper;
 		this.memberMapper = memberMapper;
 		this.accountMapper = accountMapper;
+		this.socialMapper = socialMapper;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtProvider = jwtProvider;
 		this.refreshStore = refreshStore;
@@ -46,7 +50,6 @@ public class SignService {
 	@Transactional
 	public SignUpResult signUpLocal(SignUpRequest req) {
 
-		// step2에서 nickname까지 채워져 들어오는 전제
 		if (req.getEmail() == null || req.getEmail().trim().isEmpty()) {
 			throw new IllegalStateException("이메일이 비어있습니다.");
 		}
@@ -57,7 +60,7 @@ public class SignService {
 			throw new IllegalStateException("닉네임이 비어있습니다.");
 		}
 
-		// 1) 중복 체크 (DB에도 UNIQUE 권장)
+		// 중복 체크
 		if (memberMapper.countByEmail(req.getEmail()) > 0) {
 			throw new IllegalStateException("이미 사용 중인 이메일입니다.");
 		}
@@ -65,7 +68,7 @@ public class SignService {
 			throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
 		}
 
-		// 2) member insert
+		// member insert
 		MemberDTO member = new MemberDTO();
 		member.setRankId(1);
 		member.setPoint(0);
@@ -81,7 +84,7 @@ public class SignService {
 			throw new IllegalStateException("회원가입에 실패했습니다. (userId 생성 실패)");
 		}
 
-		// 3) account insert (초기 잔고 5천만)
+		// account insert
 		AccountDTO account = new AccountDTO();
 		account.setUserId(userId);
 		account.setBalance(50_000_000L);
@@ -93,7 +96,58 @@ public class SignService {
 
 				return new SignUpResult(userId, account.getAccountNumber(), account.getBalance());
 			} catch (DuplicateKeyException e) {
-				// account_number UNIQUE인 경우 중복 발생 가능 → 재생성 재시도
+				// account_number 중복 발생 → 재생성 재시도
+			}
+		}
+
+		throw new IllegalStateException("계좌번호 생성에 실패했습니다. 다시 시도해주세요.");
+	}
+
+	@Transactional
+	public SignUpResult signUpKakao(long kakaoId, String nickname) {
+		if (nickname == null || nickname.trim().isEmpty()) {
+			throw new IllegalStateException("닉네임이 비어있습니다.");
+		}
+		// 닉네임 중복
+		if (memberMapper.countByNickname(nickname) > 0) {
+			throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
+		}
+		// 이미 소셜로 가입된 카카오ID면 막기
+		Long existsUserId = socialMapper.selectUserIdByKakaoId(kakaoId);
+		if (existsUserId != null) {
+			throw new IllegalStateException("이미 가입된 카카오 계정입니다.");
+		}
+
+		// member insert
+		MemberDTO member = new MemberDTO();
+		member.setRankId(1);
+		member.setPoint(0);
+		member.setProvider("KAKAO");
+		member.setEmail(null);
+		member.setPassword(null);
+		member.setNickname(nickname);
+
+		memberMapper.insertMember(member);
+
+		Long userId = member.getUserId();
+		if (userId == null)
+			throw new IllegalStateException("회원가입 실패(userId 생성 실패)");
+
+		// account insert
+		AccountDTO account = new AccountDTO();
+		account.setUserId(userId);
+		account.setBalance(50_000_000L);
+
+		for (int i = 0; i < ACCOUNT_NUMBER_RETRY; i++) {
+			try {
+				account.setAccountNumber(generateAccountNumber());
+				accountMapper.insertAccount(account);
+
+				socialMapper.insertSocial(kakaoId, userId);
+				return new SignUpResult(userId, account.getAccountNumber(), account.getBalance());
+
+			} catch (DuplicateKeyException e) {
+				// 재시도
 			}
 		}
 
@@ -101,11 +155,12 @@ public class SignService {
 	}
 
 	public TokenPair login(String email, String rawPassword) {
+		email = (email == null) ? "" : email.trim();
 		AuthMemberDTO member = authMemberMapper.selectByEmail(email);
 		if (member == null) {
 			throw new IllegalArgumentException("NO_USER");
 		}
-
+		
 		if (member.getPassword() == null || !passwordEncoder.matches(rawPassword, member.getPassword())) {
 			throw new IllegalArgumentException("BAD_CREDENTIALS");
 		}
@@ -118,6 +173,23 @@ public class SignService {
 		String refreshJti = UUID.randomUUID().toString();
 
 		String accessToken = jwtProvider.createAccessToken(userId, rankId, provider, accessJti);
+		String refreshToken = jwtProvider.createRefreshToken(userId, refreshJti);
+
+		refreshStore.save(userId, refreshToken, jwtProvider.getRefreshTtlSeconds());
+
+		return new TokenPair(accessToken, refreshToken, jwtProvider.getAccessTtlSeconds(),
+				jwtProvider.getRefreshTtlSeconds());
+	}
+
+	public TokenPair issueTokensByUserId(long userId) {
+		AuthMemberDTO m = authMemberMapper.selectByUserId(userId);
+		if (m == null)
+			throw new IllegalArgumentException("NO_USER");
+
+		String accessJti = UUID.randomUUID().toString();
+		String refreshJti = UUID.randomUUID().toString();
+
+		String accessToken = jwtProvider.createAccessToken(userId, m.getRankId(), m.getProvider(), accessJti);
 		String refreshToken = jwtProvider.createRefreshToken(userId, refreshJti);
 
 		refreshStore.save(userId, refreshToken, jwtProvider.getRefreshTtlSeconds());
@@ -188,11 +260,12 @@ public class SignService {
 			return balance;
 		}
 	}
+
 	// 이메일 중복 확인
 	public boolean isEmailAvailable(String email) {
 		return memberMapper.countByEmail(email) == 0;
 	}
-	
+
 	// 닉네임 중복 확인
 	public boolean isNicknameAvailable(String nickname) {
 		return memberMapper.countByNickname(nickname) == 0;

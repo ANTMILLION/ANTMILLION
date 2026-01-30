@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -228,6 +228,16 @@
 <!-- Adding the standalone version of Lightweight charts -->
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script> const contextPath = '${cpath}'; </script>
+
+<script>
+  window.__isAuthenticated = false;
+</script>
+<sec:authorize access="!isAnonymous()">
+  <script>
+    window.__isAuthenticated = true;
+  </script>
+</sec:authorize>
+
 <!-- SockJS 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 

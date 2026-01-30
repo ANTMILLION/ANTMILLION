@@ -5,6 +5,90 @@ if (typeof contextPath === 'undefined') {
     console.log('[contextPath 설정]', contextPath);
 }
 
+// 로그인 필요 모달 + 로그인 가드
+
+(function () {
+    // 로그인 상태 판별
+    window.__isLoggedIn = function () {
+        try {
+            return (typeof IS_LOGGED_IN !== 'undefined') ? !!IS_LOGGED_IN : false;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    // 모달 DOM 생성 (없으면 자동 생성)
+    window.ensureLoginRequiredModal = function () {
+        if (document.getElementById('loginRequiredModal')) return;
+
+        const modal = document.createElement('div');
+        modal.id = 'loginRequiredModal';
+        modal.className = 'login-required-modal';
+        modal.setAttribute('aria-hidden', 'true');
+
+        modal.innerHTML = `
+            <div class="login-required-modal__backdrop" data-close="true"></div>
+            <div class="login-required-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="loginRequiredTitle">
+                <h4 id="loginRequiredTitle" class="login-required-modal__title">로그인이 필요합니다</h4>
+                <button type="button" class="login-required-modal__btn" id="loginRequiredClose">확인</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const close = () => {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+        };
+
+        const open = () => {
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+        };
+
+        // 전역으로 노출 (다른 JS에서도 호출 가능)
+        if (typeof window.openLoginRequiredModal !== 'function') {
+            window.openLoginRequiredModal = open;
+        }
+        if (typeof window.closeLoginRequiredModal !== 'function') {
+            window.closeLoginRequiredModal = close;
+        }
+
+        const closeBtn = document.getElementById('loginRequiredClose');
+        if (closeBtn) closeBtn.addEventListener('click', close);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target && e.target.dataset && e.target.dataset.close === 'true') close();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') close();
+        });
+    };
+
+    // 로그인 필요 가드
+    window.requireLogin = function (e) {
+        if (window.__isLoggedIn && window.__isLoggedIn()) return true;
+
+        if (e) {
+            if (typeof e.preventDefault === 'function') e.preventDefault();
+            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+            if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        }
+
+        if (typeof window.ensureLoginRequiredModal === 'function') {
+            window.ensureLoginRequiredModal();
+        }
+
+        if (typeof window.openLoginRequiredModal === 'function') {
+            window.openLoginRequiredModal();
+        } else {
+            alert('로그인이 필요합니다');
+        }
+        return false;
+    };
+})();
+
 // ==== 차트 관련 전역 변수 ====
 let currentCandleData = null; // 현재 진행 중인 캔들 데이터
 let lastCandleUpdateTime = null; // 마지막 캔들 업데이트 시간
@@ -924,7 +1008,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // ===== 탭 전환 기능 =====
     tabs.forEach(function(tab) {
-        tab.addEventListener('click', async function() {
+        tab.addEventListener('click', async function(e) {
+            if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
             const type = this.dataset.type;
             console.log('[탭 클릭]', type);
             
@@ -1207,45 +1292,62 @@ function openEditModal(orderId, currentPrice, currentQty) {
 
 
 
+
 // 페이지 로드 시 관심종목 상태 확인
 function checkFavoriteStatus() {
-    const stockCode = document.querySelector('.detail-favorite-btn').getAttribute('data-code');
+    const btn = document.querySelector('.detail-favorite-btn');
+    if (!btn) return;
+
+    // ✅ 비로그인: 서버 호출 없이 기본 상태 유지
+    if (typeof window.__isLoggedIn === 'function' && !window.__isLoggedIn()) {
+        btn.textContent = '♡';
+        btn.classList.remove('active');
+        return;
+    }
+
+    const stockCode = btn.getAttribute('data-code');
+    if (!stockCode) return;
 
     fetch(contextPath + '/api/interest/list')
         .then(res => res.json())
         .then(interestCodes => {
-            const btn = document.querySelector('.detail-favorite-btn');
-            const isFavorite = interestCodes.includes(stockCode);
-
+            const isFavorite = Array.isArray(interestCodes) && interestCodes.includes(stockCode);
             btn.textContent = isFavorite ? '♥' : '♡';
-            if (isFavorite) {
-                btn.classList.add('active');
-            }
-        });
+            if (isFavorite) btn.classList.add('active');
+            else btn.classList.remove('active');
+        })
+        .catch(err => console.error('관심종목 상태 확인 실패:', err));
 }
 
 // 관심종목 토글 버튼 이벤트
-document.querySelector('.detail-favorite-btn').addEventListener('click', function() {
-    const stockCode = this.getAttribute('data-code');
+const __favoriteBtn = document.querySelector('.detail-favorite-btn');
+if (__favoriteBtn) {
+    __favoriteBtn.addEventListener('click', function(e) {
+        // ✅ 비로그인: 모달
+        if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
 
-    fetch(contextPath + '/api/interest/toggle', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ stockCode: stockCode })
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                this.classList.toggle('active');
-                this.textContent = data.isInterest ? '♥' : '♡';
-            }
+        const stockCode = this.getAttribute('data-code');
+
+        fetch(contextPath + '/api/interest/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ stockCode: stockCode })
         })
-        .catch(error => {
-            console.error('관심종목 토글 실패:', error);
-        });
-});
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    this.classList.toggle('active');
+                    this.textContent = data.isInterest ? '♥' : '♡';
+                }
+            })
+            .catch(error => {
+                console.error('관심종목 토글 실패:', error);
+            });
+    });
+}
+
 
 // ========== 페이지 떠날 때 구독 해제 ==========
 window.addEventListener('beforeunload', function(e) {
@@ -1566,7 +1668,8 @@ window.checkMockStatus = checkMockStatus;
     
     // 매수/매도 탭 전환
     tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
             const type = this.getAttribute('data-type');
             
             tabBtns.forEach(b => {
@@ -1726,7 +1829,8 @@ window.checkMockStatus = checkMockStatus;
     
     // 매수/매도 버튼
     if (submitBtn) {
-        submitBtn.addEventListener('click', function() {
+        submitBtn.addEventListener('click', function(e) {
+            if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
             getCurrentPrice();
             
             const quantity = parseInt(quantityInput.value) || 0;

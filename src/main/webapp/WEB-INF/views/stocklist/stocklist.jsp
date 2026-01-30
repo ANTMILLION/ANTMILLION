@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -72,7 +73,13 @@
 <script>
     // contextPath 변수 설정 (stocklist.js에서 사용)
     var contextPath = '${cpath}';
+    window.__isAuthenticated = false;
 </script>
+<sec:authorize access="!isAnonymous()">
+  <script>
+    window.__isAuthenticated = true;
+  </script>
+</sec:authorize>
 <script src="${cpath}/resources/js/stocklist/stocklist.js"></script>
 </body>
 </html>

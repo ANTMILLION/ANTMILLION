@@ -1,17 +1,21 @@
 package com.antmillion.stock.controller;
 
+import com.antmillion.auth.mapper.AccountMapper;
 import com.antmillion.kis.dto.CurrentPrice;
 import com.antmillion.kis.service.KisApiService;
 import com.antmillion.stock.service.InterestService;
 import com.antmillion.stock.service.StockService;
+
+import com.antmillion.user.dto.AccountDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-//todo: 인증 구현이 아직 안되어서, account_id를 고정값 3L로 주고있음. 나중에 전부 수정
 @RestController
 @RequestMapping("/api/interest")
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ public class InterestController {
     private final InterestService interestService;
     private final KisApiService kisApiService;
     private final StockService stockService;
+    private final AccountMapper accountMapper;
 
     /**
      * 관심종목 토글 (추가/삭제)
@@ -27,9 +32,21 @@ public class InterestController {
     @PostMapping("/toggle")
     public ResponseEntity<Map<String, Object>> toggleInterest(@RequestBody Map<String, String> request) {
         String stockCode = request.get("stockCode");
-
-        boolean result = interestService.toggleInterest(stockCode, 3L); //임시로 고정값 사용. 나중에 인증 구현되면 수정
-        boolean isInterest = interestService.isInterest(stockCode, 3L);
+        
+        Long accountId = currentAccountId();
+        if (accountId == null) {
+            // (주의) token.js가 401을 만나면 /login으로 리다이렉트할 수 있어서
+            // 여기서는 200 + 메시지로 내려줌(프론트에서 모달 처리)
+            return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "LOGIN_REQUIRED",
+                    "stockCode", stockCode,
+                    "isInterest", false
+            ));
+        }
+        
+        boolean result = interestService.toggleInterest(stockCode, accountId); //임시로 고정값 사용. 나중에 인증 구현되면 수정
+        boolean isInterest = interestService.isInterest(stockCode, accountId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", result);
@@ -44,7 +61,12 @@ public class InterestController {
      */
     @GetMapping("/list")
     public ResponseEntity<List<String>> getInterestList() {
-        List<String> interestStockCodes = interestService.getInterestStockCodes(3L);
+    	Long accountId = currentAccountId();
+        if (accountId == null) {
+            return ResponseEntity.ok(List.of());
+        }
+    	
+        List<String> interestStockCodes = interestService.getInterestStockCodes(accountId);
         return ResponseEntity.ok(interestStockCodes);
     }
 
@@ -53,12 +75,12 @@ public class InterestController {
      */
     @GetMapping("/check/{stockCode}")
     public ResponseEntity<Map<String, Boolean>> checkInterest(@PathVariable String stockCode) {
-        boolean isInterest = interestService.isInterest(stockCode, 3L);
-
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("isInterest", isInterest);
-
-        return ResponseEntity.ok(response);
+    	Long accountId = currentAccountId();
+        if (accountId == null) {
+            return ResponseEntity.ok(Map.of("isInterest", false));
+        }
+        boolean isInterest = interestService.isInterest(stockCode, accountId);
+        return ResponseEntity.ok(Map.of("isInterest", isInterest));
     }
 
     // InterestController
@@ -67,10 +89,11 @@ public class InterestController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Long accountId = 3L;
+    	Long accountId = currentAccountId();
 
-        // 1. 전체 관심종목 코드 조회
-        List<String> allStockCodes = interestService.getInterestStockCodes(accountId);
+        List<String> allStockCodes = (accountId == null)
+                ? List.of()
+                : interestService.getInterestStockCodes(accountId);
 
         if (allStockCodes.isEmpty()) {
             Map<String, Object> emptyResponse = new HashMap<>();
@@ -109,5 +132,23 @@ public class InterestController {
 
         return ResponseEntity.ok(response);
     }
+    private Long currentAccountId() {
+        Long userId = currentUserId();
+        if (userId == null) return null;
 
+        AccountDTO account = accountMapper.selectByUserId(userId);
+        return (account == null) ? null : account.getAccountId();
+    }
+
+    private static Long currentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return null;
+        }
+        try {
+            return Long.valueOf(auth.getPrincipal().toString());
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

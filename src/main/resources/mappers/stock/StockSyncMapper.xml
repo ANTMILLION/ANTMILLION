@@ -14,6 +14,15 @@
         ON DUPLICATE KEY UPDATE stock_name = VALUES(stock_name)
     </insert>
 
+    <insert id="insertTempStockBatch">
+        INSERT IGNORE INTO temp_stock(stock_code, stock_name)
+        VALUES
+        <foreach collection="list" item="stock" separator=",">
+            (#{stock.stockCode}, #{stock.stockName})
+        </foreach>
+        ON DUPLICATE KEY UPDATE stock_name = VALUES(stock_name)
+    </insert>
+
     <insert id="insertNewStocks">
         INSERT INTO stock(stock_code, stock_name)
         SELECT t.stock_code, t.stock_name

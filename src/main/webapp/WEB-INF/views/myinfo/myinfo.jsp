@@ -20,22 +20,29 @@
             <div class="myinfo-card">
                 <div class="myinfo-header">
                     <h2 class="myinfo-title">내 정보</h2>
-                    <div class="myinfo-date">2025. 1. 29 가입</div>
+                    <div class="myinfo-date">${joinDate}</div>
                 </div>
                 <div class="myinfo-content">
                     <!-- 프로필 섹션 -->
                     <div class="myinfo-profile-section">
                         <div class="myinfo-ant-image">
-                            <img src="${cpath}/resources/images/profile/bronze-ant.png" alt="개미 캐릭터" />
+                            <c:choose>
+                                <c:when test="${not empty userRank and not empty userRank.rankImage}">
+                                    <img src="${cpath}/${userRank.rankImage}" alt="개미 캐릭터" />
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${cpath}/resources/images/profile/bronze-ant.png" alt="개미 캐릭터" />
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="myinfo-details">
                             <div class="myinfo-field">
                                 <label class="myinfo-label">닉네임</label>
-                                <div class="myinfo-value" id="myinfo-nickname">가은</div>
+                                <div class="myinfo-value" id="myinfo-nickname">${nickname}</div>
                             </div>
                             <div class="myinfo-field">
                                 <label class="myinfo-label">이메일</label>
-                                <div class="myinfo-value" id="myinfo-email">rkdms@naver.com</div>
+                                <div class="myinfo-value" id="myinfo-email">${emailDisplay}</div>
                             </div>
                             <div class="myinfo-field">
                                 <label class="myinfo-label">비밀번호</label>
@@ -60,6 +67,10 @@
             <div class="myinfo-modal-content">
                 <button class="myinfo-modal-close" onclick="closePasswordModal()">✕</button>
                 <h2 class="myinfo-modal-title">비밀번호 변경</h2>
+
+                <!-- 카카오 계정 안내 메시지(카카오 계정이면 폼 대신 이 문구를 보여줌) -->
+                <p class="myinfo-modal-message" id="passwordModalMessage" style="display:none;"></p>
+
                 <form class="myinfo-password-form" id="passwordForm">
                     <div class="myinfo-input-group">
                         <input type="password" class="myinfo-input" placeholder="기존 비밀번호 입력" id="currentPassword" required>
@@ -68,15 +79,39 @@
                         <input type="password" class="myinfo-input" placeholder="새 비밀번호 입력" id="newPassword" required>
                     </div>
                     <div class="myinfo-input-group">
-                        <input type="password" class="myinfo-input" placeholder="새 비밀번호 입력" id="confirmPassword" required>
+                        <input type="password" class="myinfo-input" placeholder="새 비밀번호 확인" id="confirmPassword" required>
                     </div>
                     <button type="submit" class="myinfo-submit-btn">비밀번호 변경하기</button>
                 </form>
             </div>
         </div>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+        <!-- 회원탈퇴 모달 -->
+        <div class="myinfo-modal" id="deleteModal">
+            <div class="myinfo-modal-content">
+                <button class="myinfo-modal-close" onclick="closeDeleteModal()">✕</button>
+                <h2 class="myinfo-modal-title">회원탈퇴</h2>
+                <p class="myinfo-modal-message">
+                    회원탈퇴 시 계정 및 연동된 데이터가 모두 삭제되며 복구할 수 없습니다.
+                </p>
+
+                <form id="deleteForm">
+                    <!-- LOCAL 계정일 때만 비밀번호 입력(카카오 계정이면 JS에서 숨김) -->
+                    <div class="myinfo-input-group" id="deletePasswordGroup">
+                        <input type="password" class="myinfo-input" placeholder="비밀번호를 입력해 주세요" id="deletePassword">
+                    </div>
+
+                    <div class="myinfo-modal-buttons">
+                        <button type="button" class="myinfo-cancel-btn" onclick="closeDeleteModal()">취소</button>
+                        <button type="submit" class="myinfo-confirm-btn">회원탈퇴</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
             const cpath = "${pageContext.request.contextPath}";
+            const isKakao = ${isKakao};
         </script>
         <script src="${cpath}/resources/js/myinfo/myinfo.js"></script>
     </div>

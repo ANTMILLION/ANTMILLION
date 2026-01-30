@@ -34,8 +34,8 @@ public class JwtProvider {
 	  return Jwts.builder()
 	      .setSubject(String.valueOf(userId))
 	      .setId(jti)
-	      .claim("rankId", rankId)      // 선택
-	      .claim("provider", provider)  // 선택
+	      .claim("rankId", rankId)
+	      .claim("provider", provider)
 	      .setIssuedAt(new Date(now))
 	      .setExpiration(new Date(now + accessTtlSeconds * 1000))
 	      .signWith(key)

@@ -1,21 +1,132 @@
+// ===============================
+// ✅ 로그인 필요 모달 유틸 (community.js)
+// - detail.js가 페이지 아래에서 로드될 수 있어서 여기서도 보장
+// ===============================
+(function () {
+    function isLoggedIn() {
+        try {
+            return (typeof IS_LOGGED_IN !== 'undefined') ? !!IS_LOGGED_IN : false;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    if (typeof window.__isLoggedIn !== 'function') {
+        window.__isLoggedIn = isLoggedIn;
+    }
+
+    if (typeof window.ensureLoginRequiredModal !== 'function') {
+        window.ensureLoginRequiredModal = function () {
+            if (document.getElementById('loginRequiredModal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'loginRequiredModal';
+            modal.className = 'login-required-modal';
+            modal.setAttribute('aria-hidden', 'true');
+
+            modal.innerHTML = `
+                <div class="login-required-modal__backdrop" data-close="true"></div>
+                <div class="login-required-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="loginRequiredTitle">
+                    <h4 id="loginRequiredTitle" class="login-required-modal__title">로그인이 필요합니다</h4>
+                    <button type="button" class="login-required-modal__btn" id="loginRequiredClose">확인</button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            const close = () => {
+                modal.classList.remove('active');
+                modal.setAttribute('aria-hidden', 'true');
+            };
+
+            const open = () => {
+                modal.classList.add('active');
+                modal.setAttribute('aria-hidden', 'false');
+            };
+
+            if (typeof window.openLoginRequiredModal !== 'function') {
+                window.openLoginRequiredModal = open;
+            }
+            if (typeof window.closeLoginRequiredModal !== 'function') {
+                window.closeLoginRequiredModal = close;
+            }
+
+            const closeBtn = document.getElementById('loginRequiredClose');
+            if (closeBtn) closeBtn.addEventListener('click', close);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target && e.target.dataset && e.target.dataset.close === 'true') close();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') close();
+            });
+        };
+    }
+
+    if (typeof window.requireLogin !== 'function') {
+        window.requireLogin = function (e) {
+            if (window.__isLoggedIn && window.__isLoggedIn()) return true;
+
+            if (e) {
+                e.preventDefault?.();
+                e.stopImmediatePropagation?.();
+                e.stopPropagation?.();
+            }
+
+            window.ensureLoginRequiredModal?.();
+            window.openLoginRequiredModal ? window.openLoginRequiredModal() : alert('로그인이 필요합니다');
+            return false;
+        };
+    }
+})();
+
 $(document).ready(function() {
+    // 비로그인: 커뮤니티 이용 불가 + 모달
+    if (typeof window.__isLoggedIn === 'function' && !window.__isLoggedIn()) {
+        // 목록 영역: 로그인 안내로 대체
+        $('#communityListContainer').html('<div class="community-login-required">로그인이 필요합니다</div>');
+
+        // 입력 막기(클릭은 허용해서 모달 띄움)
+        $('#communityInput')
+            .val('')
+            .attr('readonly', true)
+            .attr('placeholder', '로그인이 필요합니다')
+            .on('focus click keydown', function(e) {
+                window.requireLogin && window.requireLogin(e);
+            });
+
+        // 전송 버튼도 모달
+        $('#btnSubmitCommunity').on('click', function(e) {
+            window.requireLogin && window.requireLogin(e);
+        });
+
+        // 커뮤니티 영역 클릭 시도도 모달(선택)
+        $('.community-content').on('click', function(e) {
+            // 입력/버튼에서 이미 처리하지만, 빈 영역 클릭도 모달 띄우고 싶으면 유지
+            window.requireLogin && window.requireLogin(e);
+        });
+
+        return; // 비로그인: 아래 로직 실행 X
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code');
-    
+
     if (!stockCode) {
         console.error('종목 코드가 없습니다.');
         $('#communityListContainer').html('<p>종목 정보를 불러올 수 없습니다.</p>');
         return;
     }
-    
+
     console.log('현재 종목 코드:', stockCode);
-    
+
     loadCommunityList(stockCode);
-    
+
     $('#btnSubmitCommunity').on('click', function() {
         writeCommunity(stockCode);
     });
-    
+
     $('#communityInput').on('keypress', function(e) {
         if (e.which === 13) {
             e.preventDefault();

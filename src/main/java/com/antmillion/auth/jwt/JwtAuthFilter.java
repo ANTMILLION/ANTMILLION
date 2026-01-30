@@ -27,39 +27,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        String token = resolveToken(req);
+        // AT 인증
+        String token = TokenResolver.resolveAccessToken(req);
 
         if (token == null || token.isBlank()) {
             chain.doFilter(req, res);
             return;
         }
-        
+
         if (!jwtProvider.isValid(token)) {
             SecurityContextHolder.clearContext();
             chain.doFilter(req, res);
             return;
         }
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            Claims claims = jwtProvider.parseClaims(token);
-            Long userId = Long.valueOf(claims.getSubject());
+        Claims claims = jwtProvider.parseClaims(token);
+        Long userId = Long.valueOf(claims.getSubject());
 
-            UsernamePasswordAuthenticationToken authentication =
+        UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
 
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         chain.doFilter(req, res);
-    }
-
-    private String resolveToken(HttpServletRequest req) {
-        String auth = req.getHeader("Authorization");
-        if (auth != null && auth.startsWith("Bearer ")) {
-            return auth.substring(7);
-        }
-        
-        return CookieUtil.getCookieValue(req, "AT");
     }
 }
