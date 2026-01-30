@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antmillion.stock.mapper.AssetMapper">
+
+    <select id="getQuantityByAccountAndStock" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(quantity), 0)
+        FROM asset
+        WHERE account_id = #{accountId} 
+          AND stock_code = #{stockCode}
+    </select>
+
+    <insert id="upsertAssetBuy">
+        INSERT INTO asset (
+            account_id, 
+            stock_code, 
+            quantity, 
+            purchase_amount, 
+            avg_price, 
+            updated_at
+        )
+        VALUES (
+            #{accountId}, 
+            #{stockCode}, 
+            #{quantity}, 
+            #{purchaseAmount}, 
+            #{avgPrice}, 
+            NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            avg_price = (purchase_amount + VALUES(purchase_amount)) / (quantity + VALUES(quantity)),
+            quantity = quantity + VALUES(quantity),
+            purchase_amount = purchase_amount + VALUES(purchase_amount),
+            updated_at = NOW()
+    </insert>
+
+    <update id="updateAssetSell">
+        UPDATE asset 
+        SET 
+            quantity = quantity - #{quantity},
+            purchase_amount = purchase_amount - (avg_price * #{quantity}),
+            updated_at = NOW()
+        WHERE account_id = #{accountId} 
+          AND stock_code = #{stockCode} 
+          AND quantity >= #{quantity}
+    </update>
+
+    <update id="addBalance">
+        UPDATE account 
+        SET balance = balance + #{amount} 
+        WHERE account_id = #{accountId}
+    </update>
+
+    <update id="minusBalance">
+        UPDATE account 
+        SET balance = balance - #{amount} 
+        WHERE account_id = #{accountId} 
+          AND balance >= #{amount}
+    </update>
+
+    <delete id="deleteZeroQuantityAsset">
+        DELETE FROM asset 
+        WHERE account_id = #{accountId} 
+          AND stock_code = #{stockCode} 
+          AND quantity &lt;= 0
+    </delete>
+
+</mapper>
