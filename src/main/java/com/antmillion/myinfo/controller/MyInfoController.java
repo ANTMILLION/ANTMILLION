@@ -27,7 +27,7 @@ import com.antmillion.myinfo.service.MyInfoService;
 @Controller
 public class MyInfoController {
 
-    private static final Pattern PW_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
+	private static final Pattern PW_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)\\S{8,}$");
     private static final DateTimeFormatter JOIN_FMT = DateTimeFormatter.ofPattern("yyyy. M. d 가입");
 
     private final MyInfoService myInfoService;
@@ -80,7 +80,7 @@ public class MyInfoController {
         }
         if (!PW_RULE.matcher(newPassword).matches()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("ok", false, "message", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다."));
+                    .body(Map.of("ok", false, "message", "비밀번호는 8자리 이상, 영문/숫자를 포함하고 공백 없이 특수문자를 사용할 수 있습니다."));
         }
 
         try {

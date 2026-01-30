@@ -9,7 +9,7 @@
   // JSP에서 주입: const isKakao = true/false;
   const IS_KAKAO = (typeof isKakao === 'boolean') ? isKakao : false;
 
-  const PW_RULE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  const PW_RULE = /^(?=.*[A-Za-z])(?=.*\d)\S{8,}$/;
 
   function $(id) {
     return document.getElementById(id);
@@ -125,7 +125,7 @@
           return;
         }
         if (!PW_RULE.test(next)) {
-          alert('비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.');
+          alert('비밀번호는 8자리 이상, 영문/숫자를 포함하고 공백 없이 특수문자를 사용할 수 있습니다.');
           return;
         }
 

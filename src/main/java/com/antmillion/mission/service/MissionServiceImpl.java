@@ -184,13 +184,10 @@ public class MissionServiceImpl implements MissionService {
         int readNewsCount = newsMapper.countTodayNewsRead(userId);
         int newsGoal = 5;
 
-        // 전체 달성률 계산
-        // 분자: (푼 퀴즈 수 + 읽은 뉴스 수)
-        int currentTotal = solvedQuizCount + readNewsCount;
-        // 분모: (퀴즈 목표 2 + 뉴스 목표 5) = 7
-        int goalTotal = quizGoal + newsGoal;
-
-        int totalProgress = (int) ((double) currentTotal / goalTotal * 100);
+        // 전체 달성률 계산 (가중치 적용)
+        int quizScore = solvedQuizCount * 20;         // 퀴즈 1문제당 20%
+        int newsScore = readNewsCount * 12;           // 뉴스 1문제당 12%
+        int totalProgress = quizScore + newsScore;
         totalProgress = Math.min(totalProgress, 100); // 100% 넘지 않게
 
         // 데이터 담기
