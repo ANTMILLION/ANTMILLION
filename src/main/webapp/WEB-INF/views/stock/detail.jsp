@@ -49,7 +49,7 @@
                     <section class="detail-bottom-split">
                         <section class="detail-hoga-box">
                             <div class="detail-hoga-placeholder">
-                                <span>호가는 장 시간에 볼 수 있어요</span>
+                                <span></span>
                             </div>
                         </section>
                         <section class="detail-community-box">
@@ -185,7 +185,7 @@
     </div>
     <div class="detail-sentiment-section">
         <div class="detail-sentiment-text">
-            <span>장 시간에 확인할 수 있어요</span>
+            <span></span>
         </div>
         <div class="detail-percent-labels">
             <div style="width: 50%;" id="buy-percent"></div>

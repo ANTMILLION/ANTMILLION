@@ -71,7 +71,7 @@ function connectStomp() {
     var url = contextPath + '/ws-stomp';
     var socket = new SockJS(url);
     stompClient = Stomp.over(socket);
-
+    stompClient.debug = null;
     stompClient.connect({}, function (frame) {
         console.log('STOMP 연결 성공: ' + frame);
 
