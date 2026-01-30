@@ -287,7 +287,7 @@ function attachMainStockItemListeners() {
             }
             
             // 차트 업데이트
-
+            drawStockMinuteChart(stockCode);
         });
         
         // click 이벤트 추가
@@ -464,30 +464,37 @@ function formatToTimestamp(dateStr, timeStr) {
     const minute = parseInt(timeStr.substring(2, 4));
     const second = parseInt(timeStr.substring(4, 6)) || 0;
 
-    const date = new Date(year, month, day, hour, minute, second); // KST 시간대 기준
-    const offsetInSeconds = date.getTimezoneOffset() * 60;
-    return Math.floor(date.getTime() / 1000) - offsetInSeconds;
+    // 로컬 시간대로 Date 객체 생성 후 Unix 타임스탬프로 변환
+    const date = new Date(year, month, day, hour, minute, second);
+    return Math.floor(date.getTime() / 1000);
 }
 
 // 차트 그리기 함수
 function drawStockMinuteChart(stockCode) {
     const chartContainer = document.getElementById('main-stockChart');
     if (!chartContainer) return;
-    chartContainer.innerHTML = ''; // 기존 차트가 있다면 삭제
+
+    // 1. 기존 차트 완전히 제거
+    if (stockChart) {
+        stockChart.remove();
+        stockChart = null;
+        candleSeries = null;
+    }
+
+    chartContainer.innerHTML = ''; // DOM도 초기화
 
     currentChartStockCode = stockCode;
-
     currentCandleData = null;
     lastCandleUpdateTime = null;
 
+    // 2. 새 차트 생성
     stockChart = LightweightCharts.createChart(chartContainer, {
         width: chartContainer.clientWidth,
         height: chartContainer.clientHeight,
         localization: {
             locale: 'ko-KR',
             timeFormatter: (time) => {
-                const date = new Date((time - 9 * 60 * 60) * 1000);
-                const y = date.getFullYear();
+                const date = new Date(time * 1000); // 타임존 보정 제거
                 const m = date.getMonth() + 1;
                 const d = date.getDate();
                 const hh = String(date.getHours()).padStart(2, '0');
@@ -530,7 +537,7 @@ function drawStockMinuteChart(stockCode) {
             timeVisible: true,
             secondsVisible: false,
             tickMarkFormatter: (time, tickMarkType, locale) => {
-                const date = new Date((time - 9 * 60 * 60) * 1000);
+                const date = new Date(time * 1000); // 타임존 보정 제거
                 const hh = String(date.getHours()).padStart(2, '0');
                 const mm = String(date.getMinutes()).padStart(2, '0');
                 return `${hh}:${mm}`;
@@ -546,18 +553,23 @@ function drawStockMinuteChart(stockCode) {
         wickDownColor: '#3498db'
     });
 
-    // 초기 데이터 로드 (분봉 데이터)
-    fetch(contextPath + `/api/kis/stockChart/minute/${stockCode}`)
+    // 3. 초기 데이터 로드 (분봉 데이터)
+    fetch(contextPath + `/api/kis/stream/${stockCode}`)
         .then(res => res.json())
         .then(data => {
-            if (!data || data.length === 0) return;
+            if (!data || data.length === 0) {
+                console.warn('분봉 데이터가 없습니다:', stockCode);
+                return;
+            }
 
+            // 4. 데이터 정렬
             data.sort((a, b) => {
                 const timeA = formatToTimestamp(a.stck_bsop_date, a.stck_cntg_hour);
                 const timeB = formatToTimestamp(b.stck_bsop_date, b.stck_cntg_hour);
                 return timeA - timeB;
             });
 
+            // 5. 차트 데이터 포맷 변환
             const formattedData = data.map(item => {
                 const timestamp = formatToTimestamp(item.stck_bsop_date, item.stck_cntg_hour);
                 return {
@@ -569,16 +581,17 @@ function drawStockMinuteChart(stockCode) {
                 };
             });
 
+            // 6. 차트에 전체 데이터 설정 (setData 사용)
             candleSeries.setData(formattedData);
             stockChart.timeScale().fitContent();
 
-            // 현재 진행 중인 캔들 초기화 (마지막 데이터)
+            // 7. 현재 진행 중인 캔들 초기화 (마지막 데이터)
             if (formattedData.length > 0) {
                 currentCandleData = { ...formattedData[formattedData.length - 1] };
                 lastCandleUpdateTime = currentCandleData.time;
             }
 
-            // 실시간 데이터 구독 (해당 종목)
+            // 8. 실시간 데이터 구독 (해당 종목만)
             subscribeStockToRealtime(stockCode);
         })
         .catch(err => console.error('분봉 차트 데이터 로드 실패:', err));
@@ -586,11 +599,17 @@ function drawStockMinuteChart(stockCode) {
 
 // 실시간 데이터(체결) 구독: STOMP 토픽에서 받아서 캔들 업데이트
 function subscribeStockToRealtime(stockCode) {
+    if (!stompClient || !stompClient.connected) {
+        console.warn('STOMP 연결이 없습니다. 구독 불가:', stockCode);
+        return;
+    }
+
     const topic = '/topic/kis-trade/present' + stockCode;
 
     // 이미 구독 중이면 해제 후 재구독
     if (subscribedTopics[stockCode]) {
         subscribedTopics[stockCode].unsubscribe();
+        delete subscribedTopics[stockCode];
     }
 
     const subscription = stompClient.subscribe(topic, function(message) {
@@ -610,13 +629,19 @@ function subscribeStockToRealtime(stockCode) {
 
 // 실시간 체결 데이터로 캔들 업데이트
 function updateCandleWithTrade(tradeData) {
-    if (!candleSeries) return;
+    if (!candleSeries) {
+        console.warn('캔들 시리즈가 초기화되지 않았습니다');
+        return;
+    }
 
     const price = Number(tradeData.stckPrpr);
     const now = new Date();
+
+    // 초 단위를 0으로 맞춰서 1분 단위 캔들 생성
     const base = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0);
     const timestamp = Math.floor(base.getTime() / 1000);
 
+    // 새로운 1분봉이 시작되었거나 초기 데이터가 없을 때
     if (!currentCandleData || lastCandleUpdateTime !== timestamp) {
         currentCandleData = {
             time: timestamp,
@@ -627,11 +652,13 @@ function updateCandleWithTrade(tradeData) {
         };
         lastCandleUpdateTime = timestamp;
     } else {
+        // 같은 1분 내에서는 high/low/close만 업데이트
         currentCandleData.high = Math.max(currentCandleData.high, price);
         currentCandleData.low = Math.min(currentCandleData.low, price);
         currentCandleData.close = price;
     }
 
+    // update 메서드로 현재 캔들 갱신
     candleSeries.update(currentCandleData);
 }
 
