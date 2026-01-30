@@ -26,15 +26,36 @@
             <div class="stocklist-header">
                 <div class="stocklist-time" id="stocklist-sort-label">거래대금 순위·오늘 <%= new java.text.SimpleDateFormat("HH:mm").format(new java.util.Date()) %> 기준</div>
                 <div class="stocklist-view-options">
-                    <span class="stocklist-help-icon">?</span>
                 </div>
             </div>
             <div class="stocklist-table-header">
                 <div class="stocklist-header-cell"></div>
-                <div class="stocklist-header-cell">종목명</div>
+                <div class="stocklist-header-cell">종목명
+                    <div class="question-wrap">
+				        <span class="question-icon">?</span>
+				        <div class="tooltip-box">
+				            <p class="tooltip-title">신호등은 외국인/기관의 매수세를 나타내요</p>
+				            <ul class="tooltip-list">
+				                <li><span class="dot green"></span> 외국인/기관 동시 매수세</li>
+				                <li><span class="dot yellow"></span> 외국인/기관 한곳만 매수세</li>
+				                <li><span class="dot red"></span> 외국인/기관 동시 매도세</li>
+				            </ul>
+				        </div>
+				    </div>
+                </div>
                 <div class="stocklist-header-cell">현재가</div>
                 <div class="stocklist-header-cell">등락률</div>
-                <div class="stocklist-header-cell">거래 비율</div>
+                <div class="stocklist-header-cell">거래 비율
+                    <div class="question-wrap">
+                        <span class="question-icon">?</span>
+                        <div class="tooltip-box">
+                            <p class="tooltip-title">투자자들의 매수·매도 체결비중을 나타내요</p>
+                            <ul class="tooltip-list">
+                                <li>투자자들의 심리와 수급추세를 알 수 있어요. 단, 시장 전체의 수급을 의미하지는 않아요.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- 종목 리스트 -->

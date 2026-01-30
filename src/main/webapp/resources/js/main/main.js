@@ -1,6 +1,8 @@
-var subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
+var stompClient = stompClient || null;
+var subscribedTopics = subscribedTopics || {};
 
 function isLoggedIn() {
+    if (typeof window.__isAuthenticated === 'undefined') return null;
     return window.__isAuthenticated === true;
 }
 
@@ -40,7 +42,8 @@ function showLoginRequiredModal() {
 }
 
 function ensureLoginOrModal() {
-    if (!isLoggedIn()) {
+    const v = isLoggedIn();
+    if (v === false) {
         showLoginRequiredModal();
         return false;
     }
@@ -49,13 +52,13 @@ function ensureLoginOrModal() {
 
 // 비로그인 상태면 interest/list를 아예 호출하지 않게(시큐리티 막혀 있어도 안전)
 function getInterestCodesPromise() {
-    if (!isLoggedIn()) return Promise.resolve([]);
+    const v = isLoggedIn();
+    if (v === false) return Promise.resolve([]);
 
     return fetch(contextPath + '/api/interest/list', { cache: 'no-store' })
         .then(res => {
             if (!res.ok) return [];
             const ct = res.headers.get('content-type') || '';
-            // 로그인 페이지 HTML로 떨어지면 JSON 파싱하지 않고 빈 배열
             if (!ct.includes('application/json')) return [];
             return res.json();
         })
@@ -123,7 +126,9 @@ function createMainStockItemHTML(stock, index) {
                     <img src="${imgUrl}" alt="${stock.hts_kor_isnm}"
                         onerror="this.src='${contextPath}/resources/images/icontmp.png'">
                 </div>
+                <div class="main-signal-lamp" id="signal-${stock.mksc_shrn_iscd}"></div>
                 <span class="main-stocklist-name">${stock.hts_kor_isnm}</span>
+                
             </div>
             <div class="main-stocklist-price">${currentPrice}</div>
             <div class="main-stocklist-change ${changeClass}">${changeText}</div>
@@ -149,41 +154,40 @@ function renderMainStocks() {
     fetch(contextPath + '/api/kis/volumeRank')
         .then(res => res.json())
         .then(data => {
-            // 관심종목 목록 가져오기 (비로그인 상태면 빈 배열)
             return getInterestCodesPromise().then(interestCodes => {
+                if (!Array.isArray(interestCodes)) interestCodes = [];
+
                 const html = data
                     .slice(0, 5)
                     .map((stock, index) => {
-                        // 관심종목 여부 확인
                         stock.isFavorite = interestCodes.includes(stock.mksc_shrn_iscd);
                         return createMainStockItemHTML(stock, index);
                     }).join('');
 
                 container.innerHTML = html;
 
-                // 이벤트 리스너 재등록
+                // ✅ 신호등 유지(원본 기능)
+                updateAllTrafficSignals();
+
+                // 이벤트 리스너
                 attachMainFavoriteListeners();
                 attachMainStockItemListeners();
 
+                // 차트 기본 1번
                 if (data.length > 0) {
                     const firstStock = data[0];
                     const chartStockName = document.querySelector('.main-chart-stock-name');
                     const chartStockCode = document.querySelector('.main-chart-stock-code');
 
-                    if (chartStockName) {
-                        chartStockName.textContent = firstStock.hts_kor_isnm;
-                    }
-                    if (chartStockCode) {
-                        chartStockCode.textContent = firstStock.mksc_shrn_iscd;
-                    }
+                    if (chartStockName) chartStockName.textContent = firstStock.hts_kor_isnm;
+                    if (chartStockCode) chartStockCode.textContent = firstStock.mksc_shrn_iscd;
 
-                    // 1번 항목의 차트 그리기
                     drawStockMinuteChart(firstStock.mksc_shrn_iscd);
                 }
 
-                // 종목 리스트 렌더링 완료 후 웹소켓 구독
+                // 렌더링 완료 후 구독
                 if (!isMockMode) {
-                    const stockCodes = data.slice(0, 5).map(stock => stock.mksc_shrn_iscd);
+                    const stockCodes = data.slice(0, 5).map(s => s.mksc_shrn_iscd);
                     subscribeAllStocksToBackend(stockCodes);
                 }
             });
@@ -198,61 +202,51 @@ function attachMainFavoriteListeners() {
     const container = document.getElementById('main-stocklist-Container');
     if (!container) return;
 
-    // 중복 바인딩 방지
     if (container.dataset.favBound === '1') return;
     container.dataset.favBound = '1';
 
-    container.addEventListener('click', function(e) {
+    container.addEventListener('click', function (e) {
         const btn = e.target.closest('.main-stocklist-favorite-btn');
         if (!btn) return;
 
         e.stopPropagation();
         e.preventDefault();
 
-        // 비로그인 상태면 모달 안내 후 중단
         if (!ensureLoginOrModal()) return;
 
         const stockCode = btn.getAttribute('data-id');
 
-        // 서버에 관심종목 토글 요청
         fetch(contextPath + '/api/interest/toggle', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ stockCode: stockCode })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stockCode })
         })
-            .then(res => {
-                // 401/403이면 모달
-                if (res.status === 401 || res.status === 403) {
-                    showLoginRequiredModal();
-                    return null;
-                }
-                const ct = res.headers.get('content-type') || '';
-                // 로그인 페이지 HTML로 떨어지면 JSON 파싱하지 않고 모달
-                if (!ct.includes('application/json')) {
-                    showLoginRequiredModal();
-                    return null;
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (!data) return;
+        .then(res => {
+            // 비로그인이거나 권한 없으면 모달
+            if (res.status === 401 || res.status === 403) {
+                showLoginRequiredModal();
+                return null;
+            }
+            const ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) {
+                showLoginRequiredModal();
+                return null;
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data) return;
 
-                if (data.message === 'LOGIN_REQUIRED') {
-                    showLoginRequiredModal();
-                    return;
-                }
-
-                if (data.success) {
-                    // UI 업데이트
-                    btn.classList.toggle('active');
-                    btn.textContent = data.isInterest ? '♥' : '♡';
-                }
-            })
-            .catch(error => {
-                console.error('관심종목 토글 실패:', error);
-            });
+            if (data.success) {
+                btn.classList.toggle('active');
+                btn.textContent = data.isInterest ? '♥' : '♡';
+            } else if (data.message === 'LOGIN_REQUIRED') {
+                showLoginRequiredModal();
+            }
+        })
+        .catch(err => {
+            console.error('관심종목 토글 실패:', err);
+        });
     }, true);
 }
 
@@ -314,6 +308,12 @@ function attachMainStockItemListeners() {
 document.addEventListener('DOMContentLoaded', function() {
     scheduleMarketClose();
     initializeMainPage();
+    
+    // 10분마다 신호등 상태만 별도로 업데이트
+    setInterval(function() {
+        console.log('[Auto Update] 신호등 상태 갱신');
+        updateAllTrafficSignals();
+    }, 600000);
 });
 
 function initializeMainPage() {
@@ -869,4 +869,28 @@ function scheduleMarketClose() {
     } else {
         console.log('[main.js] 오늘 20:00은 이미 지났습니다.');
     }
+    
+}
+
+//모든 종목의 신호등 상태를 서버에서 가져와 업데이트하는 함수
+function updateAllTrafficSignals() {
+    const stockItems = document.querySelectorAll('.main-stocklist-item');
+    
+    stockItems.forEach(item => {
+        const stockCode = item.getAttribute('data-id'); // HTML에서 설정한 data-id 가져오기
+        
+        if (!stockCode) return;
+
+        fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`)
+            .then(res => res.json())
+            .then(data => {
+                const lamp = document.getElementById(`signal-${stockCode}`);
+                if (lamp && data.signalColor) {
+                    // 기존 색상 클래스 모두 제거 후 새 색상 추가
+                    lamp.classList.remove('GREEN', 'RED', 'YELLOW');
+                    lamp.classList.add(data.signalColor);
+                }
+            })
+            .catch(err => console.log(`[Signal Error] ${stockCode} 통신 실패`));
+    });
 }

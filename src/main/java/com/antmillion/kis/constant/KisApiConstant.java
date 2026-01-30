@@ -13,7 +13,9 @@ public class KisApiConstant {
     public static final String STOCK_VOLUME_RANK = "/uapi/domestic-stock/v1/quotations/volume-rank";
     public static final String DAY_MINUTE_PATH = "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
     public static final String PRESENT_PRICE = "/uapi/domestic-stock/v1/quotations/inquire-price";
-
+    
+    public static final String FOREIGNER_ORGANIZATION_PATH = "/uapi/domestic-stock/v1/quotations/investor-trend-estimate";
+    
     private KisApiConstant() {
         // 인스턴스화 방지
     }

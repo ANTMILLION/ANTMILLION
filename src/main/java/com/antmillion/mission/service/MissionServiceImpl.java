@@ -3,6 +3,7 @@ package com.antmillion.mission.service;
 import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.mission.dto.*;
 import com.antmillion.mission.mapper.MissionMapper;
+import com.antmillion.news.mapper.NewsMapper;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ public class MissionServiceImpl implements MissionService {
     private final MissionMapper missionMapper;
     private final MemberMapper memberMapper;
     private final AntRankService antRankService;
+    private final NewsMapper newsMapper;
 
     // 로그인한 유저 ID를 가져오는 메서드
     public Long getCurrentUserId() {
@@ -159,11 +162,43 @@ public class MissionServiceImpl implements MissionService {
     }
 
     public boolean isTodayMissionCompleted(Long userId) {
-        int solvedCount = missionMapper.countTodaySolvedQuiz(userId);
-        return solvedCount >= 2;
+        Map<String, Object> status = getTodayMissionStatus(userId);
+        // totalProgress가 100이면 완료로 간주
+        int progress = (int)status.get("totalProgress");
+        return progress >= 100;
     }
 
-    public int getTodaySolvedCount(Long userId) {
-        return missionMapper.countTodaySolvedQuiz(userId);
+    public Map<String, Object> getTodayMissionStatus(Long userId) {
+        Map<String, Object> status = new HashMap<>();
+
+        if (userId == null) {
+            status.put("totalProgress", 0);
+            return status;
+        }
+
+        // 퀴즈 진행 상황
+        int solvedQuizCount = missionMapper.countTodaySolvedQuiz(userId);
+        int quizGoal = 2;
+
+        // 뉴스 진행 상황
+        int readNewsCount = newsMapper.countTodayNewsRead(userId);
+        int newsGoal = 5;
+
+        // 전체 달성률 계산
+        // 분자: (푼 퀴즈 수 + 읽은 뉴스 수)
+        int currentTotal = solvedQuizCount + readNewsCount;
+        // 분모: (퀴즈 목표 2 + 뉴스 목표 5) = 7
+        int goalTotal = quizGoal + newsGoal;
+
+        int totalProgress = (int) ((double) currentTotal / goalTotal * 100);
+        totalProgress = Math.min(totalProgress, 100); // 100% 넘지 않게
+
+        // 데이터 담기
+        status.put("totalProgress", totalProgress);
+        status.put("quizCount", solvedQuizCount);
+        status.put("newsCount", readNewsCount);
+        status.put("isQuizCompleted", solvedQuizCount >= quizGoal);
+        status.put("isNewsCompleted", readNewsCount >= newsGoal);
+        return status;
     }
 }

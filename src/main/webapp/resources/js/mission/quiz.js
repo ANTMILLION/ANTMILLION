@@ -24,7 +24,7 @@ function getDailyQuiz() {
         type: 'GET',
         dataType: 'json',
         success: function (statusData) {
-            correctAnswers = statusData.solvedCount || 0;
+            correctAnswers = statusData.quizCount || 0;
             $.ajax({
                 url: cpath + '/mission/daily',
                 type: 'GET',
@@ -152,7 +152,7 @@ function showCorrectModal(point, explanation) {
     const modalMessage = modal.querySelector('.quiz-modal-message');
 
     // 포인트 메시지 표시
-    pointsMessage.textContent = point + ' 포인트 획득하였습니다.';
+    pointsMessage.textContent = point + ' 포인트를 획득하였습니다.';
     pointsMessage.style.display = 'block';
 
     modalTitle.textContent = '짝짝짝👏👏👏 정답입니다~';

@@ -90,9 +90,11 @@
             <!-- 미션 카드 -->
             <div class="main-mission-card main-grid-mission">
                 <div class="main-mission-header">
-                    <h3>미션 : 오늘의 경제 퀴즈 풀기</h3>
+                    <h3>오늘의 미션</h3>
                 </div>
-                <p class="main-mission-description">OX 퀴즈 맞히고 100P 받아가세요!</p>
+                <p class="main-mission-description">퀴즈 풀고 뉴스 읽으면
+                    <strong>하루 최대 700P</strong> 획득할 수 있어요!<br>지금 당장 나의 개미 랭크를 높여보세요!
+                </p>
                 <c:choose>
                     <c:when test="${missionCompleted}">
                         <span class="main-mission-completed-button">미션완료</span>
@@ -131,10 +133,32 @@
                     </div>
                     <div class="main-stocklist-table-header">
                         <div class="main-stocklist-header-cell"></div>
-                        <div class="main-stocklist-header-cell">종목명</div>
+                        <div class="main-stocklist-header-cell">종목명
+	                        <div class="question-wrap">
+		                        <span class="question-icon">?</span>
+		                        <div class="tooltip-box">
+		                            <p class="tooltip-title">신호등은 외국인/기관의 매수세를 나타내요</p>
+		                            <ul class="tooltip-list">
+		                                <li><span class="dot green"></span> 외국인/기관 동시 매수세</li>
+		                                <li><span class="dot yellow"></span> 외국인/기관 한곳만 매수세</li>
+		                                <li><span class="dot red"></span> 외국인/기관 동시 매도세</li>
+		                            </ul>
+		                        </div>
+		                    </div>
+                        </div>
                         <div class="main-stocklist-header-cell">현재가</div>
                         <div class="main-stocklist-header-cell">등락률</div>
-                        <div class="main-stocklist-header-cell">거래 비율</div>
+                        <div class="main-stocklist-header-cell">거래 비율
+	                        <div class="question-wrap">
+		                        <span class="question-icon">?</span>
+		                        <div class="tooltip-box">
+		                            <p class="tooltip-title">투자자들의 매수·매도 체결비중을 나타내요</p>
+		                            <ul class="tooltip-list">
+		                                <li>투자자들의 심리와 수급추세를 알 수 있어요. 단, 시장 전체의 수급을 의미하지는 않아요.</li>
+		                            </ul>
+		                        </div>
+		                    </div>
+                        </div>
                     </div>
                     <div class="main-stocklist-list" id="main-stocklist-Container">
                         <!-- JavaScript로 동적 생성 -->
