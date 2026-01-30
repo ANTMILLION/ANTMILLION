@@ -98,25 +98,46 @@ let currentChartPeriod = 'minute';
 let stompClient = null;
 let subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
 let currentStockCodes = []; // 현재 화면에 표시된 종목 코드들
+// 타이머 변수를 전역 스코프에 선언
+let sentimentTimeout = null; 
+let hogaTimeout = null;
 
-// ======= STOMP 연결 =======
+// ======= STOMP 연결 ======
 function connectStomp() {
-    const url = contextPath + '/ws-stomp';
-    const socket = new SockJS(url);
-    stompClient = Stomp.over(socket);
-    stompClient.debug = null;
-    stompClient.connect({}, function (frame) {
-        console.log('STOMP 연결 성공: ' + frame);
+    return new Promise((resolve, reject) => {
+        const url = contextPath + '/ws-stomp';
+        const socket = new SockJS(url);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
 
-        // 연결 성공 후 현재 화면의 종목들 구독
-        if (currentStockCodes.length > 0) {
-            subscribeCurrentStocks();
-        }
-    }, function(error) {
-        console.error('STOMP 연결 실패: ' + error);
-        // 5초 후 재연결 시도
-        setTimeout(connectStomp, 5000);
+        stompClient.connect({}, 
+            (frame) => {
+                console.log('STOMP 연결 성공: ' + frame);
+                resolve(frame); 
+            }, 
+            (error) => {
+                // 최초 연결 실패 시
+                reject(error);
+            }
+        );
     });
+}
+
+// ======= 재연결 로직 =======
+function handleReconnect() {
+    console.log('5초 후 재연결을 시도합니다...');
+    setTimeout(async () => {
+        try {
+            await connectStomp();
+            console.log('재연결 성공! 현재 종목 구독을 시작합니다.');
+            if (currentStockCodes.length > 0) {
+                subscribeCurrentStocks();
+            }
+        } catch (e) {
+            console.error('재연결 실패. 다시 시도합니다.');
+            handleReconnect(); // 반복 재연결
+        }
+    }, 5000);
 }
 
 // ======= 현재 상세 화면 종목 및 호가 구독 (시간차 적용 버전) =======
@@ -199,7 +220,7 @@ function subscribeStockTopic(stockCode) {
     subscribedTopics[stockCode] = subscription;
     console.log('토픽 구독 완료:', topic);
     
-    // 구독 시작 후 1초간 데이터가 한 번도 안 들어오면 문구 교체
+    // 구독 시작 후 5초간 데이터가 한 번도 안 들어오면 문구 교체
     sentimentTimeout = setTimeout(() => {
         const sentimentText = document.querySelector('.detail-sentiment-text');
         // 수신된 데이터가 없을 때만 문구 변경
@@ -207,7 +228,7 @@ function subscribeStockTopic(stockCode) {
             sentimentText.innerHTML = `<span>장 시간에 확인할 수 있어요</span>`;
             console.log(`[${stockCode}] 데이터 수신 없음 - 상태 전환`);
         }
-    }, 1000);
+    }, 5000);
 }
 
 let isMarketOrder = false; 
@@ -308,6 +329,17 @@ function initPriceTypeEvents() {
     
 // ========== 모든 구독 해제 ==========
 function unsubscribeAllStocks() {
+    // 타이머가 존재할 때만 중단시키고 null로 초기화
+    if (typeof sentimentTimeout !== 'undefined' && sentimentTimeout) {
+        clearTimeout(sentimentTimeout);
+        sentimentTimeout = null;
+    }
+    if (typeof hogaTimeout !== 'undefined' && hogaTimeout) {
+        clearTimeout(hogaTimeout);
+        hogaTimeout = null;
+    }
+    sentimentTimeout = null;
+    hogaTimeout = null;
     console.log('구독 해제 시작...');
 
     // 프론트엔드 STOMP 구독 해제
@@ -445,7 +477,7 @@ function subscribeStockHoga(stockCode) {
     // subscribedTopics에 저장
     subscribedTopics[hogaKey] = subscription;
     
-    // 구독 시작 후 1초간 데이터가 안 들어오면 문구 교체
+    // 구독 시작 후 5초간 데이터가 안 들어오면 문구 교체
     hogaTimeout = setTimeout(() => {
         const hogaBox = document.querySelector('.detail-hoga-box');
         // 여전히 placeholder가 '로딩중...' 상태라면 문구 교체
@@ -459,7 +491,7 @@ function subscribeStockHoga(stockCode) {
             `;
             console.log(`[${stockCode}] 호가 데이터 수신 없음 - 상태 전환`);
         }
-    }, 1000);
+    }, 5000);
 }
 
 
@@ -964,18 +996,31 @@ window.addEventListener('resize', () => {
 });
 
 // ===== DOM 로드 후 실행 =====
-document.addEventListener('DOMContentLoaded', async function() {
-// 1. URL에서 종목 코드 추출
+document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code');
-    
-    if (stockCode) {
-        // 전역 변수에 현재 종목 코드를 배열로 저장
-        currentStockCodes = [stockCode]; 
-        console.log('[실시간 설정] 구독 리스트 등록:', currentStockCodes);
 
-        // 2. STOMP 연결 시도 
-        connectStomp();
+    if (!stockCode) return;
+
+    // --- 초기화 ---
+    currentStockCodes = [stockCode];
+    resetHogaToDefault();
+    resetSentimentToDefault();
+    initPriceTypeEvents();
+    drawDetailChart(stockCode);
+    scheduleMarketClose();
+    
+    // --- STOMP 실행 (비동기 흐름 제어) ---
+    try {
+        console.log('STOMP 연결 시도...');
+        await connectStomp(); // ✅ 연결 완료까지 동기적으로 대기
+        
+        console.log('STOMP 연결 성공. 구독 시작.');
+        await subscribeCurrentStocks(); // ✅ 연결 후 구독 순차 실행
+        
+    } catch (error) {
+        // 연결이 실패했을 때만 재연결 프로세스 가동
+        handleReconnect(); 
     }
     
     checkFavoriteStatus();
