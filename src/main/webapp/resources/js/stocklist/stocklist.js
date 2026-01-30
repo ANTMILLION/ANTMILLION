@@ -15,6 +15,9 @@ let favoriteTotalPages = 1;
 let stompClient = null;
 let subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
 let currentStockCodes = []; // 현재 화면에 표시된 종목 코드들
+let stompConnected = false; // STOMP 연결 상태 플래그 추가
+let pendingSubscription = false; // 대기 중인 구독 요청 플래그
+let currentFetchController = null; // fetch 요청 취소용
 
 // =====================================================
 // 로그인 상태 체크 + "로그인이 필요합니다" 모달
@@ -77,35 +80,68 @@ function getInterestCodesPromise() {
 
 
 
-// ========== STOMP 연결 ==========
+// ========== STOMP 연결 (Promise 기반으로 변경) ==========
 function connectStomp() {
-    const url = contextPath + '/ws-stomp';
-    const socket = new SockJS(url);
-    stompClient = Stomp.over(socket);
+    return new Promise((resolve, reject) => {
+        const url = contextPath + '/ws-stomp';
+        const socket = new SockJS(url);
+        stompClient = Stomp.over(socket);
 
-    // STOMP 디버그 로그 끄기
-    stompClient.debug = null;
+        // STOMP 디버그 로그 끄기
+        stompClient.debug = null;
 
-    stompClient.connect({}, function (frame) {
-        console.log('STOMP 연결 성공: ' + frame);
+        stompClient.connect({}, function (frame) {
+            console.log('STOMP 연결 성공: ' + frame);
+            stompConnected = true;
 
-        // 연결 성공 후 현재 화면의 종목들 구독
-        if (currentStockCodes.length > 0) {
-            subscribeCurrentStocks();
-        }
-    }, function(error) {
-        console.error('STOMP 연결 실패: ' + error);
-        // 5초 후 재연결 시도
-        setTimeout(connectStomp, 5000);
+            // 대기 중인 구독이 있다면 즉시 처리
+            if (pendingSubscription && currentStockCodes.length > 0) {
+                console.log('대기 중이던 구독 처리:', currentStockCodes.length + '개 종목');
+                pendingSubscription = false;
+                subscribeCurrentStocks();
+            }
+
+            resolve(frame);
+        }, function(error) {
+            console.error('STOMP 연결 실패: ' + error);
+            stompConnected = false;
+
+            // 5초 후 재연결 시도
+            setTimeout(() => {
+                connectStomp().then(() => {
+                    // 재연결 성공 시 현재 종목 재구독
+                    if (currentStockCodes.length > 0) {
+                        subscribeCurrentStocks();
+                    }
+                });
+            }, 5000);
+
+            reject(error);
+        });
     });
 }
 
 // ========== 현재 화면 종목들 구독 ==========
 function subscribeCurrentStocks() {
-    // 기존 구독 모두 해제
-    unsubscribeAllStocks();
+    // STOMP 연결 확인
+    if (!stompClient || !stompConnected) {
+        console.warn('STOMP 미연결 - 구독 대기 중...');
+        pendingSubscription = true;
+        return;
+    }
 
-    if (currentStockCodes.length === 0) return;
+    if (currentStockCodes.length === 0) {
+        console.log('구독할 종목이 없음');
+        return;
+    }
+
+    // 이전 fetch 요청 취소
+    if (currentFetchController) {
+        currentFetchController.abort();
+    }
+
+    // 기존 구독 해제
+    unsubscribeFrontendOnly();
 
     // ✅ Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
     if (isMockMode) {
@@ -116,15 +152,24 @@ function subscribeCurrentStocks() {
         return;
     }
 
+    // 새로운 AbortController 생성
+    currentFetchController = new AbortController();
+
     // 백엔드에 구독 요청
     fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNCNT0', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(currentStockCodes)
+        body: JSON.stringify(currentStockCodes),
+        signal: currentFetchController.signal
     })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('백엔드 구독 응답 실패: ' + res.status);
+            }
+            return res.json();
+        })
         .then(response => {
             console.log('백엔드 구독 완료:', response);
 
@@ -134,8 +179,35 @@ function subscribeCurrentStocks() {
             });
         })
         .catch(error => {
+            // Abort 에러는 무시 (의도적 취소)
+            if (error.name === 'AbortError') {
+                console.log('이전 구독 요청 취소됨');
+                return;
+            }
+
             console.error('백엔드 구독 실패:', error);
+
+            // 3초 후 재시도
+            setTimeout(() => {
+                console.log('백엔드 구독 재시도...');
+                if (currentStockCodes.length > 0 && stompConnected) {
+                    subscribeCurrentStocks();
+                }
+            }, 3000);
         });
+}
+
+// ========== 프론트엔드 구독만 해제 (백엔드는 유지) ==========
+function unsubscribeFrontendOnly() {
+    console.log('프론트엔드 구독 해제 시작...');
+
+    for (let stockCode in subscribedTopics) {
+        if (subscribedTopics[stockCode]) {
+            subscribedTopics[stockCode].unsubscribe();
+            console.log('토픽 구독 해제:', stockCode);
+        }
+    }
+    subscribedTopics = {};
 }
 
 // ========== 개별 종목 STOMP 토픽 구독 ==========
@@ -222,18 +294,12 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     }
 }
 
-// ========== 모든 구독 해제 ==========
+// ========== 모든 구독 해제 (백엔드 + 프론트엔드) ==========
 function unsubscribeAllStocks() {
-    console.log('구독 해제 시작...');
+    console.log('전체 구독 해제 시작...');
 
     // 프론트엔드 STOMP 구독 해제
-    for (let stockCode in subscribedTopics) {
-        if (subscribedTopics[stockCode]) {
-            subscribedTopics[stockCode].unsubscribe();
-            console.log('토픽 구독 해제:', stockCode);
-        }
-    }
-    subscribedTopics = {};
+    unsubscribeFrontendOnly();
 
     // 백엔드 구독 해제
     if (currentStockCodes.length > 0) {
@@ -339,10 +405,13 @@ function renderAllStocks() {
                 attachFavoriteListeners();
                 attachStockItemListeners();
 
-                // 3. STOMP 구독 우선 실행
-                if (stompClient && stompClient.connected) {
+                // 3. STOMP 구독 실행
+                if (stompConnected) {
                     console.log('[System] 실시간 구독 시작');
                     subscribeCurrentStocks();
+                } else {
+                    console.log('[System] STOMP 연결 대기 중...');
+                    pendingSubscription = true;
                 }
 
                 // 4. 신호등 업데이트는 시차를 두고 실행
@@ -368,11 +437,11 @@ function renderFavoriteStocks() {
     }
 
     // 페이징된 관심종목 상세 정보 API 호출
-    
+
     fetch(`${contextPath}/api/interest/details/paged?page=${favoritePage}&size=${itemsPerPage}`)
         .then(res => res.json())
         .then(async responseData => { // async 추가 (내부 await 사용을 위해)
-            
+
             // 1. 관심종목이 없는 경우 예외 처리
             if (responseData.totalItems === 0) {
                 container.innerHTML = '<p style="text-align: center; padding: 40px; color: #9CA3AF;">관심종목이 없습니다.</p>';
@@ -388,7 +457,7 @@ function renderFavoriteStocks() {
             // 2. 페이지 범위 초과 시 자동 조정
             if (favoritePage > favoriteTotalPages) {
                 favoritePage = favoriteTotalPages;
-                renderStocks(); 
+                renderStocks();
                 return;
             }
 
@@ -408,17 +477,19 @@ function renderFavoriteStocks() {
             attachFavoriteListeners();
             attachStockItemListeners();
 
-            // 6. [핵심] STOMP 구독 우선 실행 (거래비율 실시간 확보)
-            if (stompClient && stompClient.connected) {
+            // 6. STOMP 구독 실행
+            if (stompConnected) {
                 console.log('[관심종목] STOMP 구독 시작');
                 subscribeCurrentStocks();
+            } else {
+                console.log('[관심종목] STOMP 연결 대기 중...');
+                pendingSubscription = true;
             }
 
-            // 7. [핵심] 신호등 업데이트 - 구독 후 시차를 두고 순차 호출
-            // 네트워크 병목 현상을 막기 위해 300ms 시차를 줍니다.
+            // 7. 신호등 업데이트 - 구독 후 시차를 두고 순차 호출
             setTimeout(() => {
                 console.log('[관심종목] 신호등 상태 갱신 시작');
-                updateAllTrafficSignals(); 
+                updateAllTrafficSignals();
             }, 300);
 
         })
@@ -615,38 +686,38 @@ function attachFavoriteListeners() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ stockCode })
         })
-        .then(res => {
-            // 서버에서 401/403 떨어져도 모달 띄우기(플래그가 잘못 잡혀도 안전)
-            if (res.status === 401 || res.status === 403) {
-                showLoginRequiredModal();
-                return null;
-            }
-            const ct = res.headers.get('content-type') || '';
-            if (!ct.includes('application/json')) {
-                // 로그인 페이지 HTML로 리다이렉트된 경우 등
-                showLoginRequiredModal();
-                return null;
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (!data) return;
-
-            if (data.message === 'LOGIN_REQUIRED') {
-                showLoginRequiredModal();
-                return;
-            }
-
-            if (data.success) {
-                btn.classList.toggle('active');
-                btn.textContent = data.isInterest ? '♥' : '♡';
-
-                if (currentTab === 'favorite') {
-                    renderStocks();
+            .then(res => {
+                // 서버에서 401/403 떨어져도 모달 띄우기(플래그가 잘못 잡혀도 안전)
+                if (res.status === 401 || res.status === 403) {
+                    showLoginRequiredModal();
+                    return null;
                 }
-            }
-        })
-        .catch(err => console.error('관심종목 토글 실패:', err));
+                const ct = res.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) {
+                    // 로그인 페이지 HTML로 리다이렉트된 경우 등
+                    showLoginRequiredModal();
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                if (data.message === 'LOGIN_REQUIRED') {
+                    showLoginRequiredModal();
+                    return;
+                }
+
+                if (data.success) {
+                    btn.classList.toggle('active');
+                    btn.textContent = data.isInterest ? '♥' : '♡';
+
+                    if (currentTab === 'favorite') {
+                        renderStocks();
+                    }
+                }
+            })
+            .catch(err => console.error('관심종목 토글 실패:', err));
     }, true); // 캡처링으로 먼저 잡아내서 안전
 }
 
@@ -711,7 +782,7 @@ function updateSortLabel() {
 window.addEventListener('beforeunload', function(e) {
     unsubscribeAllStocks();
 
-    if (stompClient !== null && stompClient.connected) {
+    if (stompClient !== null && stompConnected) {
         stompClient.disconnect(function() {
             console.log('STOMP 연결 종료');
         });
@@ -725,16 +796,23 @@ window.addEventListener('pagehide', function(e) {
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', function() {
     scheduleMarketClose();
-    
-    // STOMP 연결
-    connectStomp();
 
-    // 초기 정렬 라벨 설정
-    updateSortLabel();
+    // STOMP 연결 후 렌더링
+    connectStomp()
+        .then(() => {
+            console.log('STOMP 연결 완료 - 초기 렌더링 시작');
+            // 초기 정렬 라벨 설정
+            updateSortLabel();
+            // 초기 렌더링
+            renderStocks();
+        })
+        .catch(error => {
+            console.error('STOMP 초기 연결 실패, 렌더링은 진행:', error);
+            // STOMP 연결 실패해도 화면은 보여줌
+            updateSortLabel();
+            renderStocks();
+        });
 
-    // 초기 렌더링
-    renderStocks();
-    
     // 10분마다 신호등 상태만 별도로 업데이트
     setInterval(function() {
         console.log('[Auto Update] 신호등 상태 갱신');
