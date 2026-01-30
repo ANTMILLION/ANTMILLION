@@ -108,7 +108,7 @@
 
 					<div class="detail-pending-card" id="pending-list-area"
 						style="display: none;">
-						<div class="detail-pending-header">미체결 내역</div>
+						<div class="detail-pending-header"></div>
 						<div class="detail-pending-body">
 							<table class="detail-pending-table">
 								<thead>
@@ -122,7 +122,7 @@
 								</thead>
 								<tbody id="pending-tbody">
 									<tr class="p-empty-row">
-										<td colspan="4" class="p-empty-msg">
+										<td colspan="5" class="p-empty-msg">
 											<p>미체결 내역이 없습니다.</p>
 										</td>
 									</tr>
