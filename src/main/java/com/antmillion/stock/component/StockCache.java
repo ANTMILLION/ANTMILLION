@@ -52,4 +52,14 @@ public class StockCache {
                 .findFirst()
                 .orElse(null);
     }
+
+    // 캐시 갱신 메서드 추가
+    public void refresh() {
+        cache.clear();
+        stockMapper.findAll().forEach(s -> {
+            cache.put(
+                    s.getStockCode(),
+                    new StockDTO(s.getStockCode(), s.getStockName(), null));
+        });
+    }
 }

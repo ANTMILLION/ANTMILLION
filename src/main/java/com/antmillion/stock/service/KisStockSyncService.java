@@ -1,5 +1,6 @@
 package com.antmillion.stock.service;
 
+import com.antmillion.stock.component.StockCache;
 import com.antmillion.stock.dto.StockDTO;
 import com.antmillion.stock.dto.SyncResult;
 import com.antmillion.stock.mapper.StockSyncMapper;
@@ -26,6 +27,7 @@ public class KisStockSyncService {
     private static final String KOSDAQ_URL = "https://new.real.download.dws.co.kr/common/master/kosdaq_code.mst.zip";
 
     private final StockSyncMapper stockSyncMapper;
+    private final StockCache stockCache;
 
     @Transactional
     public SyncResult syncAllStocks() throws Exception {
@@ -54,16 +56,20 @@ public class KisStockSyncService {
         log.info("temp_stock에 종목 삽입 중... (코스피: {}, 코스닥: {})",
                 kospiStocks.size(), kosdaqStocks.size());
 
-        int totalInserted = 0;
-        for (StockDTO stock : kospiStocks) {
-            stockSyncMapper.insertTempStock(stock);
-            totalInserted++;
+        // 배치 삽입으로 성능 개선
+        List<StockDTO> allStocks = new ArrayList<>();
+        allStocks.addAll(kospiStocks);
+        allStocks.addAll(kosdaqStocks);
+        
+        // 500개씩 나눠서 배치 삽입 (한 번에 너무 많으면 쿼리가 길어질 수 있음)
+        int batchSize = 500;
+        for (int i = 0; i < allStocks.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, allStocks.size());
+            List<StockDTO> batch = allStocks.subList(i, end);
+            stockSyncMapper.insertTempStockBatch(batch);
         }
-        for (StockDTO stock : kosdaqStocks) {
-            stockSyncMapper.insertTempStock(stock);
-            totalInserted++;
-        }
-
+        
+        int totalInserted = allStocks.size();
         log.info("temp_stock에 {} 종목 삽입 완료", totalInserted);
 
         // 5. stock 테이블과 동기화
@@ -84,6 +90,11 @@ public class KisStockSyncService {
         // 동기화 후 종목 수 확인
         int afterCount = stockSyncMapper.countStock();
         log.info("동기화 후 stock 테이블 종목 수: {}", afterCount);
+
+        // 6. 캐시 갱신
+        log.info("StockCache 갱신 중...");
+        stockCache.refresh();
+        log.info("StockCache 갱신 완료");
 
         // 결과 반환
         SyncResult result = SyncResult.builder()
