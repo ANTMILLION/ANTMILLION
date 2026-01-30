@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antmillion.stock.mapper.TradeLogMapper">
+
+    <insert id="insertTradeLog">
+        INSERT INTO trade_log (
+            order_id, 
+            trade_date, 
+            trade_price, 
+            trade_quantity
+        ) 
+        VALUES (
+            #{orderId}, 
+            NOW(), 
+            #{tradePrice}, 
+            #{tradeQuantity}
+        )
+    </insert>
+
+    <select id="getTotalExecutedQty" resultType="int">
+        SELECT 
+            COALESCE(SUM(trade_quantity), 0)
+        FROM trade_log
+        WHERE order_id = #{orderId}
+    </select>
+
+</mapper>
