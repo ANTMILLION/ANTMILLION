@@ -27,7 +27,8 @@
         SELECT news_url
         FROM news_log
         WHERE user_id = #{userId}
-          AND DATE(news_read_at) = CURDATE()
+        AND DATE(news_read_at) = CURDATE()
+        ORDER BY news_read_at ASC
     </select>
 
 </mapper>
