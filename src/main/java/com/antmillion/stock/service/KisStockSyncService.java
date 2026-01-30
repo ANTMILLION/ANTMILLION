@@ -203,7 +203,7 @@ public class KisStockSyncService {
                 String part2 = line.substring(line.length() - 228);
 
                 // 단축코드 숫자 6자리만 허용
-                if (!shortCode.matches("\\d{6}")) {
+                if (!shortCode.matches("[A-Za-z0-9]{6}")) {
                     continue;
                 }
 
