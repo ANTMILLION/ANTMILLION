@@ -1,7 +1,5 @@
 package com.antmillion.stock.service;
 
-import com.antmillion.kis.dto.CurrentPrice;
-
 import java.util.List;
 
 public interface InterestService {

@@ -132,6 +132,7 @@ public class InterestController {
 
         return ResponseEntity.ok(response);
     }
+    
     private Long currentAccountId() {
         Long userId = currentUserId();
         if (userId == null) return null;

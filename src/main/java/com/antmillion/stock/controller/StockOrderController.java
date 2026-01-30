@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.antmillion.auth.mapper.AccountMapper;
 import com.antmillion.stock.dto.StockOrderDTO;
 import com.antmillion.stock.dto.StockOrderResponseDTO;
 import com.antmillion.stock.service.StockOrderService;
@@ -29,21 +30,19 @@ import lombok.extern.slf4j.Slf4j;
 public class StockOrderController {
 
     private final StockOrderService stockOrderService;
+    private final AccountMapper accountMapper;
 
     /**
      * 주식 주문 API
      */
     @PostMapping("/order")
     public ResponseEntity<Map<String, Object>> createOrder(
-            @RequestBody Map<String, Object> orderRequest,
-            HttpSession session) {
+            @RequestBody Map<String, Object> orderRequest) {
         
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // ===== 테스트용: 세션 없으면 accountId = 1 사용 =====
-            AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
-            Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
+        	Long accountId = currentAccountId();
             
             String stockCode = (String) orderRequest.get("stockCode");
             String transactionType = (String) orderRequest.get("transactionType");
@@ -85,9 +84,8 @@ public class StockOrderController {
      * 주문 대기 API
      */
     @GetMapping("/pending-list")
-    public ResponseEntity<List<StockOrderResponseDTO>> getPendingList(HttpSession session) {
-        AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
-        Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
+    public ResponseEntity<List<StockOrderResponseDTO>> getPendingList() {
+    	Long accountId = currentAccountId();
 
         List<StockOrderResponseDTO> list = stockOrderService.getWaitOrders(accountId);
         return ResponseEntity.ok(list);
@@ -97,11 +95,10 @@ public class StockOrderController {
      * 주문 취소 API
      */
     @PostMapping("/cancel")
-    public ResponseEntity<Map<String, Object>> cancelOrder(@RequestBody Map<String, Long> request, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> cancelOrder(@RequestBody Map<String, Long> request) {
         Map<String, Object> response = new HashMap<>();
         
-        AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
-        Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
+        Long accountId = currentAccountId();
         Long orderId = request.get("orderId");
 
         boolean success = stockOrderService.cancelOrder(orderId, accountId);
@@ -130,5 +127,25 @@ public class StockOrderController {
             response.put("message", "알 수 없는 오류 발생");
         }
         return response;
+    }
+
+    private Long currentAccountId() {
+        Long userId = currentUserId();
+        if (userId == null) return null;
+
+        AccountDTO account = accountMapper.selectByUserId(userId);
+        return (account == null) ? null : account.getAccountId();
+    }
+
+    private static Long currentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return null;
+        }
+        try {
+            return Long.valueOf(auth.getPrincipal().toString());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

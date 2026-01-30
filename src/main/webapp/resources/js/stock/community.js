@@ -218,7 +218,6 @@ function writeCommunity(stockCode) {
         contentType: 'application/json',
         data: JSON.stringify({
             postId: Date.now(),
-            userId: 1,
             stockCode: stockCode,
             content: content
         }),

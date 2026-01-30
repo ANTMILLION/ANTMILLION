@@ -14,6 +14,6 @@ public interface HistoryService {
         String endDate
     );
     int getUnreadCount(Long userId);
-    void markAsRead(Long historyId);
+    void markAsRead(Long historyId, Long userId);
     List<HistoryDTO> getRecentNotifications(Long userId, int limit);
 }
