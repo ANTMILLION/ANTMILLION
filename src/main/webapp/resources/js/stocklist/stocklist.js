@@ -143,7 +143,7 @@ function subscribeCurrentStocks() {
     // 기존 구독 해제
     unsubscribeFrontendOnly();
 
-    // ✅ Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
+    // Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
     if (isMockMode) {
         console.log('Mock 모드 - STOMP 구독만 진행');
         currentStockCodes.forEach(stockCode => {
@@ -152,10 +152,18 @@ function subscribeCurrentStocks() {
         return;
     }
 
+    // 프론트엔드 STOMP 구독을 먼저 시작
+    // 백엔드 응답을 기다리지 않고 즉시 토픽 구독
+    console.log('[최적화] 프론트 구독 즉시 시작 (' + currentStockCodes.length + '개)');
+    currentStockCodes.forEach(stockCode => {
+        subscribeStockTopic(stockCode);
+    });
+
     // 새로운 AbortController 생성
     currentFetchController = new AbortController();
 
-    // 백엔드에 구독 요청
+    // 백엔드 구독은 비동기로 병렬 실행
+    // 프론트는 이미 구독 중이므로 백엔드 완료되면 즉시 데이터 수신 가능
     fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNCNT0', {
         method: 'POST',
         headers: {
@@ -171,12 +179,9 @@ function subscribeCurrentStocks() {
             return res.json();
         })
         .then(response => {
-            console.log('백엔드 구독 완료:', response);
-
-            // 프론트엔드 STOMP 토픽 구독
-            currentStockCodes.forEach(stockCode => {
-                subscribeStockTopic(stockCode);
-            });
+            console.log('[백엔드] 한투 구독 완료:', response);
+            // 이 시점부터 한투 API가 데이터를 보내기 시작
+            // 프론트는 이미 구독 중이므로 즉시 수신 가능
         })
         .catch(error => {
             // Abort 에러는 무시 (의도적 취소)
@@ -185,15 +190,38 @@ function subscribeCurrentStocks() {
                 return;
             }
 
-            console.error('백엔드 구독 실패:', error);
+            console.error('[백엔드] 구독 실패:', error);
 
-            // 3초 후 재시도
+            // 백엔드 구독 실패 시 재시도
             setTimeout(() => {
-                console.log('백엔드 구독 재시도...');
-                if (currentStockCodes.length > 0 && stompConnected) {
-                    subscribeCurrentStocks();
-                }
-            }, 3000);
+                console.log('[백엔드] 구독 재시도...');
+                retryBackendSubscription(currentStockCodes);
+            }, 2000);
+        });
+}
+
+// ========== 백엔드 구독만 재시도하는 함수 (새로 추가) ==========
+function retryBackendSubscription(stockCodes) {
+    if (stockCodes.length === 0 || !stompConnected) return;
+
+    fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNCNT0', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(stockCodes)
+    })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('백엔드 재구독 실패: ' + res.status);
+            }
+            return res.json();
+        })
+        .then(response => {
+            console.log('[백엔드] 재구독 완료:', response);
+        })
+        .catch(error => {
+            console.error('[백엔드] 재구독 실패:', error);
         });
 }
 
