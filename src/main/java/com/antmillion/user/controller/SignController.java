@@ -34,7 +34,7 @@ import com.antmillion.mail.service.EmailVerificationService;
 public class SignController {
 
 	private static final Pattern EMAIL_RULE = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-	private static final Pattern PW_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
+	private static final Pattern PW_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)\\S{8,}$");
 
 	private final TermsProvider termsProvider;
 	private final SignService signService;
@@ -66,10 +66,13 @@ public class SignController {
 			ra.addFlashAttribute("email", email);
 			return "redirect:/login";
 		}
+		if (password == null || password.isBlank()) {
+		    ra.addFlashAttribute("error", "비밀번호를 입력해 주세요.");
+		    return "login/login";
+		}
 		if (password == null || !PW_RULE.matcher(password).matches()) {
-			ra.addFlashAttribute("loginError", "비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
-			ra.addFlashAttribute("email", email);
-			return "redirect:/login";
+		    ra.addFlashAttribute("error", "비밀번호는 8자리 이상, 영문/숫자를 포함하고 공백 없이 특수문자를 사용할 수 있습니다.");
+		    return "login/signup";
 		}
 		try {
 			TokenPair tokens = signService.login(email, password);
@@ -312,7 +315,7 @@ public class SignController {
 			throw new IllegalStateException("비밀번호를 입력해 주세요.");
 		}
 		if (!PW_RULE.matcher(password).matches()) {
-			throw new IllegalStateException("비밀번호는 영문과 숫자를 포함해 8자리 이상이어야 합니다.");
+			throw new IllegalStateException("비밀번호는 8자리 이상, 영문/숫자를 포함하고 공백 없이 특수문자를 사용할 수 있습니다.");
 		}
 		if (!password.equals(passwordConfirm)) {
 			throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
