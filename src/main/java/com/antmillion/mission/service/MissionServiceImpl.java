@@ -162,8 +162,10 @@ public class MissionServiceImpl implements MissionService {
     }
 
     public boolean isTodayMissionCompleted(Long userId) {
-        int solvedCount = missionMapper.countTodaySolvedQuiz(userId);
-        return solvedCount >= 2;
+        Map<String, Object> status = getTodayMissionStatus(userId);
+        // totalProgress가 100이면 완료로 간주
+        int progress = (int)status.get("totalProgress");
+        return progress >= 100;
     }
 
     public Map<String, Object> getTodayMissionStatus(Long userId) {
