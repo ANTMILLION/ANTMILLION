@@ -31,13 +31,12 @@ public class BiasAlertService {
 
     // 위험회피 편향 기준
     private static final BigDecimal RISK_AVERSION_PROFIT_THRESHOLD = new BigDecimal("3.0");
-    private static final int RISK_AVERSION_HOLDING_DAYS = 3;
     
     // 손실회피 편향 기준
     private static final BigDecimal LOSS_AVERSION_LOSS_THRESHOLD = new BigDecimal("-7.0");
     
     // 매몰비용오류 편향 기준
-    private static final BigDecimal SUNK_COST_LOSS_THRESHOLD = new BigDecimal("-10.0");
+    private static final BigDecimal SUNK_COST_LOSS_THRESHOLD = new BigDecimal("-15.0");
     private static final int SUNK_COST_HOLDING_DAYS = 21;
     
     // FOMO 편향 기준
@@ -70,8 +69,11 @@ public class BiasAlertService {
         BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
 
         // 4. 편향 조건 체크
-        boolean hasAlert = profitRate.compareTo(RISK_AVERSION_PROFIT_THRESHOLD) >= 0
-                && asset.getHoldingDays() <= RISK_AVERSION_HOLDING_DAYS;
+        // 수익률이 0 < profit <= 3% 이고, 보유일수 <= 3일
+        boolean hasAlert = profitRate.compareTo(BigDecimal.ZERO) > 0
+                && profitRate.compareTo(RISK_AVERSION_PROFIT_THRESHOLD) <= 0;
+                
+                
 
         log.info("위험회피 체크 결과 - 수익률: {}%, 보유일수: {}일, 경고: {}",
                 profitRate, asset.getHoldingDays(), hasAlert);
@@ -160,7 +162,7 @@ public class BiasAlertService {
 
     /**
      * 매몰비용오류 편향 체크
-     * 조건: 수익률 -10% 이하 && 보유기간 21일 이상
+     * 조건: 수익률 -15% 이하 && 보유기간 21일 이상
      * 타이밍: 페이지 로드(상시) + 매수 탭 전환 시
      */
     public BiasAlertDTO checkSunkCostBias(Long accountId, String stockCode, Long userId) {
@@ -185,7 +187,7 @@ public class BiasAlertService {
         // 3. 수익률 계산
         BigDecimal profitRate = calculateProfitRate(asset.getAvgPrice(), currentPrice);
 
-        // 4. 편향 조건 체크: 수익률 -10% 이하 && 보유기간 21일 이상
+        // 4. 편향 조건 체크: 수익률 -15% 이하 && 보유기간 21일 이상
         boolean hasAlert = profitRate.compareTo(SUNK_COST_LOSS_THRESHOLD) <= 0
                 && asset.getHoldingDays() >= SUNK_COST_HOLDING_DAYS;
 
@@ -225,8 +227,8 @@ public class BiasAlertService {
 
         // 1. 등락률 확인 (파라미터가 없으면 DB에서 조회)
         if (changeRate == null) {
-            changeRate = biasAlertMapper.selectDailyChangeRate(stockCode);
-            log.info("DB에서 등락률 조회: {}%", changeRate);
+            changeRate = BigDecimal.ZERO; 
+            log.info("changeRate 파라미터 없음 - 0으로 설정");
         } else {
             log.info("프론트에서 전달받은 등락률: {}%", changeRate);
         }

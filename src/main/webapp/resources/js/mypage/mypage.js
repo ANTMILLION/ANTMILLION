@@ -803,22 +803,27 @@ function initializeRealizedDates() {
 }
 
 /**
- * 심리경고 날짜 필드 초기화 (오늘 날짜로)
+ * 심리경고 날짜 필드 초기화 (최근 7일 ~ 오늘)
  */
 function initializeHistoryDates() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    
+    const todayStr = today.toISOString().split('T')[0];
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
     
     const startDateInput = document.getElementById("alertStartDate");
     const endDateInput = document.getElementById("alertEndDate");
     
     if (startDateInput) {
-        startDateInput.value = today;
-        console.log("심리경고 시작 날짜 초기화:", today);
+        startDateInput.value = sevenDaysAgoStr;  // 7일 전
+        console.log("심리경고 시작 날짜 초기화:", sevenDaysAgoStr);
     }
     
     if (endDateInput) {
-        endDateInput.value = today;
-        console.log("심리경고 종료 날짜 초기화:", today);
+        endDateInput.value = todayStr;  // 오늘
+        console.log("심리경고 종료 날짜 초기화:", todayStr);
     }
 }
 
