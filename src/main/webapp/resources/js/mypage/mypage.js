@@ -933,7 +933,7 @@ function loadHistoryData() {
                             <img src="${stockImgSrc}" 
                                  alt="${history.stockName}" 
                                  style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #fff;"
-                                 onerror="this.src='/antmillion/resources/images/icontmp.png'">
+                                 onerror="this.src='/antmillion/resources/images/antmillion-logo.png'">
                             <div style="flex: 1;">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                     <span style="font-weight: bold; font-size: 16px; color: #333;">${history.stockName || "-"}</span>

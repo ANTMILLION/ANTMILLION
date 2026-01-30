@@ -456,7 +456,7 @@ async function loadNotifications() {
                 '<div class="header-stock-img-box">' +
                     '<img src="' + stockImgSrc + '" alt="' + stockName + '" ' +
                     'style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px;" ' +
-                    'onerror="this.onerror=null; this.src=\'/antmillion/resources/images/icontmp.png\';">' +
+                    'onerror="this.onerror=null; this.src=\'/antmillion/resources/images/antmillion-logo.png\';">' +
                 '</div>' +
                 '<div>' +
                     '<div style="font-size: 13px; font-weight: bold;">(' + stockCode + ') ' + stockName + '</div>' +
