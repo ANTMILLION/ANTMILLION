@@ -217,7 +217,9 @@ async function checkUnreadAlerts() {
         return;
     }
     try {
-        const response = await fetch('/antmillion/api/history/unread-count?userId=1');
+    	const response = await fetch('/antmillion/api/history/unread-count', {
+    	    credentials: 'same-origin'
+    	});
         const count = await response.json();
         
         const notifBtn = document.querySelector('.header-notification-btn');
@@ -376,8 +378,24 @@ function toggleNotif() {
 
 // 알림 목록 로드
 async function loadNotifications() {
+	const notificationList = document.getElementById('notificationList');
+
+    if (!IS_LOGGED_IN) {
+        notificationList.innerHTML =
+          '<div style="padding: 40px; text-align: center; color: #999;">로그인이 필요합니다</div>';
+        return;
+    }
+	
     try {
-        const response = await fetch('${cpath}/api/history/recent?userId=1&limit=5');
+        const response = await fetch('${cpath}/api/history/recent?limit=5', {
+            credentials: 'same-origin'
+        });
+
+        if (response.status === 401) {
+            notificationList.innerHTML =
+              '<div style="padding: 40px; text-align: center; color: #999;">로그인이 필요합니다</div>';
+            return;
+        }
         const notifications = await response.json();
         
         console.log('[알림] API 응답:', notifications);  // 디버깅

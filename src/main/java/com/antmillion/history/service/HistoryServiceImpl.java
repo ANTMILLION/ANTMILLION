@@ -47,8 +47,8 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public void markAsRead(Long historyId) {
-        historyMapper.markAsRead(historyId);
+    public void markAsRead(Long historyId, Long userId) {
+        historyMapper.markAsRead(historyId, userId);
     }
     @Override
     public List<HistoryDTO> getRecentNotifications(Long userId, int limit) {

@@ -28,7 +28,7 @@ public interface HistoryMapper {
 
         int countUnreadAlerts(@Param("userId") Long userId);
 
-        int markAsRead(@Param("historyId") Long historyId);
+        int markAsRead(@Param("historyId") Long historyId, @Param("userId") Long userId);
         List<HistoryDTO> selectRecentNotifications(
                 @Param("userId") Long userId,
                 @Param("limit") int limit

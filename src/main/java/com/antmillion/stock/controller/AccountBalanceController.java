@@ -3,9 +3,9 @@ package com.antmillion.stock.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,13 +31,11 @@ public class AccountBalanceController {
      * 현재 계좌 잔액 조회 API
      */
     @GetMapping("/balance")
-    public ResponseEntity<Map<String, Object>> getBalance(HttpSession session) {
+    public ResponseEntity<Map<String, Object>> getBalance() {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // ===== 테스트용: 세션 없으면 accountId = 1 사용 =====
-            AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
-            Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
+        	Long accountId = currentAccountId();
             
             log.info("잔액 조회 - accountId: {}", accountId);
             
@@ -68,15 +66,12 @@ public class AccountBalanceController {
      */
     @GetMapping("/holdings")
     public ResponseEntity<Map<String, Object>> getHoldings(
-            @RequestParam String stockCode,
-            HttpSession session) {
+            @RequestParam String stockCode) {
         
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // ===== 테스트용: 세션 없으면 accountId = 1 사용 =====
-            AccountDTO accountDTO = (AccountDTO) session.getAttribute("account");
-            Long accountId = (accountDTO != null) ? accountDTO.getAccountId() : 1L;
+        	Long accountId = currentAccountId();
             
             log.info("보유 수량 조회 - accountId: {}, stockCode: {}", accountId, stockCode);
             
@@ -96,4 +91,25 @@ public class AccountBalanceController {
         
         return ResponseEntity.ok(response);
     }
+    
+    private Long currentAccountId() {
+        Long userId = currentUserId();
+        if (userId == null) return null;
+
+        AccountDTO account = accountMapper.selectByUserId(userId);
+        return (account == null) ? null : account.getAccountId();
+    }
+
+    private static Long currentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return null;
+        }
+        try {
+            return Long.valueOf(auth.getPrincipal().toString());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }

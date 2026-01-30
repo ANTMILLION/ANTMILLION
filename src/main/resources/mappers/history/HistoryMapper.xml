@@ -108,6 +108,7 @@
         UPDATE history
         SET is_read = true
         WHERE history_id = #{historyId}
+            AND user_id = #{userId}
     </update>
     
        <!-- 최신 알림 조회 (알림창용) -->
