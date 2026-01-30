@@ -15,7 +15,7 @@ function connectStompForStockHoldings() {
     const url = contextPath + '/ws-stomp';
     const socket = new SockJS(url);
     stompClient = Stomp.over(socket);
-
+    stompClient.debug = null;
     stompClient.connect({}, function (frame) {
         console.log('마이페이지 STOMP 연결 성공: ' + frame);
 

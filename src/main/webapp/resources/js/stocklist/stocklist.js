@@ -82,10 +82,7 @@ function connectStomp() {
     const url = contextPath + '/ws-stomp';
     const socket = new SockJS(url);
     stompClient = Stomp.over(socket);
-
-    // STOMP 디버그 로그 끄기
     stompClient.debug = null;
-
     stompClient.connect({}, function (frame) {
         console.log('STOMP 연결 성공: ' + frame);
 

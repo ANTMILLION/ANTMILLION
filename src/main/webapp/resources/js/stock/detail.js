@@ -104,7 +104,7 @@ function connectStomp() {
     const url = contextPath + '/ws-stomp';
     const socket = new SockJS(url);
     stompClient = Stomp.over(socket);
-
+    stompClient.debug = null;
     stompClient.connect({}, function (frame) {
         console.log('STOMP 연결 성공: ' + frame);
 
@@ -126,7 +126,7 @@ async function subscribeCurrentStocks() {
 
     if (currentStockCodes.length === 0) return;
 
-    // ✅ Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
+    // Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
     if (isMockMode) {
         console.log('Mock 모드 - STOMP 구독 진행');
         currentStockCodes.forEach(stockCode => {
@@ -193,6 +193,16 @@ function subscribeStockTopic(stockCode) {
 
     subscribedTopics[stockCode] = subscription;
     console.log('토픽 구독 완료:', topic);
+    
+    // 구독 시작 후 1초간 데이터가 한 번도 안 들어오면 문구 교체
+    sentimentTimeout = setTimeout(() => {
+        const sentimentText = document.querySelector('.detail-sentiment-text');
+        // 수신된 데이터가 없을 때만 문구 변경
+        if (sentimentText && sentimentText.innerText.includes('로딩중...')) {
+            sentimentText.innerHTML = `<span>장 시간에 확인할 수 있어요</span>`;
+            console.log(`[${stockCode}] 데이터 수신 없음 - 상태 전환`);
+        }
+    }, 1000);
 }
 
 let isMarketOrder = false; 
@@ -224,34 +234,32 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     
     // 매수/매도 비율 및 텍스트 업데이트
     const rawBuyRate = tradeData.shnuRate;
-    
     if (rawBuyRate !== undefined && rawBuyRate !== null) {
-        // 1. 비율 계산 (소수점이면 100 곱하기)
-        let buyRate = rawBuyRate < 1 ? (rawBuyRate * 100) : rawBuyRate;
-        buyRate = Math.round(buyRate);
-        const sellRate = 100 - buyRate;
-    
-        // 2. 바(Bar) 업데이트
-        const buyBar = document.getElementById('buy-bar');
-        const sellBar = document.getElementById('sell-bar');
-        if (buyBar && sellBar) {
-            buyBar.classList.remove('detail-sentiment-inactive');
-            sellBar.classList.remove('detail-sentiment-inactive');
-
-            buyBar.style.width = buyRate + '%';
-            sellBar.style.width = sellRate + '%';
-        }
-
         const sentimentText = document.querySelector('.detail-sentiment-text');
-        // 매수가 50% 이상이면 '매수', 아니면 '매도' 표시
+        
+        // 1. 비율 계산
+        let buyRate = Math.round(rawBuyRate < 1 ? (rawBuyRate * 100) : rawBuyRate);
+        const sellRate = 100 - buyRate;
+
+        // 2. 데이터가 수신되면 "로딩중"을 지우고 실제 내용을 넣음
         if (buyRate >= 50) {
             sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${buyRate}</span>%가 <span class="detail-red-text" id="sentiment-direction">매수</span>쪽으로 몰려요!`;
         } else {
             sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${sellRate}</span>%가 <span class="detail-blue-text" id="sentiment-direction">매도</span>쪽으로 몰려요!`;
         }
-        
+
+        // 3. 바(Bar) 활성화
+        const buyBar = document.getElementById('buy-bar');
+        const sellBar = document.getElementById('sell-bar');
         const buyText = document.getElementById('buy-percent');
         const sellText = document.getElementById('sell-percent');
+        if (buyBar && sellBar) {
+            buyBar.classList.remove('detail-sentiment-inactive');
+            sellBar.classList.remove('detail-sentiment-inactive');
+            buyBar.style.width = buyRate + '%';
+            sellBar.style.width = sellRate + '%';
+        }
+        // 4. 그래프 위에 실제 숫자 표시
         if (buyText) buyText.textContent = buyRate + '%';
         if (sellText) sellText.textContent = sellRate + '%';
     }
@@ -346,6 +354,11 @@ function updateHogaUI(hogaData) {
     // 1. 호가 전용 컨테이너를 찾거나 생성함
     let hogaBox = document.querySelector('.detail-hoga-box');
     if (!hogaBox) return;
+    
+    // 데이터 수신 시 placeholder가 있으면 비우고 시작
+    if (hogaBox.querySelector('.detail-hoga-placeholder')) {
+        hogaBox.innerHTML = ''; 
+    }
 
     let hogaList = hogaBox.querySelector('.hoga-container');
     if (!hogaList) {
@@ -414,20 +427,39 @@ function subscribeStockHoga(stockCode) {
 
     const subscription = stompClient.subscribe(topic, function(message) {
         const askBidData = JSON.parse(message.body);
-        //console.log('[호가 실시간 데이터 수신]', askBidData);
+        
+        // 데이터 수신 성공
+        if (hogaTimeout) {
+            clearTimeout(hogaTimeout);
+            hogaTimeout = null;
+        }
+        
         updateHogaUI(askBidData);
     });
 
-    // ✅ subscribedTopics에 저장
+    // subscribedTopics에 저장
     subscribedTopics[hogaKey] = subscription;
-    console.log('호가 토픽 구독 완료:', topic);
+    
+    // 구독 시작 후 1초간 데이터가 안 들어오면 문구 교체
+    hogaTimeout = setTimeout(() => {
+        const hogaBox = document.querySelector('.detail-hoga-box');
+        // 여전히 placeholder가 '로딩중...' 상태라면 문구 교체
+        if (hogaBox && hogaBox.querySelector('.detail-hoga-placeholder') && 
+            hogaBox.innerText.includes('로딩중...')) {
+            
+            hogaBox.innerHTML = `
+                <div class="detail-hoga-placeholder">
+                    <span>호가는 장 시간에 볼 수 있어요</span>
+                </div>
+            `;
+            console.log(`[${stockCode}] 호가 데이터 수신 없음 - 상태 전환`);
+        }
+    }, 1000);
 }
 
 
 // ===== API 호출 함수 =====
 async function checkBiasAlert(stockCode) {
-    console.log('[API 호출] stockCode:', stockCode);
-    
     try {
         const url = contextPath + '/api/bias-alert/check?stockCode=' + stockCode;
         console.log('[API URL]', url);
@@ -862,6 +894,11 @@ function drawPeriodChart(stockCode, period) {
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code'); // ?code=005930 에서 005930 추출
+    
+    // 호가 상태 즉시 초기화
+    resetHogaToDefault();
+    // 거래 비율 즉시 초기화
+    resetSentimentToDefault();
 
     const imgUrl = contextPath + '/resources/images/stock/' + stockCode + '.png';
     const logoImg = document.getElementById('detail-stock-image');
@@ -954,8 +991,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             const lossData = await checkLossAversionAlert(stockCode);
             
             // 우선순위 4: FOMO
-            // FOMO는 WebSocket 데이터 수신 대기 (0.5초)
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // FOMO는 WebSocket 데이터 수신 대기
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
             
             // 우선순위에 따라 표시 (매몰비용 > 손실회피 > FOMO)
@@ -2049,13 +2086,26 @@ function resetSentimentToDefault() {
     const buyPercent = document.getElementById('buy-percent');
     const sellPercent = document.getElementById('sell-percent');
 
+    const now = new Date();
+    const day = now.getDay(); 
+    const currentTime = now.getHours() * 100 + now.getMinutes();
+    // 평일 09:00 ~ 20:00까지는 데이터를 기다리는 상태로 설정
+    const isTradingTime = day >= 1 && day <= 5 && currentTime >= 900 && currentTime <= 2000;
+
     if (sentimentText) {
-        sentimentText.innerHTML = '<span>장 시간에 확인할 수 있어요</span>';
+        // 장 중일 때만 "로딩중..." 출력
+        sentimentText.innerHTML = `<span>${isTradingTime ? '로딩중...' : '장 시간에 확인할 수 있어요'}</span>`;
     }
 
     if (buyBar && sellBar) {
-        buyBar.classList.add('detail-sentiment-inactive');
-        sellBar.classList.add('detail-sentiment-inactive');
+        // 장 중(로딩 시점)일 때만 회색(inactive) 처리, 아니면 기본 상태
+        if (isTradingTime) {
+            buyBar.classList.add('detail-sentiment-inactive');
+            sellBar.classList.add('detail-sentiment-inactive');
+        } else {
+            buyBar.classList.add('detail-sentiment-inactive');
+            sellBar.classList.add('detail-sentiment-inactive');
+        }
         buyBar.style.width = '50%';
         sellBar.style.width = '50%';
     }
@@ -2069,13 +2119,23 @@ function resetHogaToDefault() {
     console.log('호가를 초기 상태로 복원');
 
     const hogaBox = document.querySelector('.detail-hoga-box');
-    if (hogaBox) {
-        hogaBox.innerHTML = `
-            <div class="detail-hoga-placeholder">
-                <span>호가는 장 시간에 볼 수 있어요</span>
-            </div>
-        `;
-    }
+    if (!hogaBox) return;
+
+    const now = new Date();
+    const day = now.getDay(); 
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTime = hours * 100 + minutes;
+
+    // [수정] 평일 09:00 ~ 20:00까지는 '로딩중...'이 뜨게 함
+    const isTradingTime = day >= 1 && day <= 5 && currentTime >= 900 && currentTime <= 2000;
+
+    // innerHTML을 사용하여 placeholder 구조와 함께 텍스트 주입
+    hogaBox.innerHTML = `
+        <div class="detail-hoga-placeholder">
+            <span>${isTradingTime ? '로딩중...' : '호가는 장 시간에 볼 수 있어요'}</span>
+        </div>
+    `;
 }
 
 // ========== 특정 시간에 자동 실행 예약 ==========
