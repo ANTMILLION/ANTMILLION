@@ -16,8 +16,66 @@ let stompClient = null;
 let subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
 let currentStockCodes = []; // 현재 화면에 표시된 종목 코드들
 
-// 임시 account_id (로그인 기능 완성 전까지)
-const TEMP_ACCOUNT_ID = 3;
+// =====================================================
+// 로그인 상태 체크 + "로그인이 필요합니다" 모달
+// - 스타일은 stocklist.css에서 처리
+// =====================================================
+function isLoggedIn() {
+    return window.__isAuthenticated === true;
+}
+
+function showLoginRequiredModal() {
+    let modal = document.getElementById('login-required-modal');
+
+    // 없으면 동적으로 생성
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'login-required-modal';
+        modal.className = 'login-required-modal';
+        modal.innerHTML = `
+            <div class="login-required-backdrop" data-close="true"></div>
+            <div class="login-required-panel" role="dialog" aria-modal="true">
+                <div class="login-required-body">로그인이 필요합니다.</div>
+                <div class="login-required-actions">
+                    <button type="button" class="login-required-ok" data-close="true">확인</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // 닫기(백드롭/버튼)
+        modal.addEventListener('click', (e) => {
+            if (e.target && e.target.getAttribute('data-close') === 'true') {
+                modal.classList.remove('active');
+            }
+        });
+
+        // ESC 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') modal.classList.remove('active');
+        });
+    }
+
+    modal.classList.add('active');
+}
+
+function ensureLoginOrModal() {
+    if (!isLoggedIn()) {
+        showLoginRequiredModal();
+        return false;
+    }
+    return true;
+}
+
+// 관심종목 코드 목록 가져오기(비로그인이면 빈 배열)
+function getInterestCodesPromise() {
+    if (!isLoggedIn()) return Promise.resolve([]);
+    return fetch(`${contextPath}/api/interest/list`)
+        .then(res => res.ok ? res.json() : [])
+        .catch(() => []);
+}
+
+
 
 // ========== STOMP 연결 ==========
 function connectStomp() {
@@ -266,9 +324,8 @@ function renderAllStocks() {
             // 현재 화면의 종목 코드들 저장
             currentStockCodes = stocks.map(stock => stock.mksc_shrn_iscd);
 
-            // 관심종목 목록 가져오기
-            return fetch(`${contextPath}/api/interest/list`)
-                .then(res => res.json())
+            // 관심종목 목록 가져오기 (비로그인이면 빈 배열)
+            return (getInterestCodesPromise())
                 .then(interestCodes => {
                     const startIndex = (currentPage - 1) * itemsPerPage;
                     const html = stocks.map((stock, index) => {
@@ -300,6 +357,11 @@ function renderAllStocks() {
 // ========== 관심종목 렌더링 ==========
 function renderFavoriteStocks() {
     const container = document.getElementById('stocklist-Container');
+
+    // 비로그인 상태면 관심종목 탭 접근 불가
+    if (!ensureLoginOrModal()) {
+        return;
+    }
 
     // 페이징된 관심종목 상세 정보 API 호출
     fetch(`${contextPath}/api/interest/details/paged?page=${favoritePage}&size=${itemsPerPage}`)
@@ -515,37 +577,63 @@ function renderPagination() {
 
 // ========== 즐겨찾기 버튼 이벤트 리스너 등록 ==========
 function attachFavoriteListeners() {
-    document.querySelectorAll('.stocklist-favorite-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const stockCode = this.getAttribute('data-code');
+    const container = document.getElementById('stocklist-Container');
+    if (!container) return;
 
-            // 서버에 관심종목 토글 요청
-            fetch(`${contextPath}/api/interest/toggle`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ stockCode: stockCode })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        // UI 업데이트
-                        this.classList.toggle('active');
-                        this.textContent = data.isInterest ? '♥' : '♡';
+    // 이미 한번 바인딩했으면 다시 안함
+    if (container.dataset.favBound === '1') return;
+    container.dataset.favBound = '1';
 
-                        // 관심종목 탭이면 목록 새로고침
-                        if (currentTab === 'favorite') {
-                            renderStocks();
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('관심종목 토글 실패:', error);
-                });
-        });
-    });
+    container.addEventListener('click', function(e) {
+        const btn = e.target.closest('.stocklist-favorite-btn');
+        if (!btn) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        // 비로그인 상태면 모달
+        if (!ensureLoginOrModal()) return;
+
+        const stockCode = btn.getAttribute('data-code');
+
+        fetch(`${contextPath}/api/interest/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stockCode })
+        })
+        .then(res => {
+            // 서버에서 401/403 떨어져도 모달 띄우기(플래그가 잘못 잡혀도 안전)
+            if (res.status === 401 || res.status === 403) {
+                showLoginRequiredModal();
+                return null;
+            }
+            const ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) {
+                // 로그인 페이지 HTML로 리다이렉트된 경우 등
+                showLoginRequiredModal();
+                return null;
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data) return;
+
+            if (data.message === 'LOGIN_REQUIRED') {
+                showLoginRequiredModal();
+                return;
+            }
+
+            if (data.success) {
+                btn.classList.toggle('active');
+                btn.textContent = data.isInterest ? '♥' : '♡';
+
+                if (currentTab === 'favorite') {
+                    renderStocks();
+                }
+            }
+        })
+        .catch(err => console.error('관심종목 토글 실패:', err));
+    }, true); // 캡처링으로 먼저 잡아내서 안전
 }
 
 // ========== 종목 아이템 클릭 이벤트 리스너 등록 ==========
@@ -566,6 +654,13 @@ function attachStockItemListeners() {
 // ========== 탭 전환 이벤트 ==========
 document.querySelectorAll('.stocklist-tab-btn').forEach((btn, index) => {
     btn.addEventListener('click', function() {
+
+        // 두 번째 버튼(관심종목)은 로그인 필요
+        if (index === 1 && !isLoggedIn()) {
+            showLoginRequiredModal();
+            return;
+        }
+
         document.querySelectorAll('.stocklist-tab-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
 

@@ -202,40 +202,6 @@
 		</div>
 	</div>
 
-
-
-	<div class="detail-order-result">
-		<div class="detail-row">
-			<span id="available-label">구매 가능 금액</span> <span
-				class="detail-big-price">0원</span>
-		</div>
-		<div class="detail-total-row">
-			<span>주문금액</span> <span class="detail-total-money" id="total-money">0원</span>
-		</div>
-	</div>
-	<div class="detail-sentiment-section">
-		<div class="detail-sentiment-text">
-			<span>장 시간에 확인할 수 있어요</span>
-		</div>
-		<div class="detail-percent-labels">
-			<div style="width: 50%;" id="buy-percent"></div>
-			<div style="width: 50%;" id="sell-percent"></div>
-		</div>
-		<div>
-			<div class="detail-progress-bar">
-				<div class="detail-fill-buy detail-sentiment-inactive"
-					style="width: 50%;" id="buy-bar"></div>
-				<div class="detail-fill-sell detail-sentiment-inactive"
-					style="width: 50%;" id="sell-bar"></div>
-			</div>
-		</div>
-	</div>
-	<button class="detail-btn-submit" id="submit-btn">매수</button>
-	</aside>
-	</div>
-	</main>
-	</div>
-
 	<!-- 주문 확인 팝업 -->
 	<div class="detail-order-modal" id="order-modal">
 		<div class="detail-modal-content">
@@ -273,7 +239,45 @@
 			</div>
 		</div>
 	</div>
+	<div id="loginRequiredModal" class="login-required-modal" aria-hidden="true">
+  		<div class="login-required-modal__backdrop" data-close="true"></div>
+  		<div class="login-required-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="loginRequiredTitle">
+    		<h4 id="loginRequiredTitle" class="login-required-modal__title">로그인이 필요합니다</h4>
+    		<button type="button" class="login-required-modal__btn" id="loginRequiredClose">확인</button>
+  		</div>
+	</div>
+<script>
+  	(function () {
+    	const modal = document.getElementById('loginRequiredModal');
+    	const closeBtn = document.getElementById('loginRequiredClose');
 
+    	function open() {
+      		if (!modal) return;
+      		modal.classList.add('active');
+      		modal.setAttribute('aria-hidden', 'false');
+    	}
+
+    	function close() {
+      		if (!modal) return;
+      		modal.classList.remove('active');
+      		modal.setAttribute('aria-hidden', 'true');
+    	}
+    	window.openLoginRequiredModal = open;
+    	window.closeLoginRequiredModal = close;
+    	
+    	if (closeBtn) closeBtn.addEventListener('click', close);
+
+    	if (modal) {
+      		modal.addEventListener('click', (e) => {
+        	if (e.target && e.target.dataset && e.target.dataset.close === 'true') close();
+      		});
+    	}
+
+    	document.addEventListener('keydown', (e) => {
+      	if (e.key === 'Escape') close();
+    	});
+  	})();
+</script>
 
 	<!-- SockJS 라이브러리 -->
 	<script

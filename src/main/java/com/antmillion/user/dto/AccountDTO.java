@@ -19,5 +19,5 @@ public class AccountDTO {
     private Long userId;
     private String accountNumber;
     private Long balance;
-    private LocalDateTime accountCreateAt;
+    private LocalDateTime accountCreatedAt;
 }
