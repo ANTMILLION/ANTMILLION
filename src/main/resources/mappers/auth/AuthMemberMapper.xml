@@ -8,13 +8,26 @@
 	<select id="selectByEmail" parameterType="string"
 		resultType="com.antmillion.auth.dto.AuthMemberDTO">
 		SELECT
-		user_id AS userId,
-		email,
-		password,
-		rank_id AS rankId,
-		provider AS provider
-		FROM member
+		  user_id AS userId,
+		  email,
+		  password,
+		  rank_id AS rankId,
+		  provider AS provider
+		  FROM member
 		WHERE email = #{email}
+		LIMIT 1
+	</select>
+
+	<select id="selectByUserId"
+		resultType="com.antmillion.auth.dto.AuthMemberDTO">
+		SELECT
+		  user_id AS userId,
+		  email,
+		  password,
+		  rank_id AS rankId,
+		  provider AS provider
+		FROM member
+		WHERE user_id = #{userId}
 		LIMIT 1
 	</select>
 
