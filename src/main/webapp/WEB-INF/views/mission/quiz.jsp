@@ -19,7 +19,7 @@
 			<!-- 진행률 카드 -->
 			<div class="quiz-progress-card">
 				<div class="quiz-progress-header">
-					<h2 class="quiz-progress-title">오늘의 미션 달성률</h2>
+					<h2 class="quiz-progress-title">오늘의 경제 퀴즈 달성률</h2>
 					<div class="quiz-progress-status" id="quiz-progressStatus">0%
 						달성!</div>
 				</div>

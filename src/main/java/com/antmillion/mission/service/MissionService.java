@@ -6,6 +6,7 @@ import com.antmillion.mission.dto.QuizSubmissionResponseDTO;
 import com.antmillion.user.dto.UserRankResponseDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MissionService {
     List<QuizQuestionResponseDTO> getDailyQuiz();
@@ -13,5 +14,5 @@ public interface MissionService {
     UserRankResponseDTO getUserMissionStatus(Long userId);
     Long getCurrentUserId();
     boolean isTodayMissionCompleted(Long userId);
-    int getTodaySolvedCount(Long userId);
+    Map<String, Object> getTodayMissionStatus(Long userId);
 }

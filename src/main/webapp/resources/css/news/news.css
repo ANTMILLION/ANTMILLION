@@ -106,7 +106,7 @@ body {
 .news-section-card {
     background: var(--secondary-bg);
     border-radius: 20px;
-    padding: 28px;
+    padding: 24px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -128,6 +128,16 @@ body {
     letter-spacing: -0.5px;
     animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
     animation-delay: 0.1s;
+}
+
+.news-points-badge {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #8b6914;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .news-cards-container {

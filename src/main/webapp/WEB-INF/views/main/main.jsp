@@ -90,9 +90,11 @@
             <!-- 미션 카드 -->
             <div class="main-mission-card main-grid-mission">
                 <div class="main-mission-header">
-                    <h3>미션 : 오늘의 경제 퀴즈 풀기</h3>
+                    <h3>오늘의 미션</h3>
                 </div>
-                <p class="main-mission-description">OX 퀴즈 맞히고 100P 받아가세요!</p>
+                <p class="main-mission-description">퀴즈 풀고 뉴스 읽으면
+                    <strong>하루 최대 700P</strong> 획득할 수 있어요!<br>지금 당장 나의 개미 랭크를 높여보세요!
+                </p>
                 <c:choose>
                     <c:when test="${missionCompleted}">
                         <span class="main-mission-completed-button">미션완료</span>
