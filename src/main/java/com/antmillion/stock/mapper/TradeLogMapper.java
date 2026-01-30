@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 public interface TradeLogMapper {
 
     /**
-     * trade_log 테이블에 새로운 체결 행 삽입
+     * trade_log 테이블에 새로운 체결 행 삽입 (주문 ID, 체결 시간, 체결가, 체결 수량)
      */
     int insertTradeLog(@Param("orderId") Long orderId, 
                        @Param("tradePrice") long tradePrice,

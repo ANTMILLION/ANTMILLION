@@ -28,7 +28,7 @@
         )
     </insert>
 
-    <select id="selectWaitOrders" resultType="com.antmillion.trade.dto.StockOrderResponseDTO">
+    <select id="selectWaitOrders" resultType="com.antmillion.stock.dto.StockOrderResponseDTO">
         SELECT 
             o.*, 
             s.stock_name,
@@ -62,11 +62,11 @@
           AND account_id = #{accountId}
     </update>
 
-    <select id="getOrderByOrderId" resultType="com.antmillion.trade.dto.StockOrderResponseDTO">
+    <select id="getOrderByOrderId" resultType="com.antmillion.stock.dto.StockOrderResponseDTO">
         SELECT * FROM stock_order WHERE order_id = #{orderId}
     </select>
 
-    <select id="findExecutableOrders" resultType="com.antmillion.trade.dto.StockOrderResponseDTO">
+    <select id="findExecutableOrders" resultType="com.antmillion.stock.dto.StockOrderResponseDTO">
         SELECT 
             o.*, 
             s.stock_name, 
