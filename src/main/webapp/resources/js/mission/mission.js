@@ -24,7 +24,7 @@ $(document).ready(function() {
 // 오늘의 미션 달성률(퀴즈/뉴스) 조회
 function checkMissionStatus() {
     $.ajax({
-        url: cpath + '/mission/today-status',
+        url: cpath + '/api/mission/today-progress',
         method: 'GET',
         success: function(data) {
             // 전체 진행률 업데이트 (서버에서 계산된 totalProgress 사용)
@@ -74,7 +74,7 @@ function checkMissionStatus() {
 // 랭크 정보 로드
 function loadRankInfo() {
     $.ajax({
-        url: cpath + '/mission/status',
+        url: cpath + '/api/mission/user-rank',
         type: 'GET',
         dataType: 'json',
         success: function(data) {
