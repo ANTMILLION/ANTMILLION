@@ -10,7 +10,7 @@ $(document).ready(function() {
 
 function loadNews(page) {
     $.ajax({
-        url: `${cpath}/api/news`,
+        url: `${cpath}/api/naver/news`,
         method: 'GET',
         data: {
             page: page,
@@ -107,7 +107,7 @@ function handleNewsClick(url, cardElement) {
 
     // 서버에 읽음 기록 요청
     $.ajax({
-        url: `${cpath}/api/news/read`,
+        url: `${cpath}/api/mission/news/read`,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ newsUrl: url }),
@@ -156,7 +156,7 @@ function changePage(page) {
 // 미션 진행률 로딩
 function loadMissionProgress() {
     $.ajax({
-        url: `${cpath}/api/news/progress`,
+        url: `${cpath}/api/mission/news/progress`,
         type: 'GET',
         dataType: 'json',
         success: function(data) {

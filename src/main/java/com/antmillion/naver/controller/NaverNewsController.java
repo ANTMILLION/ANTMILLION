@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/news")
+@RequestMapping("/api/naver/news")
 public class NaverNewsController {
 
     private final NaverNewsService naverNewsService;
@@ -44,34 +44,5 @@ public class NaverNewsController {
         response.put("maxPage", newsResponse.getMaxPage());   // 마지막 페이지 번호
         response.put("readList", readList);                   // 내가 읽은 URL 리스트 (String 배열)
         return ResponseEntity.ok(response);
-    }
-
-    // 뉴스 읽기 및 포인트 적립
-    @PostMapping("/read")
-    public ResponseEntity<Map<String, Object>> readNews(@RequestBody Map<String, String> payload) {
-        Long userId = missionService.getCurrentUserId();
-
-        // 비로그인 상태면 null -> 401 에러 처리
-        if (userId == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        String newsUrl = payload.get("newsUrl");
-        Map<String, Object> result = newsService.readNews(userId, newsUrl);
-        return ResponseEntity.ok(result);
-    }
-
-    // 현재 달성률 조회
-    @GetMapping("/progress")
-    public ResponseEntity<Map<String, Object>> getProgress() {
-        Long userId = missionService.getCurrentUserId();
-
-        // 비로그인 상태면 0%로 응답
-        if (userId == null) {
-            return ResponseEntity.ok(Map.of("progress", 0, "readCount", 0));
-        }
-
-        Map<String, Object> result = newsService.getMissionProgress(userId);
-        return ResponseEntity.ok(result);
     }
 }
