@@ -1,4 +1,4 @@
-package com.antmillion.mission.dto;
+package com.antmillion.quiz.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

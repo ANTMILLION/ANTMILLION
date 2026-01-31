@@ -45,7 +45,7 @@
                             경제 지식도 쌓고 나의 개미 랭크도 높여보세요!</p>
                     </div>
                     <div class="mission-card-footer">
-                        <button class="mission-card-btn" id="quiz-start-btn" onclick="location.href='${cpath}/mission/quiz'">도전하기</button>
+                        <button class="mission-card-btn" id="quiz-start-btn" onclick="location.href='${cpath}/quiz'">도전하기</button>
                     </div>
                 </div>
 

@@ -5,7 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>똑똑한개미 - 미션</title>
+<title>똑똑한개미 - 퀴즈</title>
 <%@ include file="/WEB-INF/views/common/common.jsp"%>
 <link rel="stylesheet" href="${cpath}/resources/css/mission/quiz.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
@@ -74,7 +74,7 @@
 			currentUserId = parseInt('${pageContext.request.userPrincipal.name}');
 			</c:if>
 		</script>
-		<script src="${cpath}/resources/js/mission/quiz.js"></script>
+		<script src="${cpath}/resources/js/quiz/quiz.js"></script>
 	</div>
 </body>
 </html>

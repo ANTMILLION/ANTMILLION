@@ -20,13 +20,13 @@ function formatTodayKorean() {
 // 서버 API 호출하여 데이터 가져오기
 function getDailyQuiz() {
     $.ajax({
-        url: cpath + "/mission/today-status",
+        url: cpath + "/api/mission/today-progress",
         type: 'GET',
         dataType: 'json',
         success: function (statusData) {
             correctAnswers = statusData.quizCount || 0;
             $.ajax({
-                url: cpath + '/mission/daily',
+                url: cpath + '/api/mission/quiz/daily',
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
@@ -199,7 +199,7 @@ function submitAnswer(quizId, optionId, buttonElement) {
         choiceNo : optionId
     }
     $.ajax({
-        url: cpath + '/mission/check',
+        url: cpath + '/api/mission/quiz/check',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(requestData),

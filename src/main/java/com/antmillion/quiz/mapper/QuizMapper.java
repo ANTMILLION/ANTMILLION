@@ -1,16 +1,16 @@
-package com.antmillion.mission.mapper;
+package com.antmillion.quiz.mapper;
 
-import com.antmillion.mission.dto.QuizChoiceDTO;
-import com.antmillion.mission.dto.QuizLogDTO;
-import com.antmillion.mission.dto.QuizQuestionDTO;
-import com.antmillion.mission.dto.QuizResultDTO;
+import com.antmillion.quiz.dto.QuizChoiceDTO;
+import com.antmillion.quiz.dto.QuizLogDTO;
+import com.antmillion.quiz.dto.QuizQuestionDTO;
+import com.antmillion.quiz.dto.QuizResultDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 @Mapper
-public interface MissionMapper {
+public interface QuizMapper {
     // 오늘의 퀴즈 조회
     List<QuizQuestionDTO> selectQuizByDate(@Param("quizDate") String quizDate);
 
