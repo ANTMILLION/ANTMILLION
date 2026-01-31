@@ -194,7 +194,6 @@ function closeModal() {
 // 정답 제출 (AJAX)
 function submitAnswer(quizId, optionId, buttonElement) {
     const requestData = {
-        userId : currentUserId,
         quizId : quizId,
         choiceNo : optionId
     }

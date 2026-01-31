@@ -69,10 +69,6 @@
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script>
 			const cpath = "${pageContext.request.contextPath}";
-			let currentUserId = null;
-			<c:if test="${not empty pageContext.request.userPrincipal}">
-			currentUserId = parseInt('${pageContext.request.userPrincipal.name}');
-			</c:if>
 		</script>
 		<script src="${cpath}/resources/js/quiz/quiz.js"></script>
 	</div>

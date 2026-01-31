@@ -5,6 +5,8 @@ import com.antmillion.quiz.dto.QuizSubmissionRequestDTO;
 import com.antmillion.quiz.dto.QuizSubmissionResponseDTO;
 import com.antmillion.quiz.service.QuizService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,30 +27,32 @@ public class QuizController {
     @GetMapping("/api/mission/quiz/daily")
     @ResponseBody
     public List<QuizQuestionResponseDTO> getDailyQuizData() {
-        try {
-            return quizService.getDailyQuiz();
-        } catch (IllegalStateException e) {
-            throw e;
-        } catch (Exception e) {
-            System.err.println("퀴즈 조회 중 오류: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
+        Long userId = currentUserId(); // 1. 여기서 ID 꺼내기
+        if (userId == null) {
+            return new ArrayList<>(); // 비로그인이면 빈 리스트
         }
+        return quizService.getDailyQuiz(userId);
     }
 
     @PostMapping("/api/mission/quiz/check")
     @ResponseBody
     public QuizSubmissionResponseDTO checkAnswer(@RequestBody QuizSubmissionRequestDTO requestDTO) {
+        Long userId = currentUserId();
+        if (userId == null) {
+            return QuizSubmissionResponseDTO.builder().isCorrect(false).message("로그인이 필요합니다.").build();
+        }
+        return quizService.checkAndLogAnswer(userId, requestDTO);
+    }
+
+    private Long currentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return null;
+        }
         try {
-            return quizService.checkAndLogAnswer(requestDTO);
+            return Long.valueOf(auth.getPrincipal().toString());
         } catch (Exception e) {
-            System.err.println("퀴즈 채점 중 오류: " + e.getMessage());
-            e.printStackTrace();
-            return QuizSubmissionResponseDTO.builder()
-                    .isCorrect(false)
-                    .point(0)
-                    .message("오류가 발생했습니다. 다시 시도해주세요.")
-                    .build();
+            return null;
         }
     }
 }

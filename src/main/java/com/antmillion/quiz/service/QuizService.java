@@ -7,7 +7,6 @@ import com.antmillion.quiz.dto.QuizSubmissionResponseDTO;
 import java.util.List;
 
 public interface QuizService {
-    Long getCurrentUserId();
-    List<QuizQuestionResponseDTO> getDailyQuiz();
-    QuizSubmissionResponseDTO checkAndLogAnswer(QuizSubmissionRequestDTO requestDTO);
+    List<QuizQuestionResponseDTO> getDailyQuiz(Long userId);
+    QuizSubmissionResponseDTO checkAndLogAnswer(Long userId, QuizSubmissionRequestDTO requestDTO);
 }

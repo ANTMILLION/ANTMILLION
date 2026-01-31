@@ -5,8 +5,6 @@ import com.antmillion.quiz.dto.*;
 import com.antmillion.quiz.mapper.QuizMapper;
 import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,19 +22,8 @@ public class QuizServiceImpl implements QuizService {
     private final MemberMapper memberMapper;
     private final AntRankService antRankService;
 
-    // 로그인한 유저 ID를 가져오는 메서드
-    public Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            return Long.valueOf(auth.getPrincipal().toString());
-        }
-        return null;
-    }
-
     @Override
-    public List<QuizQuestionResponseDTO> getDailyQuiz() {
-        Long userId = getCurrentUserId();
-
+    public List<QuizQuestionResponseDTO> getDailyQuiz(Long userId) {
         // 오늘 날짜 구하기 (yyyy-MM-dd)
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
@@ -95,7 +82,11 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional
-    public QuizSubmissionResponseDTO checkAndLogAnswer(QuizSubmissionRequestDTO requestDTO) {
+    public QuizSubmissionResponseDTO checkAndLogAnswer(Long userId, QuizSubmissionRequestDTO requestDTO) {
+        if (userId == null) {
+            throw new IllegalStateException("로그인이 필요한 서비스입니다.");
+        }
+
         // 해당 퀴즈의 정답 조회
         QuizResultDTO resultInfo = quizMapper.selectQuizResultByQuizId(requestDTO.getQuizId());
         if (resultInfo == null || resultInfo.getAnswer() == null) {
@@ -106,19 +97,18 @@ public class QuizServiceImpl implements QuizService {
         boolean isCorrect = resultInfo.getAnswer().equals(requestDTO.getChoiceNo());
         if(isCorrect) {
             try {
-                int count = quizMapper.countSolvedHistory(requestDTO.getUserId(), requestDTO.getQuizId());
+                int count = quizMapper.countSolvedHistory(userId, requestDTO.getQuizId());
                 if (count == 0) {
                     QuizLogDTO logDTO = QuizLogDTO.builder()
-                            .userId(requestDTO.getUserId())
+                            .userId(userId)
                             .quizId(requestDTO.getQuizId())
                             .build();
                     quizMapper.insertQuizLog(logDTO);
 
                     // 포인트 지급
-                    memberMapper.updateUserPoint(requestDTO.getUserId(), resultInfo.getPoint());
+                    memberMapper.updateUserPoint(userId, resultInfo.getPoint());
 
                     // 랭크 갱신
-                    Long userId = requestDTO.getUserId();
                     int newPoint = memberMapper.selectUserPoint(userId);
                     antRankService.updateUserRank(userId, newPoint);
                 }
