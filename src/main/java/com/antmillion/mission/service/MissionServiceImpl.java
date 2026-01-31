@@ -1,15 +1,12 @@
 package com.antmillion.mission.service;
 
+import com.antmillion.mission.dto.MissionStatusResponseDTO;
 import com.antmillion.quiz.mapper.QuizMapper;
 import com.antmillion.news.mapper.NewsMapper;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -17,15 +14,6 @@ public class MissionServiceImpl implements MissionService {
     private final QuizMapper quizMapper;
     private final AntRankService antRankService;
     private final NewsMapper newsMapper;
-
-    // 로그인한 유저 ID를 가져오는 메서드
-    public Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            return Long.valueOf(auth.getPrincipal().toString());
-        }
-        return null;
-    }
 
     @Override
     public UserRankResponseDTO getUserRankInfo(Long userId) {
@@ -43,18 +31,20 @@ public class MissionServiceImpl implements MissionService {
     }
 
     public boolean isTodayMissionCompleted(Long userId) {
-        Map<String, Object> status = getTodayMissionStatus(userId);
+        MissionStatusResponseDTO status = getTodayMissionStatus(userId);
         // totalProgress가 100이면 완료로 간주
-        int progress = (int)status.get("totalProgress");
-        return progress >= 100;
+        return status.getTotalProgress() >= 100;
     }
 
-    public Map<String, Object> getTodayMissionStatus(Long userId) {
-        Map<String, Object> status = new HashMap<>();
-
+    public MissionStatusResponseDTO getTodayMissionStatus(Long userId) {
         if (userId == null) {
-            status.put("totalProgress", 0);
-            return status;
+            return MissionStatusResponseDTO.builder()
+                    .totalProgress(0)
+                    .quizCount(0)
+                    .newsCount(0)
+                    .isQuizCompleted(false)
+                    .isNewsCompleted(false)
+                    .build();
         }
 
         // 퀴즈 진행 상황
@@ -71,12 +61,12 @@ public class MissionServiceImpl implements MissionService {
         int totalProgress = quizScore + newsScore;
         totalProgress = Math.min(totalProgress, 100); // 100% 넘지 않게
 
-        // 데이터 담기
-        status.put("totalProgress", totalProgress);
-        status.put("quizCount", solvedQuizCount);
-        status.put("newsCount", readNewsCount);
-        status.put("isQuizCompleted", solvedQuizCount >= quizGoal);
-        status.put("isNewsCompleted", readNewsCount >= newsGoal);
-        return status;
+        return MissionStatusResponseDTO.builder()
+                .totalProgress(totalProgress)
+                .quizCount(solvedQuizCount)
+                .newsCount(readNewsCount)
+                .isQuizCompleted(solvedQuizCount >= quizGoal)
+                .isNewsCompleted(readNewsCount >= newsGoal)
+                .build();
     }
 }
