@@ -50,7 +50,7 @@ public class NaverNewsService {
     }
 
     // 1시간마다 최신 2개 추가
-    @Scheduled(fixedRate = 60 * 60 * 1000)
+    @Scheduled(initialDelay = 60 * 60 * 1000, fixedRate = 60 * 60 * 1000)
     public void appendHourlyNews() {
         if (newsList.isEmpty()) {
             initNews();
