@@ -95,6 +95,9 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 			String trId = parts[1];
 			if (isPresentPriceTrId(trId)) {
 				String[] data = parts[3].split("\\^");
+				if (data[2].equals("0")) {
+		               return;
+		            }
 				// [0], [2], [4], [5], [22]
 				Map<String, String> tradeData = new HashMap<>();
 				tradeData.put("mkscShrnIscd", data[0]); // 종목코드
