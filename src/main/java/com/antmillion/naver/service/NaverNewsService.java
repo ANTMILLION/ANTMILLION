@@ -42,34 +42,79 @@ public class NaverNewsService {
     private void initNews() {
         List<NaverNewsItemDTO> fetched = fetchFromNaverNewsApi(50);
         newsList.clear();
-        newsList.addAll(
-                fetched.stream()
-                        .limit(5)
-                        .collect(Collectors.toList())
-        );
+        List<NaverNewsItemDTO> initial = fetched.stream()
+                .limit(5)
+                .collect(Collectors.toList());
+        newsList.addAll(initial);
+
+        if (initial.isEmpty()) {
+            log.info("초기화될 뉴스가 없습니다.");
+        } else {
+            log.info("처음 뉴스 {}개 조회", initial.size());
+        }
     }
 
     // 1시간마다 최신 2개 추가
     @Scheduled(initialDelay = 60 * 60 * 1000, fixedRate = 60 * 60 * 1000)
     public void appendHourlyNews() {
-        if (newsList.isEmpty()) {
-            initNews();
+        // 네이버 API 호출
+        List<NaverNewsItemDTO> latest = fetchFromNaverNewsApi(100);
+        if (latest.isEmpty()) {
+            log.info("네이버에서 가져온 뉴스가 없습니다.");
             return;
         }
 
-        List<NaverNewsItemDTO> latest = fetchFromNaverNewsApi(100);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
 
-        Set<String> existingLinks = newsList.stream()
-                .map(NaverNewsItemDTO::getLink)
-                .collect(Collectors.toSet());
+        synchronized (newsList) {
+            // 기존 링크 스냅샷 및 현재 저장된 가장 최신 시간 계산
+            Set<String> existingLinks = newsList.stream()
+                    .map(NaverNewsItemDTO::getLink)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
 
-        List<NaverNewsItemDTO> newItems = latest.stream()
-                .filter(item -> !existingLinks.contains(item.getLink()))
-                .limit(2)
-                .collect(Collectors.toList());
+            Optional<ZonedDateTime> currentNewest = newsList.stream()
+                    .map(NaverNewsItemDTO::getPubDate)
+                    .filter(Objects::nonNull)
+                    .map(s -> parsePubDate(s, formatter))
+                    .filter(Objects::nonNull)
+                    .max(Comparator.naturalOrder());
 
-        if (!newItems.isEmpty()) {
-            newsList.addAll(0, newItems);
+            // latest에서 링크 중복 제거 + pubDate가 현재 저장된 최신보다 이후인 것만 선택
+            List<NaverNewsItemDTO> candidates = latest.stream()
+                    .filter(item -> item.getLink() != null && item.getPubDate() != null)
+                    .filter(item -> !existingLinks.contains(item.getLink()))
+                    .filter(item -> {
+                        ZonedDateTime itemDt = parsePubDate(item.getPubDate(), formatter);
+                        if (itemDt == null) return false;
+                        return currentNewest.map(cur -> itemDt.isAfter(cur)).orElse(true);
+                    })
+                    .sorted((a, b) -> {
+                        ZonedDateTime da = parsePubDate(a.getPubDate(), formatter);
+                        ZonedDateTime db = parsePubDate(b.getPubDate(), formatter);
+                        if (da == null || db == null) return 0;
+                        return db.compareTo(da); // 최신순
+                    })
+                    .limit(2)
+                    .collect(Collectors.toList());
+
+            if (!candidates.isEmpty()) {
+                newsList.addAll(0, candidates);
+                log.info("뉴스 {}개가 추가되었습니다. 총 뉴스 {}개", candidates.size(), newsList.size());
+                candidates.forEach(it -> log.debug("추가된 뉴스: title='{}' link='{}' pubDate='{}'", it.getTitle(), it.getLink(), it.getPubDate()));
+            } else {
+                log.info("추가될 뉴스가 없습니다.");
+            }
+        }
+    }
+
+    private ZonedDateTime parsePubDate(String pubDateStr, DateTimeFormatter formatter) {
+        if (pubDateStr == null) return null;
+        try {
+            return ZonedDateTime.parse(pubDateStr, formatter);
+        } catch (Exception e) {
+            log.debug("pubDate 파싱 실패: {}", pubDateStr);
+            return null;
         }
     }
 
