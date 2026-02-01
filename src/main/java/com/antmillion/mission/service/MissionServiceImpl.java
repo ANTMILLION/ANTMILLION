@@ -42,8 +42,8 @@ public class MissionServiceImpl implements MissionService {
                     .totalProgress(0)
                     .quizCount(0)
                     .newsCount(0)
-                    .isQuizCompleted(false)
-                    .isNewsCompleted(false)
+                    .QuizCompleted(false)
+                    .NewsCompleted(false)
                     .build();
         }
 
@@ -65,8 +65,8 @@ public class MissionServiceImpl implements MissionService {
                 .totalProgress(totalProgress)
                 .quizCount(solvedQuizCount)
                 .newsCount(readNewsCount)
-                .isQuizCompleted(solvedQuizCount >= quizGoal)
-                .isNewsCompleted(readNewsCount >= newsGoal)
+                .QuizCompleted(solvedQuizCount >= quizGoal)
+                .NewsCompleted(readNewsCount >= newsGoal)
                 .build();
     }
 }

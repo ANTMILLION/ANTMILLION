@@ -10,6 +10,6 @@ public class MissionStatusResponseDTO {
     private int totalProgress;
     private int quizCount;
     private int newsCount;
-    private boolean isQuizCompleted;
-    private boolean isNewsCompleted;
+    private boolean QuizCompleted;
+    private boolean NewsCompleted;
 }

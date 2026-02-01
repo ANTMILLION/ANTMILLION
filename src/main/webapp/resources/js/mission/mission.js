@@ -42,7 +42,7 @@ function checkMissionStatus() {
             $('#news-count-text').text(`(${newsCount}/5)`);
 
             // 퀴즈 미션 카드 상태 업데이트
-            if (data.isQuizCompleted) {
+            if (data.quizCompleted) {
                 const $quizCard = $('#mission-card-quiz');
                 $quizCard.addClass('completed');
 
@@ -54,7 +54,7 @@ function checkMissionStatus() {
             }
 
             // 뉴스 미션 카드 상태 업데이트
-            if (data.isNewsCompleted) {
+            if (data.newsCompleted) {
                 const $newsCard = $('#mission-card-news');
                 $newsCard.addClass('completed');
 
