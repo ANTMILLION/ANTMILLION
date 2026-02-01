@@ -20,27 +20,36 @@
     <select id="selectRealizedProfit" resultType="com.antmillion.mypage.dto.RealizedProfitDTO">
 	    SELECT 
 	        s.stock_name AS "name",
-	        so.quantity AS "shares",
-	        a.avg_price AS "buyPrice", 
-	        so.order_price AS "sellPrice",
-	        (so.order_price - a.avg_price) * so.quantity AS "profit",
-	        ROUND(((so.order_price - a.avg_price) / a.avg_price) * 100, 2) AS "profitRate",
-	        so.updated_at AS "tradeDate"
-	    FROM stock_order so
+	        tl.trade_quantity AS "shares",
+	        COALESCE(
+	            (SELECT a.avg_price FROM asset a 
+	             WHERE a.account_id = #{accountId} AND a.stock_code = so.stock_code),
+	            (SELECT tl_buy.trade_price FROM trade_log tl_buy 
+	             JOIN stock_order so_buy ON tl_buy.order_id = so_buy.order_id
+	             WHERE so_buy.account_id = #{accountId} 
+	               AND so_buy.stock_code = so.stock_code 
+	               AND so_buy.transaction_type = 'BUY'
+	             ORDER BY tl_buy.trade_date DESC LIMIT 1)
+	        ) AS "buyPrice",
+	        tl.trade_price AS "sellPrice",
+	        (tl.trade_price - (SELECT buyPrice)) * tl.trade_quantity AS "profit",
+	        CASE 
+	            WHEN (SELECT buyPrice) = 0 THEN 0
+	            ELSE ROUND(((tl.trade_price - (SELECT buyPrice)) / (SELECT buyPrice)) * 100, 2)
+	        END AS "profitRate",
+	        DATE_FORMAT(tl.trade_date, '%Y-%m-%d %H:%i:%s') AS "tradeDate"
+	    FROM trade_log tl
+	    JOIN stock_order so ON tl.order_id = so.order_id
 	    JOIN stock s ON so.stock_code = s.stock_code
-	    LEFT JOIN asset a ON so.account_id = a.account_id AND so.stock_code = a.stock_code
 	    WHERE so.account_id = #{accountId}
 	      AND so.transaction_type = 'SELL'
-	      AND so.status = 'COMPLETED'
-	    
-	    <if test="startDate != null and startDate != ''">
-	        AND so.updated_at &gt;= #{startDate}
-	    </if>
-	    <if test="endDate != null and endDate != ''">
-	        AND so.updated_at &lt;= STR_TO_DATE(CONCAT(#{endDate}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
-	    </if>
-	    
-	    ORDER BY so.updated_at DESC
+	      <if test="startDate != null and startDate != ''">
+	          AND tl.trade_date &gt;= #{startDate}
+	      </if>
+	      <if test="endDate != null and endDate != ''">
+	          AND tl.trade_date &lt;= STR_TO_DATE(CONCAT(#{endDate}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
+	      </if>
+	    ORDER BY tl.trade_date DESC
 	</select>
 	
 	
