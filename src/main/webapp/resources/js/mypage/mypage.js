@@ -178,7 +178,7 @@ function unsubscribeAllHoldingStocks() {
 const biasTypeMap = {
     RISK_AVERSION: { title: "위험회피 주의", icon: "⚠️" },
     LOSS_AVERSION: { title: "손실회피 주의", icon: "⚠️" },
-    SUNK_COST: { title: "매몰비용 경고", icon: "⚠️" },
+    SUNK_COST: { title: "매몰비용오류 경고", icon: "⚠️" },
     FOMO: { title: "FOMO 주의", icon: "⚠️" }
 };
 
@@ -970,13 +970,13 @@ function loadHistoryData() {
  */
 function setupBiasTooltips() {
     const biasDescriptions = {
-        'RISK_AVERSION': '위험회피란? 전망이론에 따르면 투자자들은 이익 영역에서 확실한 작은 이익을 선호하는 경향이 있습니다.\n 주의: 성급한 매도를 경계하세요',
+        'RISK_AVERSION': '위험회피란?\n 투자자들이 이익 구간에서 불확실한 더 큰 이익보다 확실한 작은 이익을 선택하는 경향입니다.',
         
-        'LOSS_AVERSION': '손실회피란? 투자자들은 이익보다 손실을 약 2.25배 더 크게 느끼며, 손실을 확정짓지 않으려는 경향이 있습니다.\n 주의: 손실 확정을 미루고 있지 않은지 확인하세요',
+        'LOSS_AVERSION': '손실회피란?\n 투자자들이 이익의 기쁨보다 손실의 고통을 더 크게 느껴 손실을 확정하지 않고 손실 구간에서 과도한 위험을 감수하는 경향입니다.',
         
-        'SUNK_COST': '매몰비용오류란? 이미 투자한 금액이 아깝다는 이유로 손실을 인정하지 못하는 심리 편향입니다. \n과거 비용은 회수할 수 없으므로 현재 시점에서 합리적 판단이 필요합니다',
+        'SUNK_COST': '매몰비용오류란?\n 이미 지불하여 되찾을 수 없는 비용(시간·돈·노력 등)에 미련을 두어, 미래의 가치보다 과거의 투자분에 집착하여 비합리적인 의사결정을 내리는 현상입니다.',
         
-        'FOMO': 'FOMO란? Fear Of Missing Out의 약자로, 급등 종목을 놓칠까봐 두려워 충분한 분석 없이 고점 매수하는 심리 편향입니다.\n 주의: 이미 상승한 종목은 조정 가능성이 높습니다'
+        'FOMO': 'FOMO(포모)란?\n 나만 기회를 놓치고 소외될 것 같은 공포(Fear Of Missing Out)를 뜻합니다. 급등하는 차트를 보며 이성적 판단 없이 추격 매수하는 심리적 상태입니다.'
     };
     
     const infoIcons = document.querySelectorAll('.info-icon');
