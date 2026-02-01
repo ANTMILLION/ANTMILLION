@@ -14,19 +14,14 @@
         <result property="quizDate" column="quiz_date"/>
     </resultMap>
 
-    <select id="selectQuizByDate" resultMap="quizQuestionMap">
-        SELECT
-            quiz_id,
-            mission_id,
-            type,
-            question,
-            answer,
-            explanation,
-            point,
-            quiz_date
-        FROM quiz_question
-        WHERE DATE_FORMAT(quiz_date, '%Y-%m-%d') = #{quizDate}
-        ORDER BY quiz_id ASC
+    <select id="selectUnsolvedQuizByDate" resultMap="quizQuestionMap">
+        SELECT * FROM quiz_question q
+        WHERE DATE(q.quiz_date) = #{quizDate}
+          AND NOT EXISTS (
+            SELECT 1 FROM quiz_log l
+            WHERE l.quiz_id = q.quiz_id AND l.user_id = #{userId}
+            )
+        ORDER BY q.quiz_id ASC
     </select>
 
     <resultMap id="quizChoiceMap" type="com.antmillion.quiz.dto.QuizChoiceDTO">
@@ -59,13 +54,6 @@
         SELECT COUNT(*)
         FROM quiz_log
         WHERE user_id = #{userId} AND quiz_id = #{quizId}
-    </select>
-
-    <select id="selectTodaySolvedQuizIds" resultType="long">
-        SELECT quiz_id
-        FROM quiz_log
-        WHERE user_id = #{userId}
-        AND DATE_FORMAT(solved_at, '%Y-%m-%d') = CURDATE()
     </select>
 
     <select id="countTodaySolvedQuiz" resultType="int">

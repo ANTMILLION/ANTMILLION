@@ -24,25 +24,10 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     public List<QuizQuestionResponseDTO> getDailyQuiz(Long userId) {
-        // 오늘 날짜 구하기 (yyyy-MM-dd)
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-        // 오늘의 퀴즈 문제(Question) 조회
-        List<QuizQuestionDTO> questions = quizMapper.selectQuizByDate(today);
+        // 오늘의 경제 퀴즈 문제(오늘 날짜 && 안 푼) 조회
+        List<QuizQuestionDTO> unsolvedQuestions = quizMapper.selectUnsolvedQuizByDate(userId, LocalDate.now().toString());
 
         // 퀴즈가 없으면 빈 리스트 반환 (에러 방지)
-        if (questions.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<Long> solvedQuizIds = quizMapper.selectTodaySolvedQuizIds(userId);
-
-        // 안 푼 문제만 필터링
-        List<QuizQuestionDTO> unsolvedQuestions = questions.stream()
-                .filter(q -> !solvedQuizIds.contains(q.getQuizId()))
-                .collect(Collectors.toList());
-
-        // 오늘 미션 완료면 빈 리스트 반환 (에러 방지)
         if (unsolvedQuestions.isEmpty()) {
             return new ArrayList<>();
         }
@@ -53,31 +38,19 @@ public class QuizServiceImpl implements QuizService {
                 .collect(Collectors.toList());
 
         // 해당 퀴즈들의 보기(Choice) 전체 조회
-        List<QuizChoiceDTO> choices = quizMapper.selectQuizChoicesByQuizIds(quizIds);
-
-        // 보기들을 quizId를 키(Key)로 하여 그룹화 (퀴즈 ID로 객관식 보기 찾기 가능)
-        Map<Long, List<QuizChoiceDTO>> choicesMap = choices.stream()
+        Map<Long, List<QuizChoiceDTO>> choicesMap = quizMapper.selectQuizChoicesByQuizIds(quizIds)
+                .stream()
                 .collect(Collectors.groupingBy(QuizChoiceDTO::getQuizId));
 
-        // 결과 DTO (Question + Choices)
-        List<QuizQuestionResponseDTO> responseList = new ArrayList<>();
-
-        for (QuizQuestionDTO q : unsolvedQuestions) {
-            // 해당 문제의 보기 리스트 가져오기 (없으면 빈 리스트)
-            List<QuizChoiceDTO> quizChoices = choicesMap.getOrDefault(q.getQuizId(), new ArrayList<>());
-
-            // ResponseDTO 생성
-            QuizQuestionResponseDTO responseDTO = QuizQuestionResponseDTO.builder()
-                    .quizId(q.getQuizId())
-                    .type(q.getType())
-                    .question(q.getQuestion())
-                    .point(q.getPoint())
-                    .quizDate(q.getQuizDate())
-                    .choices(quizChoices)
-                    .build();
-            responseList.add(responseDTO);
-        }
-        return responseList;
+        return unsolvedQuestions.stream().map(q -> QuizQuestionResponseDTO.builder()
+                .quizId(q.getQuizId())
+                .type(q.getType())
+                .question(q.getQuestion())
+                .point(q.getPoint())
+                .quizDate(q.getQuizDate())
+                .choices(choicesMap.getOrDefault(q.getQuizId(), new ArrayList<>()))
+                .build()
+        ).collect(Collectors.toList());
     }
 
     @Override

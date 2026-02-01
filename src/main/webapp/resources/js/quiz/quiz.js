@@ -111,7 +111,7 @@ function handleCorrectAnswer(buttonElement, optionId, response) {
     correctAnswers++;
 
     // 정답 모달 표시
-    showCorrectModal(response.point, response.message);
+    showResultModal(true, response.point, response.message);
 
     // 진행률 업데이트
     updateProgress();
@@ -122,7 +122,7 @@ function handleWrongAnswer(buttonElement, message) {
     buttonElement.classList.add('wrong');
 
     // 오답 모달 표시
-    showWrongModal(message);
+    showResultModal(false, 0, message);
 
     // 1초 후 원래 상태로
     setTimeout(() => {
@@ -144,38 +144,25 @@ function updateProgress() {
     document.getElementById('quiz-progressStatus').textContent = progress + '% 달성!';
 }
 
-// 정답 모달 표시
-function showCorrectModal(point, explanation) {
+// 결과 모달 표시
+function showResultModal(isCorrect, point, message) {
     const modal = document.getElementById('quiz-result-Modal');
     const pointsMessage = document.getElementById('quiz-pointsMessage');
     const modalTitle = modal.querySelector('.quiz-modal-title');
     const modalMessage = modal.querySelector('.quiz-modal-message');
 
-    // 포인트 메시지 표시
-    pointsMessage.textContent = point + ' 포인트를 획득하였습니다.';
-    pointsMessage.style.display = 'block';
-
-    modalTitle.textContent = '짝짝짝👏👏👏 정답입니다~';
-    modalMessage.textContent = explanation;
-
-    // 정답 스타일 추가
-    modal.classList.add('correct');
-    modal.classList.add('active');
-}
-
-// 오답 모달 표시
-function showWrongModal(message) {
-    const modal = document.getElementById('quiz-result-Modal');
-    const pointsMessage = document.getElementById('quiz-pointsMessage');
-    const modalTitle = modal.querySelector('.quiz-modal-title');
-    const modalMessage = modal.querySelector('.quiz-modal-message');
-
-    pointsMessage.style.display = 'none';
-    modalTitle.textContent = message; // "다시 한번 생각해 보세요."
-    modalMessage.textContent = '퀴즈를 맞히고 나의 개미 랭크를 높여보세요!';
-
-    // 정답 스타일 제거
-    modal.classList.remove('correct');
+    if (isCorrect) {
+        modal.classList.add('correct');
+        pointsMessage.textContent = point + ' 포인트를 획득하였습니다.';
+        pointsMessage.style.display = 'block';
+        modalTitle.textContent = '짝짝짝👏👏👏 정답입니다~';
+        modalMessage.textContent = message;
+    } else {
+        modal.classList.remove('correct');
+        pointsMessage.style.display = 'none';
+        modalTitle.textContent = message; // "다시 한번 생각해 보세요."
+        modalMessage.textContent = '퀴즈를 맞히고 나의 개미 랭크를 높여보세요!';
+    }
     modal.classList.add('active');
 }
 
