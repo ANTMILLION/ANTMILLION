@@ -5,7 +5,7 @@
 <aside class="sidebar-sidebar">
     <div class="sidebar-logo" style="cursor: pointer">
         <div class="sidebar-logo-icon">
-            <img src="${cpath}/resources/images/icontmp.png">
+            <img src="${cpath}/resources/images/antmillion-logo.png">
         </div>
         <span>ANTMILLION</span>
     </div>

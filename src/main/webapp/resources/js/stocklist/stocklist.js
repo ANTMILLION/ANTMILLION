@@ -385,7 +385,7 @@ function createStockItemHTML(stock, index, isFavorite) {
             <div class="stocklist-info">
                 <div class="stocklist-logo">
                     <img src="${imgUrl}" alt="${stock.hts_kor_isnm}" 
-                        onerror="this.src='${contextPath}/resources/images/icontmp.png'">
+                        onerror="this.src='${contextPath}/resources/images/antmillion-logo.png'">
                 </div>
                 <div class="main-signal-lamp" id="signal-${stock.mksc_shrn_iscd}"></div>
                 <span class="stocklist-name">${stock.hts_kor_isnm}</span>
@@ -562,7 +562,7 @@ function createFavoriteStockItemHTML(stock, index) {
             <div class="stocklist-info">
                 <div class="stocklist-logo">
                     <img src="${imgUrl}" alt="${stock.stockName}" 
-                        onerror="this.src='${contextPath}/resources/images/icontmp.png'">
+                        onerror="this.src='${contextPath}/resources/images/antmillion-logo.png'">
                 </div>
                 <div class="main-signal-lamp" id="signal-${stock.stockCode}"></div>
                 <span class="stocklist-name">${stock.stockName}</span>

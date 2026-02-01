@@ -941,7 +941,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoImg = document.getElementById('detail-stock-image');
     logoImg.src = imgUrl;
     logoImg.onerror = function () {
-        this.src = contextPath + '/resources/images/icontmp.png';
+        this.src = contextPath + '/resources/images/antmillion-logo.png';
     }
 
     scheduleMarketClose();
