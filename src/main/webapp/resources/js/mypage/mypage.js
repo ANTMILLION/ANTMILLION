@@ -922,7 +922,7 @@ function loadHistoryData() {
                         <div class="mypage-warning-header">
                             <span class="warning-icon">⚠️</span>
                             <span class="warning-title">${biasInfo.title}</span>
-                            <span class="info-icon" data-bias-type="${history.biasType}">ⓘ</span>
+                            <span class="info-icon" data-bias-type="${history.biasType}">?</span>
                         </div>
                         
                         <div style="text-align: right; color: #999; font-size: 13px; margin-bottom: 12px;">
@@ -966,25 +966,51 @@ function loadHistoryData() {
 }
 
 /**
- * 편향 설명 툴팁 설정
+ * 편향 설명 툴팁 설정 (HTML 지원 버전)
  */
 function setupBiasTooltips() {
     const biasDescriptions = {
-        'RISK_AVERSION': '위험회피란?\n 투자자들이 이익 구간에서 불확실한 더 큰 이익보다 확실한 작은 이익을 선택하는 경향입니다.',
-        
-        'LOSS_AVERSION': '손실회피란?\n 투자자들이 이익의 기쁨보다 손실의 고통을 더 크게 느껴 손실을 확정하지 않고 손실 구간에서 과도한 위험을 감수하는 경향입니다.',
-        
-        'SUNK_COST': '매몰비용오류란?\n 이미 지불하여 되찾을 수 없는 비용(시간·돈·노력 등)에 미련을 두어, 미래의 가치보다 과거의 투자분에 집착하여 비합리적인 의사결정을 내리는 현상입니다.',
-        
-        'FOMO': 'FOMO(포모)란?\n 나만 기회를 놓치고 소외될 것 같은 공포(Fear Of Missing Out)를 뜻합니다. 급등하는 차트를 보며 이성적 판단 없이 추격 매수하는 심리적 상태입니다.'
+        'RISK_AVERSION': '<strong>위험회피란?</strong>투자자들이 이익 구간에서 불확실한 더 큰 이익보다 확실한 작은 이익을 선택하는 경향입니다.',
+        'LOSS_AVERSION': '<strong>손실회피란?</strong>투자자들이 이익의 기쁨보다 손실의 고통을 더 크게 느껴 손실을 확정하지 않고 손실 구간에서 과도한 위험을 감수하는 경향입니다.',
+        'SUNK_COST': '<strong>매몰비용오류란?</strong>이미 지불하여 되찾을 수 없는 비용(시간·돈·노력 등)에 미련을 두어, 미래의 가치보다 과거의 투자분에 집착하여 비합리적인 의사결리는 현상입니다.',
+        'FOMO': '<strong>FOMO(포모)란?</strong>나만 기회를 놓치고 소외될 것 같은 공포(Fear Of Missing Out)를 뜻합니다. 급등하는 차트를 보며 이성적 판단 없이 추격 매수하는 심리적 상태입니다.'
     };
-    
+
     const infoIcons = document.querySelectorAll('.info-icon');
     
+    // 1. 공통 툴팁 엘리먼트 (딱 하나만 생성하여 재사용)
+    let tooltipEl = document.getElementById('js-custom-tooltip');
+    if (!tooltipEl) {
+        tooltipEl = document.createElement('div');
+        tooltipEl.id = 'js-custom-tooltip';
+        tooltipEl.className = 'js-custom-tooltip'; // CSS에서 스타일링할 클래스
+        document.body.appendChild(tooltipEl);
+    }
+
     infoIcons.forEach(icon => {
         const biasType = icon.getAttribute('data-bias-type');
         const description = biasDescriptions[biasType] || '심리 편향에 대한 설명입니다.';
-        icon.setAttribute('data-tooltip', description);
+        
+        // 2. 마우스 이벤트 리스너 정의 (기존 리스너가 있다면 덮어씌움)
+        icon.onmouseenter = function(e) {
+            tooltipEl.innerHTML = description; // HTML 해석 (볼드 적용)
+            tooltipEl.style.display = 'block';
+
+            // 위치 계산 (아이콘 위쪽 중앙)
+            const rect = icon.getBoundingClientRect();
+            const scrollY = window.pageYOffset;
+            const scrollX = window.pageXOffset;
+
+            tooltipEl.style.top = (rect.top + scrollY - tooltipEl.offsetHeight - 12) + 'px';
+            tooltipEl.style.left = (rect.left + scrollX + (rect.width / 2) - (tooltipEl.offsetWidth / 2)) + 'px';
+            
+            tooltipEl.classList.add('show');
+        };
+
+        icon.onmouseleave = function() {
+            tooltipEl.classList.remove('show');
+            tooltipEl.style.display = 'none';
+        };
     });
 }
 
