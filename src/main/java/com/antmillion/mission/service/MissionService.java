@@ -6,5 +6,5 @@ import com.antmillion.user.dto.UserRankResponseDTO;
 public interface MissionService {
     UserRankResponseDTO getUserRankInfo(Long userId);
     boolean isTodayMissionCompleted(Long userId);
-    MissionProgressResponseDTO getTodayMissionStatus(Long userId);
+    MissionProgressResponseDTO getTodayMissionProgress(Long userId);
 }

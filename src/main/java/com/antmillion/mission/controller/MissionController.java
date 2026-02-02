@@ -41,7 +41,7 @@ public class MissionController {
 
     @GetMapping("/api/mission/today-progress")
     @ResponseBody
-    public MissionProgressResponseDTO getTodayMissionStatus() {
+    public MissionProgressResponseDTO getTodayMissionProgress() {
         Long userId = currentUserId();
         if (userId == null) {
             return MissionProgressResponseDTO.builder()
@@ -52,7 +52,7 @@ public class MissionController {
                     .NewsCompleted(false)
                     .build();
         }
-        return missionService.getTodayMissionStatus(userId);
+        return missionService.getTodayMissionProgress(userId);
     }
 
     private Long currentUserId() {

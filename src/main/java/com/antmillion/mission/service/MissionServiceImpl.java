@@ -27,12 +27,12 @@ public class MissionServiceImpl implements MissionService {
     }
 
     public boolean isTodayMissionCompleted(Long userId) {
-        MissionProgressResponseDTO status = getTodayMissionStatus(userId);
+        MissionProgressResponseDTO status = getTodayMissionProgress(userId);
         // totalProgress가 100이면 완료로 간주
         return status.getTotalProgress() >= MAX_PROGRESS;
     }
 
-    public MissionProgressResponseDTO getTodayMissionStatus(Long userId) {
+    public MissionProgressResponseDTO getTodayMissionProgress(Long userId) {
         // 퀴즈 진행 상황
         int solvedQuizCount = quizMapper.countTodaySolvedQuiz(userId);
 
