@@ -1,6 +1,6 @@
 package com.antmillion.mission.service;
 
-import com.antmillion.mission.dto.MissionStatusResponseDTO;
+import com.antmillion.mission.dto.MissionProgressResponseDTO;
 import com.antmillion.quiz.mapper.QuizMapper;
 import com.antmillion.news.mapper.NewsMapper;
 import com.antmillion.user.dto.UserRankResponseDTO;
@@ -27,12 +27,12 @@ public class MissionServiceImpl implements MissionService {
     }
 
     public boolean isTodayMissionCompleted(Long userId) {
-        MissionStatusResponseDTO status = getTodayMissionStatus(userId);
+        MissionProgressResponseDTO status = getTodayMissionStatus(userId);
         // totalProgress가 100이면 완료로 간주
         return status.getTotalProgress() >= MAX_PROGRESS;
     }
 
-    public MissionStatusResponseDTO getTodayMissionStatus(Long userId) {
+    public MissionProgressResponseDTO getTodayMissionStatus(Long userId) {
         // 퀴즈 진행 상황
         int solvedQuizCount = quizMapper.countTodaySolvedQuiz(userId);
 
@@ -45,7 +45,7 @@ public class MissionServiceImpl implements MissionService {
         int totalProgress = quizScore + newsScore;
         totalProgress = Math.min(totalProgress, MAX_PROGRESS); // 100% 넘지 않게
 
-        return MissionStatusResponseDTO.builder()
+        return MissionProgressResponseDTO.builder()
                 .totalProgress(totalProgress)
                 .quizCount(solvedQuizCount)
                 .newsCount(readNewsCount)

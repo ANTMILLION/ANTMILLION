@@ -1,6 +1,6 @@
 package com.antmillion.mission.controller;
 
-import com.antmillion.mission.dto.MissionStatusResponseDTO;
+import com.antmillion.mission.dto.MissionProgressResponseDTO;
 import com.antmillion.mission.service.MissionService;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +41,10 @@ public class MissionController {
 
     @GetMapping("/api/mission/today-progress")
     @ResponseBody
-    public MissionStatusResponseDTO getTodayMissionStatus() {
+    public MissionProgressResponseDTO getTodayMissionStatus() {
         Long userId = currentUserId();
         if (userId == null) {
-            return MissionStatusResponseDTO.builder()
+            return MissionProgressResponseDTO.builder()
                     .totalProgress(0)
                     .quizCount(0)
                     .newsCount(0)
