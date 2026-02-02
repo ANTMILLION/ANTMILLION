@@ -153,6 +153,9 @@ public class KisApiService {
         HttpEntity<KisWebSocketRequest> request =
                 new HttpEntity<>(body, headers);
         ResponseEntity<KisWebSocketResponse> response = restTemplate.postForEntity(url, request, KisWebSocketResponse.class);
+        if(response.getBody() != null) {
+        	log.info("### Approval Key 발급 성공: {}******** ###", response.getBody().getApprovalKey().substring(0, 8));
+    	}
         return response.getBody();
     }
     

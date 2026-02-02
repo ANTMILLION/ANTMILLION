@@ -48,7 +48,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-		System.out.println("KIS 웹소켓 핸드셰이크 성공");
+		log.info("### [KIS 웹소켓] 핸드셰이크 성공 및 연결 완료 ###");
 	}
 
 	// 숫자를 안전하게 추출하는 헬퍼 메서드 (클래스 내부에 추가)
@@ -71,11 +71,10 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 		// 1. PINGPONG 처리
 		if (payload.contains("PINGPONG")) {
 			manager.updateLastHeartbeatTime(); // 수신 시간 갱신
-			System.out.println("PINGPONG 수신 완료");
+			log.info("### PINGPONG 수신 완료 ###");
 			try {
 				// 한투 가이드: 받은 PINGPONG 메시지를 그대로 다시 보내야 연결이 유지됨
 				session.sendMessage(new TextMessage(payload));
-				//System.out.println("PINGPONG 응답 완료");
 			} catch (IOException e) {
 				System.err.println("PINGPONG 응답 전송 실패: " + e.getMessage());
 				manager.monitorHealth(); // 재연결
@@ -85,7 +84,6 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 
 		// 2. JSON 응답 처리 (최초 구독 성공 알림 등)
 		if (payload.startsWith("{")) {
-			//System.out.println("시스템 메시지(JSON): " + payload);
 			return;
 		}
 
@@ -111,7 +109,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 
 				// STOMP 전송
 				messagingTemplate.convertAndSend("/topic/kis-trade/present" + stockCode, tradeData); // 실시간 체결가
-				// System.out.println("체결가 수신: " + tradeData);
+				log.info("### [실시간 체결가] 종목: {} ###\n{}", stockCode, tradeData);
 			} else if (isAskBidTrId(trId)) {
 				String[] data = parts[3].split("\\^");
 				Map<String, String> askBidData = new HashMap<>();
@@ -139,7 +137,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 
 				String stockCode = data[0];
 				messagingTemplate.convertAndSend("/topic/kis-trade/ask-bid" + stockCode, askBidData);
-				// System.out.println("호가 수신: " + askBidData);
+				log.info("### [실시간 호가] 종목: {} ###\n{}", stockCode, askBidData);
 				int bestBidPrice = parseSafeInt(data[13]); // 매수 1호가
 				int bestBidQty = parseSafeInt(data[33]); // 매수 1호가 잔량
 
@@ -150,21 +148,21 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 				// 매도 주문 체결 확인 (최우선 매수호가에 내 매도 주문이 닿았는가)
 				tradingEngineService.processExecution(stockCode, bestBidPrice, bestBidQty);
 			} else {
-				System.out.println("현재가/호가 아님");
+				log.info("### [알림] 현재가/호가 데이터 아님 ###");
 			}
 		} catch (Exception e) {
-			System.err.println("데이터 처리 오류: " + e);
+			log.error("### [ERROR] 데이터 처리 오류: {} ###", e.getMessage(), e);
 		}
 	}
 
 	@Override
 	public void handleTransportError(WebSocketSession session, Throwable exception) {
-		System.err.println("웹소켓 통신 에러: " + exception.getMessage());
+		log.error("### [ERROR] 웹소켓 통신 에러: {} ###", exception.getMessage());
 	}
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-		System.out.println("KIS 연결 종료: " + status.getReason());
+		log.info("### KIS 연결 종료: {} ###", status.getReason());
 	}
 
 }
