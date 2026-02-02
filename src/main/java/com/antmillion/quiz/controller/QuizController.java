@@ -1,6 +1,5 @@
 package com.antmillion.quiz.controller;
 
-import com.antmillion.news.dto.NewsProgressResponseDTO;
 import com.antmillion.quiz.dto.QuizProgressResponseDTO;
 import com.antmillion.quiz.dto.QuizQuestionResponseDTO;
 import com.antmillion.quiz.dto.QuizSubmissionRequestDTO;

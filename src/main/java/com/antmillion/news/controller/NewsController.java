@@ -1,6 +1,7 @@
 package com.antmillion.news.controller;
 
 import com.antmillion.news.dto.NewsProgressResponseDTO;
+import com.antmillion.news.dto.NewsRewardResponseDTO;
 import com.antmillion.news.service.NewsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -24,13 +25,12 @@ public class NewsController {
     // 뉴스 읽기 및 포인트 적립
     @PostMapping("/api/mission/news/read")
     @ResponseBody
-    public NewsProgressResponseDTO readNews(@RequestBody Map<String, String> payload) {
+    public NewsRewardResponseDTO readNews(@RequestBody Map<String, String> payload) {
         Long userId = currentUserId();
 
         if (userId == null) {
-            return NewsProgressResponseDTO.builder()
+            return NewsRewardResponseDTO.builder()
                     .progress(0)
-                    .readCount(0)
                     .earnedPoint(0)
                     .build();
         }

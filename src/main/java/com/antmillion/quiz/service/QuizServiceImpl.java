@@ -3,6 +3,7 @@ package com.antmillion.quiz.service;
 import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.quiz.dto.*;
 import com.antmillion.quiz.mapper.QuizMapper;
+import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,9 @@ public class QuizServiceImpl implements QuizService {
     private final QuizMapper quizMapper;
     private final MemberMapper memberMapper;
     private final AntRankService antRankService;
+
+    private static final int TOTAL_QUIZ_COUNT = 2;
+    private static final int PROGRESS_PER_QUIZ = 50;
 
     @Override
     public List<QuizQuestionResponseDTO> getDailyQuiz(Long userId) {
@@ -69,6 +73,7 @@ public class QuizServiceImpl implements QuizService {
                     .isCorrect(false)
                     .point(0)
                     .message("다시 한번 생각해 보세요.")
+                    .progress(0)
                     .build();
         }
         int count = quizMapper.countSolvedHistory(userId, requestDTO.getQuizId());
@@ -86,24 +91,34 @@ public class QuizServiceImpl implements QuizService {
             int newPoint = memberMapper.selectUserPoint(userId);
             antRankService.updateUserRank(userId, newPoint);
         }
+        UserRankResponseDTO updatedRank = antRankService.getUserRankInfo(userId);
+
+        int progress = calculateQuizProgress(userId);
+
         // 정답 응답
         return QuizSubmissionResponseDTO.builder()
                 .isCorrect(true)
                 .point(resultInfo.getPoint())
                 .message(resultInfo.getExplanation())
+                .updatedRank(updatedRank)
+                .progress(progress)
                 .build();
     }
 
     @Override
     public QuizProgressResponseDTO getQuizProgress(Long userId) {
         int solvedCount = quizMapper.countTodaySolvedQuiz(userId);
-        int totalCount = 2;
-        int progress = Math.min((solvedCount * 50) / totalCount, 100);
+        int progress = calculateQuizProgress(userId);
 
         return QuizProgressResponseDTO.builder()
                 .solvedCount(solvedCount)
-                .totalCount(totalCount)
+                .totalCount(TOTAL_QUIZ_COUNT)
                 .progress(progress)
                 .build();
+    }
+
+    private int calculateQuizProgress(Long userId) {
+        int solvedCount = quizMapper.countTodaySolvedQuiz(userId);
+        return Math.min((solvedCount * PROGRESS_PER_QUIZ), 100);
     }
 }

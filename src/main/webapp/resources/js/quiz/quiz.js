@@ -1,6 +1,5 @@
 let quizData = [];
 let currentQuizIndex = 0;
-let correctAnswers = 0;
 let isAnswering = false;
 
 // 페이지 로드 시 실행
@@ -23,13 +22,13 @@ function getDailyQuiz() {
         url: cpath + "/api/mission/quiz/progress",
         type: 'GET',
         success: function (data) {
-            correctAnswers = data.solvedCount || 0;
+            updateProgress(data.progress)
             $.ajax({
                 url: cpath + '/api/mission/quiz/daily',
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
-                    if ((!data || data.length === 0) && correctAnswers >= 2) {
+                    if (!data || data.length === 0) {
                         showCompletion();
                         return;
                     }
@@ -52,9 +51,7 @@ function getDailyQuiz() {
                         }))
                     }));
 
-                    totalQuizCount = quizData.length + correctAnswers;
                     currentQuizIndex = 0;
-                    updateProgress();
                     if (quizData.length > 0) {
                         loadQuiz(currentQuizIndex);
                     }
@@ -107,13 +104,12 @@ function selectOption(optionId, ignore, buttonElement) {
 // 정답 처리
 function handleCorrectAnswer(buttonElement, optionId, response) {
     buttonElement.classList.add('correct');
-    correctAnswers++;
 
     // 정답 모달 표시
     showResultModal(true, response.point, response.message);
 
     // 진행률 업데이트
-    updateProgress();
+    updateProgress(response.progress);
 }
 
 // 오답 처리
@@ -137,10 +133,14 @@ function goToNextQuiz() {
 }
 
 // 진행률 업데이트
-function updateProgress() {
-    const progress = Math.round((correctAnswers / totalQuizCount) * 100);
-    document.getElementById('quiz-progressBar').style.width = progress + '%';
-    document.getElementById('quiz-progressStatus').textContent = progress + '% 달성!';
+function updateProgress(percent) {
+    const bar = document.getElementById('quiz-progressBar');
+    const text = document.getElementById('quiz-progressStatus');
+
+    if(bar && text) {
+        bar.style.width = percent + '%';
+        text.innerText = percent + '% 달성!';
+    }
 }
 
 // 결과 모달 표시
@@ -192,6 +192,9 @@ function submitAnswer(quizId, optionId, buttonElement) {
         success: function (response) {
             if (response.isCorrect){
                 handleCorrectAnswer(buttonElement, optionId, response);
+                if (response.updatedRank) {
+                    updateHeaderUI(response.updatedRank);
+                }
             } else {
                 handleWrongAnswer(buttonElement, response.message);
             }
@@ -204,22 +207,42 @@ function submitAnswer(quizId, optionId, buttonElement) {
     })
 }
 
+// 헤더(상단바) UI 업데이트
+function updateHeaderUI(data) {
+    // 헤더 상단 닉네임
+    const headerName = document.querySelector('.header-user-name');
+    if (headerName) headerName.textContent = data.nickName;
+
+    // 헤더 드롭다운 닉네임
+    const profileName = document.querySelector('.header-profile-nickname');
+    if (profileName) profileName.textContent = data.nickName;
+
+    // 헤더 드롭다운 티어
+    const rankName = document.querySelector('.header-profile-tier');
+    if (rankName) rankName.textContent = data.rankName + " 개미";
+
+    // 헤더 드롭다운 아바타 이미지
+    const rankImg = document.querySelector('.header-profile-avatar');
+    if (rankImg) {
+        rankImg.src = cpath + '/' + data.rankImage;
+        rankImg.alt = data.rankName;
+    }
+}
+
 // 완료 화면 표시
 function showCompletion() {
-    // 1. 퀴즈 질문과 보기 숨기기
+    // 퀴즈 질문과 보기 숨기기
     document.getElementById('quiz-quizContent').style.display = 'none';
 
-    // 2. (선택사항) 날짜 헤더도 숨기고 싶다면 주석 해제
+    // 날짜 헤더도 숨기기
     document.querySelector('.quiz-quiz-header').style.display = 'none';
 
     // 3. 완료 화면 보이기
     const completionScreen = document.getElementById('quiz-completionScreen');
-    completionScreen.style.display = 'block'; // 보이게 설정
-    completionScreen.classList.add('active'); // CSS 효과를 위한 클래스 추가
+    completionScreen.style.display = 'block';
+    completionScreen.classList.add('active');
 
-    // 4. 진행률 100%로 강제 설정
-    document.getElementById('quiz-progressBar').style.width = '100%';
-    document.getElementById('quiz-progressStatus').textContent = '100% 달성!';
+    updateProgress(100);
 }
 
 // 모달 외부 클릭 시 닫기

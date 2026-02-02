@@ -3,7 +3,10 @@ package com.antmillion.news.service;
 import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.news.dto.NewsLogDTO;
 import com.antmillion.news.dto.NewsProgressResponseDTO;
+import com.antmillion.news.dto.NewsRewardResponseDTO;
 import com.antmillion.news.mapper.NewsMapper;
+import com.antmillion.user.dto.UserRankResponseDTO;
+import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +22,15 @@ public class NewsServiceImpl implements NewsService {
 
     private final NewsMapper newsMapper;
     private final MemberMapper memberMapper;
+    private final AntRankService antRankService;
 
     // 뉴스 읽기 처리 및 포인트 획득 결과 반환
     @Transactional
-    public NewsProgressResponseDTO readNews(Long userId, String newsUrl) {
+    public NewsRewardResponseDTO readNews(Long userId, String newsUrl) {
         // 중복 체크 (오늘 이미 읽은 기사인지)
         boolean alreadyRead = newsMapper.existsTodayLog(userId, newsUrl);
         int earnedPoint = 0; // 뉴스 획득 포인트
+        UserRankResponseDTO updatedRank = null;
 
         if (!alreadyRead) {
             // 안 읽었으면 기록 저장
@@ -42,17 +47,19 @@ public class NewsServiceImpl implements NewsService {
             if (count <= 5) {
                 earnedPoint = 100;
                 memberMapper.updateUserPoint(userId, earnedPoint);
+                int newPoint = memberMapper.selectUserPoint(userId);
+                antRankService.updateUserRank(userId, newPoint);
+                updatedRank = antRankService.getUserRankInfo(userId);
             }
         }
 
-        // 현재 상태 조회 (DTO 반환됨)
-        NewsProgressResponseDTO currentStatus = getNewsProgress(userId);
+        int progress = calculateNewsProgress(userId);
 
         // 기존 상태에 earnedPoint만 추가해서
-        return NewsProgressResponseDTO.builder()
-                .readCount(currentStatus.getReadCount())
-                .progress(currentStatus.getProgress())
+        return NewsRewardResponseDTO.builder()
+                .progress(progress)
                 .earnedPoint(earnedPoint) // 포인트 정보 추가
+                .updatedRank(updatedRank)
                 .build();
     }
 
@@ -61,7 +68,7 @@ public class NewsServiceImpl implements NewsService {
         int count = newsMapper.countTodayNewsRead(userId);
 
         // 1개당 20%
-        int progress = Math.min(count * PROGRESS_PER_NEWS, MAX_PROGRESS);
+        int progress = calculateNewsProgress(userId);
 
         return NewsProgressResponseDTO.builder()
                 .readCount(count)
@@ -72,5 +79,10 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public List<String> selectTodayReadUrls(Long userId) {
         return newsMapper.selectTodayReadUrls(userId);
+    }
+
+    private int calculateNewsProgress(Long userId) {
+        int count = newsMapper.countTodayNewsRead(userId);
+        return Math.min(count * PROGRESS_PER_NEWS, MAX_PROGRESS);
     }
 }
