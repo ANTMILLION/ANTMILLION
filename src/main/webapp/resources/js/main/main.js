@@ -166,9 +166,6 @@ function renderMainStocks() {
 
                 container.innerHTML = html;
 
-                // ✅ 신호등 유지(원본 기능)
-                updateAllTrafficSignals();
-
                 // 이벤트 리스너
                 attachMainFavoriteListeners();
                 attachMainStockItemListeners();
@@ -190,6 +187,12 @@ function renderMainStocks() {
                     const stockCodes = data.slice(0, 5).map(s => s.mksc_shrn_iscd);
                     subscribeAllStocksToBackend(stockCodes);
                 }
+                
+                // 신호등 업데이트는 시차를 두고 실행
+                setTimeout(() => {
+                    console.log('[System] 신호등 상태 업데이트 시작');
+                    updateAllTrafficSignals();
+                }, 500);
             });
         })
         .catch(error => {
@@ -900,24 +903,29 @@ function scheduleMarketClose() {
 }
 
 //모든 종목의 신호등 상태를 서버에서 가져와 업데이트하는 함수
-function updateAllTrafficSignals() {
+async function updateAllTrafficSignals() {
     const stockItems = document.querySelectorAll('.main-stocklist-item');
-    
-    stockItems.forEach(item => {
-        const stockCode = item.getAttribute('data-id'); // HTML에서 설정한 data-id 가져오기
-        
-        if (!stockCode) return;
+    console.log('[System] 메인 신호등 상태 업데이트 시작');
 
-        fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`)
-            .then(res => res.json())
-            .then(data => {
-                const lamp = document.getElementById(`signal-${stockCode}`);
-                if (lamp && data.signalColor) {
-                    // 기존 색상 클래스 모두 제거 후 새 색상 추가
-                    lamp.classList.remove('GREEN', 'RED', 'YELLOW');
-                    lamp.classList.add(data.signalColor);
-                }
-            })
-            .catch(err => console.log(`[Signal Error] ${stockCode} 통신 실패`));
-    });
+    for (const item of stockItems) {
+        const stockCode = item.getAttribute('data-id'); // 메인은 data-id를 사용함에 유의
+        if (!stockCode) continue;
+
+        try {
+            const res = await fetch(`${contextPath}/api/kis/foreigner-organization/${stockCode}`);
+            const data = await res.json();
+            const lamp = document.getElementById(`signal-${stockCode}`);
+            
+            if (lamp && data.signalColor) {
+                // 기존 색상 클래스 모두 제거 후 새 색상 추가
+                lamp.classList.remove('GREEN', 'RED', 'YELLOW');
+                lamp.classList.add(data.signalColor);
+            }
+        } catch (err) {
+            console.error(`[Signal Error] ${stockCode} 업데이트 실패:`, err);
+        }
+        
+        // 0.05초 대기하여 네트워크 병목 방지
+        await new Promise(resolve => setTimeout(resolve, 50));
+    }
 }
