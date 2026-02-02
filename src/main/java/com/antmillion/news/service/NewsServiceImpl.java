@@ -14,6 +14,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NewsServiceImpl implements NewsService {
 
+    private static final int PROGRESS_PER_NEWS = 20;
+    private static final int MAX_PROGRESS = 100;
+
     private final NewsMapper newsMapper;
     private final MemberMapper memberMapper;
 
@@ -58,7 +61,7 @@ public class NewsServiceImpl implements NewsService {
         int count = newsMapper.countTodayNewsRead(userId);
 
         // 1개당 20%
-        int progress = Math.min(count * 20, 100);
+        int progress = Math.min(count * PROGRESS_PER_NEWS, MAX_PROGRESS);
 
         return NewsProgressResponseDTO.builder()
                 .readCount(count)
