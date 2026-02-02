@@ -17,7 +17,7 @@ public class RealizedProfitDTO {
     private long shares;           // 매도수량
     private long buyPrice;         // 매수단가 (평균단가)
     private long sellPrice;        // 매도단가
-    private long profit;           // 실현손익 ((매도단가 - 매수단가) * 수량)
-    private double profitRate;     // 수익률
+    private long profit;           // 실현손익
+    private double profitRate;     // 수익률 (실현손익 / 차감원가)
     private String tradeDate;      // 거래일시 (날짜 포맷팅)
 }
