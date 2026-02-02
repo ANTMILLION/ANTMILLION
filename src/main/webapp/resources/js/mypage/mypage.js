@@ -410,14 +410,14 @@ function loadStockHoldings() {
                 currentHoldingStocks = [];
                 updateTotalAsset();
                 
-                // ✅ 주식이 없어도 심리경고는 로드
+                // 주식이 없어도 심리경고는 로드
                 loadHistoryData();
                 return;
             }
 
             // 현재 보유 종목 정보 저장 (code 포함)
             currentHoldingStocks = data;
-            console.log('✅ 주식 잔고 로드 완료:', currentHoldingStocks.length, '개');
+            console.log('주식 잔고 로드 완료:', currentHoldingStocks.length, '개');
 
             // 화면 렌더링
             renderStockHoldings(data);

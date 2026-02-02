@@ -24,7 +24,10 @@ public class RateLimitedKisApiClient {
         this.redisTemplate = redisTemplate;
 
         // 1초당 20건 제한 설정
-        Bandwidth limit = Bandwidth.simple(20, Duration.ofSeconds(1));
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(20) // 버킷 용량
+                .refillGreedy(20, Duration.ofSeconds(1)) // 1초마다 20개 즉시 리필
+                .build();
         this.bucket = Bucket.builder()
                 .addLimit(limit)
                 .build();
