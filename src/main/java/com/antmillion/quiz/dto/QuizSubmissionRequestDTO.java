@@ -1,4 +1,4 @@
-package com.antmillion.mission.dto;
+package com.antmillion.quiz.dto;
 
 import lombok.*;
 
@@ -7,7 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class QuizSubmissionRequestDTO {
-    private Long userId;
     private Long quizId;
     private Integer choiceNo;
 }

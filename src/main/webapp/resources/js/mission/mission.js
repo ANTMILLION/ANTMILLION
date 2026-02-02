@@ -24,7 +24,7 @@ $(document).ready(function() {
 // 오늘의 미션 달성률(퀴즈/뉴스) 조회
 function checkMissionStatus() {
     $.ajax({
-        url: cpath + '/mission/today-status',
+        url: cpath + '/api/mission/today-progress',
         method: 'GET',
         success: function(data) {
             // 전체 진행률 업데이트 (서버에서 계산된 totalProgress 사용)
@@ -42,7 +42,7 @@ function checkMissionStatus() {
             $('#news-count-text').text(`(${newsCount}/5)`);
 
             // 퀴즈 미션 카드 상태 업데이트
-            if (data.isQuizCompleted) {
+            if (data.quizCompleted) {
                 const $quizCard = $('#mission-card-quiz');
                 $quizCard.addClass('completed');
 
@@ -54,7 +54,7 @@ function checkMissionStatus() {
             }
 
             // 뉴스 미션 카드 상태 업데이트
-            if (data.isNewsCompleted) {
+            if (data.newsCompleted) {
                 const $newsCard = $('#mission-card-news');
                 $newsCard.addClass('completed');
 
@@ -74,7 +74,7 @@ function checkMissionStatus() {
 // 랭크 정보 로드
 function loadRankInfo() {
     $.ajax({
-        url: cpath + '/mission/status',
+        url: cpath + '/api/mission/user-rank',
         type: 'GET',
         dataType: 'json',
         success: function(data) {

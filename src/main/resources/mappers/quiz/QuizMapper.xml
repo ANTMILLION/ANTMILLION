@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.antmillion.mission.mapper.MissionMapper">
+<mapper namespace="com.antmillion.quiz.mapper.QuizMapper">
 
-    <resultMap id="quizQuestionMap" type="com.antmillion.mission.dto.QuizQuestionDTO">
+    <resultMap id="quizQuestionMap" type="com.antmillion.quiz.dto.QuizQuestionDTO">
         <id property="quizId" column="quiz_id"/>
         <result property="missionId" column="mission_id"/>
         <result property="type" column="type"/>
@@ -14,22 +14,17 @@
         <result property="quizDate" column="quiz_date"/>
     </resultMap>
 
-    <select id="selectQuizByDate" resultMap="quizQuestionMap">
-        SELECT
-            quiz_id,
-            mission_id,
-            type,
-            question,
-            answer,
-            explanation,
-            point,
-            quiz_date
-        FROM quiz_question
-        WHERE DATE_FORMAT(quiz_date, '%Y-%m-%d') = #{quizDate}
-        ORDER BY quiz_id ASC
+    <select id="selectUnsolvedQuizByDate" resultMap="quizQuestionMap">
+        SELECT * FROM quiz_question q
+        WHERE DATE(q.quiz_date) = #{quizDate}
+          AND NOT EXISTS (
+            SELECT 1 FROM quiz_log l
+            WHERE l.quiz_id = q.quiz_id AND l.user_id = #{userId}
+            )
+        ORDER BY q.quiz_id ASC
     </select>
 
-    <resultMap id="quizChoiceMap" type="com.antmillion.mission.dto.QuizChoiceDTO">
+    <resultMap id="quizChoiceMap" type="com.antmillion.quiz.dto.QuizChoiceDTO">
         <id property="quizChoiceId" column="quiz_choice_id"/>
         <result property="quizId" column="quiz_id"/>
         <result property="choiceNo" column="choice_no"/>
@@ -50,7 +45,7 @@
         ORDER BY quiz_id ASC, choice_no ASC
     </select>
 
-    <insert id="insertQuizLog" parameterType="com.antmillion.mission.dto.QuizLogDTO">
+    <insert id="insertQuizLog" parameterType="com.antmillion.quiz.dto.QuizLogDTO">
         INSERT INTO quiz_log (user_id, quiz_id, solved_at)
         VALUES (#{userId}, #{quizId}, NOW())
     </insert>
@@ -61,13 +56,6 @@
         WHERE user_id = #{userId} AND quiz_id = #{quizId}
     </select>
 
-    <select id="selectTodaySolvedQuizIds" resultType="long">
-        SELECT quiz_id
-        FROM quiz_log
-        WHERE user_id = #{userId}
-        AND DATE_FORMAT(solved_at, '%Y-%m-%d') = CURDATE()
-    </select>
-
     <select id="countTodaySolvedQuiz" resultType="int">
         SELECT COUNT(DISTINCT quiz_id)
         FROM quiz_log
@@ -75,7 +63,7 @@
         AND DATE(solved_at) = CURDATE()
     </select>
 
-    <resultMap id="quizResultMap" type="com.antmillion.mission.dto.QuizResultDTO">
+    <resultMap id="quizResultMap" type="com.antmillion.quiz.dto.QuizResultDTO">
         <result property="answer" column="answer"/>
         <result property="explanation" column="explanation"/>
         <result property="point" column="point"/>

@@ -1,4 +1,4 @@
-package com.antmillion.mission.dto;
+package com.antmillion.quiz.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

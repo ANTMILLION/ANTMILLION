@@ -33,6 +33,9 @@ public class NaverNewsService {
     // 메모리 뉴스 저장소 (최신순)
     private final List<NaverNewsItemDTO> newsList = Collections.synchronizedList(new ArrayList<>());
 
+    private static final DateTimeFormatter NAVER_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
+
     // 서버 시작 시 초기화
     @PostConstruct
     public void init() {
@@ -64,8 +67,6 @@ public class NaverNewsService {
             return;
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
-
         synchronized (newsList) {
             // 기존 링크 스냅샷 및 현재 저장된 가장 최신 시간 계산
             Set<String> existingLinks = newsList.stream()
@@ -76,7 +77,7 @@ public class NaverNewsService {
             Optional<ZonedDateTime> currentNewest = newsList.stream()
                     .map(NaverNewsItemDTO::getPubDate)
                     .filter(Objects::nonNull)
-                    .map(s -> parsePubDate(s, formatter))
+                    .map(s -> parsePubDate(s, NAVER_DATE_FORMATTER))
                     .filter(Objects::nonNull)
                     .max(Comparator.naturalOrder());
 
@@ -85,13 +86,18 @@ public class NaverNewsService {
                     .filter(item -> item.getLink() != null && item.getPubDate() != null)
                     .filter(item -> !existingLinks.contains(item.getLink()))
                     .filter(item -> {
-                        ZonedDateTime itemDt = parsePubDate(item.getPubDate(), formatter);
+                        ZonedDateTime itemDt = parsePubDate(item.getPubDate(), NAVER_DATE_FORMATTER);
                         if (itemDt == null) return false;
-                        return currentNewest.map(cur -> itemDt.isAfter(cur)).orElse(true);
+                        if (currentNewest.isPresent()) {
+                            ZonedDateTime cur = currentNewest.get();
+                            return itemDt.isAfter(cur);
+                        } else {
+                            return true;
+                        }
                     })
                     .sorted((a, b) -> {
-                        ZonedDateTime da = parsePubDate(a.getPubDate(), formatter);
-                        ZonedDateTime db = parsePubDate(b.getPubDate(), formatter);
+                        ZonedDateTime da = parsePubDate(a.getPubDate(), NAVER_DATE_FORMATTER);
+                        ZonedDateTime db = parsePubDate(b.getPubDate(), NAVER_DATE_FORMATTER);
                         if (da == null || db == null) return 0;
                         return db.compareTo(da); // 최신순
                     })
@@ -121,14 +127,10 @@ public class NaverNewsService {
     // 뉴스 조회 (페이지네이션)
     public PagedNewsResponseDTO getNews(int page, int size) {
         synchronized (newsList) {
-            // 리스트를 내보내기 전에 최신순으로 정렬
-            // 네이버 뉴스 날짜 포맷: Tue, 28 Jan 2026 15:06:00 +0900
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
-
             newsList.sort((o1, o2) -> {
                 try {
-                    ZonedDateTime t1 = ZonedDateTime.parse(o1.getPubDate(), formatter);
-                    ZonedDateTime t2 = ZonedDateTime.parse(o2.getPubDate(), formatter);
+                    ZonedDateTime t1 = ZonedDateTime.parse(o1.getPubDate(), NAVER_DATE_FORMATTER);
+                    ZonedDateTime t2 = ZonedDateTime.parse(o2.getPubDate(), NAVER_DATE_FORMATTER);
                     return t2.compareTo(t1); // t2가 더 크면(최신이면) 앞으로 -> 내림차순
                 } catch (Exception e) {
                     return 0;
@@ -137,14 +139,13 @@ public class NaverNewsService {
 
             int totalCount = newsList.size();
             int start = (page - 1) * size;
-            int end = Math.min(start + size, totalCount);
 
-            List<NaverNewsItemDTO> paged;
             if (start >= totalCount) {
-                paged = Collections.emptyList();
-            } else {
-                paged = new ArrayList<>(newsList.subList(start, end));
+                return new PagedNewsResponseDTO(Collections.emptyList(), totalCount, page, 0);
             }
+
+            int end = Math.min(start + size, totalCount);
+            List<NaverNewsItemDTO> paged = newsList.subList(start, end);
             return new PagedNewsResponseDTO(
                     paged,
                     totalCount,
@@ -190,7 +191,6 @@ public class NaverNewsService {
         } catch (Exception e) {
             log.error("네이버 뉴스 API 호출 실패", e);
         }
-
         return Collections.emptyList();
     }
 }

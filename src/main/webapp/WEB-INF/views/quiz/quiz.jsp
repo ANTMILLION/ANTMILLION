@@ -5,7 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>똑똑한개미 - 미션</title>
+<title>똑똑한개미 - 퀴즈</title>
 <%@ include file="/WEB-INF/views/common/common.jsp"%>
 <link rel="stylesheet" href="${cpath}/resources/css/mission/quiz.css">
 <link rel="stylesheet" href="${cpath}/resources/css/common/sidebar.css">
@@ -69,12 +69,8 @@
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script>
 			const cpath = "${pageContext.request.contextPath}";
-			let currentUserId = null;
-			<c:if test="${not empty pageContext.request.userPrincipal}">
-			currentUserId = parseInt('${pageContext.request.userPrincipal.name}');
-			</c:if>
 		</script>
-		<script src="${cpath}/resources/js/mission/quiz.js"></script>
+		<script src="${cpath}/resources/js/quiz/quiz.js"></script>
 	</div>
 </body>
 </html>

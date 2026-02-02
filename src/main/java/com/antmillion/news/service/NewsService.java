@@ -1,10 +1,10 @@
 package com.antmillion.news.service;
 
+import com.antmillion.news.dto.NewsProgressResponseDTO;
 import java.util.List;
-import java.util.Map;
 
 public interface NewsService {
-    Map<String, Object> readNews(Long userId, String newsUrl);
-    Map<String, Object> getMissionProgress(Long userId);
+    NewsProgressResponseDTO readNews(Long userId, String newsUrl);
+    NewsProgressResponseDTO getMissionProgress(Long userId);
     List<String> selectTodayReadUrls(Long userId);
 }

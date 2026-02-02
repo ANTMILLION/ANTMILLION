@@ -45,7 +45,7 @@
                             경제 지식도 쌓고 나의 개미 랭크도 높여보세요!</p>
                     </div>
                     <div class="mission-card-footer">
-                        <button class="mission-card-btn" id="quiz-start-btn" onclick="location.href='${cpath}/mission/quiz'">도전하기</button>
+                        <button class="mission-card-btn" id="quiz-start-btn" onclick="location.href='${cpath}/quiz'">도전하기</button>
                     </div>
                 </div>
 
@@ -123,10 +123,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         const cpath = "${pageContext.request.contextPath}";
-        let currentUserId = null;
-        <c:if test="${not empty pageContext.request.userPrincipal}">
-        currentUserId = parseInt('${pageContext.request.userPrincipal.name}');
-        </c:if>
     </script>
     <script src="${cpath}/resources/js/mission/mission.js"></script>
 </div>
