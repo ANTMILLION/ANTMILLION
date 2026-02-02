@@ -502,8 +502,12 @@ function renderStockHoldings(holdings) {
         const profitClass = stock.profit > 0 ? 'positive' : stock.profit < 0 ? 'negative' : 'neutral';
         const profitSign = stock.profit > 0 ? '+' : '';
         
+        // 상세 페이지 URL 생성
+        const detailUrl = `${contextPath}/stock/detail?code=${stock.code}`;
+        
         return `
-            <div class="mypage-stock-card" data-code="${stock.code}">
+            <div class="mypage-stock-card" data-code="${stock.code}" onclick="location.href='${detailUrl}'" 
+                 style="cursor: pointer;">
                 <div class="mypage-stock-header">
                     <div>
                         <div class="mypage-stock-name">${stock.name}</div>
