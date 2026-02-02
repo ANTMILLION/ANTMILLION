@@ -51,7 +51,8 @@
                         <div class="tooltip-box">
                             <p class="tooltip-title">투자자들의 매수·매도 체결비중을 나타내요</p>
                             <ul class="tooltip-list">
-                                <li>투자자들의 심리와 수급추세를 알 수 있어요. 단, 시장 전체의 수급을 의미하지는 않아요.</li>
+                                <li>투자자들의 심리와 수급추세를 알 수 있어요.</li>
+                                <li><span style="color: red;">⚠️군중심리를 주의하세요.</span></li>
                             </ul>
                         </div>
                     </div>
