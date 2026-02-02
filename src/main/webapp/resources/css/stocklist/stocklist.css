@@ -120,8 +120,8 @@ body {
 }
 
 .question-icon {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     border: 1.5px solid var(--text-tertiary);
     display: inline-flex;
@@ -131,6 +131,12 @@ body {
     color: var(--text-tertiary);
     cursor: help;
     transition: all 0.2s ease;
+    
+    vertical-align: middle;
+    margin-bottom: 3px;
+    
+    box-sizing: border-box;
+    padding-bottom: 1px;
 }
 
 .question-icon:hover {
@@ -142,7 +148,7 @@ body {
 .question-wrap {
     display: inline-block;
     position: relative;
-    margin-left: 12px;
+    margin-left: 14px;
     vertical-align: middle;
 }
 
