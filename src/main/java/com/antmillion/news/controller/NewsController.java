@@ -42,7 +42,7 @@ public class NewsController {
     // 현재 달성률 조회
     @GetMapping("/api/mission/news/progress")
     @ResponseBody
-    public NewsProgressResponseDTO getProgress() {
+    public NewsProgressResponseDTO getNewsProgress() {
         Long userId = currentUserId();
 
         if (userId == null) {
@@ -51,7 +51,7 @@ public class NewsController {
                     .readCount(0)
                     .build();
         }
-        return newsService.getMissionProgress(userId);
+        return newsService.getNewsProgress(userId);
     }
 
     private Long currentUserId() {

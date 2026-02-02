@@ -5,6 +5,6 @@ import java.util.List;
 
 public interface NewsService {
     NewsProgressResponseDTO readNews(Long userId, String newsUrl);
-    NewsProgressResponseDTO getMissionProgress(Long userId);
+    NewsProgressResponseDTO getNewsProgress(Long userId);
     List<String> selectTodayReadUrls(Long userId);
 }

@@ -20,7 +20,7 @@ public class NewsServiceImpl implements NewsService {
     private final NewsMapper newsMapper;
     private final MemberMapper memberMapper;
 
-    // 뉴스 클릭 처리 및 현재 달성률 반환
+    // 뉴스 읽기 처리 및 포인트 획득 결과 반환
     @Transactional
     public NewsProgressResponseDTO readNews(Long userId, String newsUrl) {
         // 중복 체크 (오늘 이미 읽은 기사인지)
@@ -46,7 +46,7 @@ public class NewsServiceImpl implements NewsService {
         }
 
         // 현재 상태 조회 (DTO 반환됨)
-        NewsProgressResponseDTO currentStatus = getMissionProgress(userId);
+        NewsProgressResponseDTO currentStatus = getNewsProgress(userId);
 
         // 기존 상태에 earnedPoint만 추가해서
         return NewsProgressResponseDTO.builder()
@@ -56,8 +56,8 @@ public class NewsServiceImpl implements NewsService {
                 .build();
     }
 
-    // 현재 미션 달성률 조회 (페이지 로딩용)
-    public NewsProgressResponseDTO getMissionProgress(Long userId) {
+    // 현재 뉴스 달성률 조회 (페이지 로딩용)
+    public NewsProgressResponseDTO getNewsProgress(Long userId) {
         int count = newsMapper.countTodayNewsRead(userId);
 
         // 1개당 20%
