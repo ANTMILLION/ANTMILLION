@@ -20,11 +20,10 @@ function formatTodayKorean() {
 // 서버 API 호출하여 데이터 가져오기
 function getDailyQuiz() {
     $.ajax({
-        url: cpath + "/api/mission/today-progress",
+        url: cpath + "/api/mission/quiz/progress",
         type: 'GET',
-        dataType: 'json',
-        success: function (statusData) {
-            correctAnswers = statusData.quizCount || 0;
+        success: function (data) {
+            correctAnswers = data.solvedCount || 0;
             $.ajax({
                 url: cpath + '/api/mission/quiz/daily',
                 type: 'GET',

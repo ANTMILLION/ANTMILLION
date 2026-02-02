@@ -94,4 +94,17 @@ public class QuizServiceImpl implements QuizService {
                 .message(resultInfo.getExplanation())
                 .build();
     }
+
+    @Override
+    public QuizProgressResponseDTO getQuizProgress(Long userId) {
+        int solvedCount = quizMapper.countTodaySolvedQuiz(userId);
+        int totalCount = 2;
+        int progress = Math.min((solvedCount * 50) / totalCount, 100);
+
+        return QuizProgressResponseDTO.builder()
+                .solvedCount(solvedCount)
+                .totalCount(totalCount)
+                .progress(progress)
+                .build();
+    }
 }
