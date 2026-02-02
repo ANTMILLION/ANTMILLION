@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class QuizServiceImpl implements QuizService {
     @Transactional
     public QuizSubmissionResponseDTO checkAndLogAnswer(Long userId, QuizSubmissionRequestDTO requestDTO) {
         // 해당 퀴즈의 정답 조회
-        QuizResultDTO resultInfo = quizMapper.selectQuizResultByQuizId(requestDTO.getQuizId());
+        QuizQuestionDTO resultInfo = quizMapper.selectQuizResultByQuizId(requestDTO.getQuizId());
         if (resultInfo == null || resultInfo.getAnswer() == null) {
             throw new IllegalArgumentException("존재하지 않는 퀴즈입니다.");
         }
