@@ -52,38 +52,43 @@
 	    ORDER BY tl.trade_date DESC
 	</select>
 	
-	
 	<select id="selectExecutedOrders" resultType="com.antmillion.mypage.dto.ExecutedOrdersDTO">
-	    SELECT 
-	        s.stock_name AS "stockName",
-	        s.stock_code AS "stockCode",
-	        o.quantity AS "orderQty",
-	        o.order_price AS "orderPrice",
-	        o.transaction_type AS "type",
-	        (o.quantity * o.order_price) AS "orderAmount",
-	        DATE_FORMAT(o.created_at, '%Y-%m-%d %H:%i:%s') AS "orderTime",
-	        COALESCE(t.total_qty, 0) AS "executedQty",
-	        (o.quantity - COALESCE(t.total_qty, 0)) AS "unexecutedQty",
-	        ((o.quantity - COALESCE(t.total_qty, 0)) * o.order_price) AS "unexecutedAmount",
-	        t.avg_price AS "executedPrice",
-	        DATE_FORMAT(o.updated_at, '%Y-%m-%d %H:%i:%s') AS "executedTime"
-	    FROM stock_order o
-	    JOIN stock s ON o.stock_code = s.stock_code
-	    LEFT JOIN (
-	        SELECT order_id, 
-	               SUM(trade_quantity) as total_qty, 
-	               AVG(trade_price) as avg_price 
-	        FROM trade_log 
-	        GROUP BY order_id
-	    ) t ON o.order_id = t.order_id
-	    WHERE o.account_id = #{accountId}
-	      AND o.created_at >= STR_TO_DATE(#{startDate}, '%Y-%m-%d')
-	      AND o.created_at &lt; DATE_ADD(STR_TO_DATE(#{endDate}, '%Y-%m-%d'), INTERVAL 1 DAY)
-	    ORDER BY o.created_at DESC
-	</select>
+        SELECT
+            s.stock_name AS "stockName",
+            s.stock_code AS "stockCode",
+            o.quantity AS "orderQty",
+            o.order_price AS "orderPrice",
+            o.transaction_type AS "type",
+            (o.quantity * o.order_price) AS "orderAmount",
+            DATE_FORMAT(o.created_at, '%Y-%m-%d %H:%i:%s') AS "orderTime",
+            /* 개별 체결 수량 */
+            COALESCE(tl.trade_quantity, 0) AS "executedQty",
+            /* 누적 체결 수량 (윈도우 함수 사용) */
+            (o.quantity - COALESCE(
+                    SUM(tl.trade_quantity) OVER (
+                        PARTITION BY o.order_id
+                        ORDER BY tl.trade_date
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                        ), 0)
+                ) AS "unexecutedQty",
+            ((o.quantity - COALESCE(
+                    SUM(tl.trade_quantity) OVER (
+                        PARTITION BY o.order_id
+                        ORDER BY tl.trade_date
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                        ), 0)
+                 ) * o.order_price) AS "unexecutedAmount",
+            tl.trade_price AS "executedPrice",
+            DATE_FORMAT(o.updated_at, '%Y-%m-%d %H:%i:%s') AS "executedTime"
+        FROM stock_order o
+                 JOIN stock s ON o.stock_code = s.stock_code
+                 LEFT JOIN trade_log tl ON o.order_id = tl.order_id
+        WHERE o.account_id = #{accountId}
+          AND o.created_at >= STR_TO_DATE(#{startDate}, '%Y-%m-%d')
+          AND o.created_at &lt; DATE_ADD(STR_TO_DATE(#{endDate}, '%Y-%m-%d'), INTERVAL 1 DAY)
+        ORDER BY tl.trade_date DESC
+    </select>
 	
-    
-
 	<select id="selectAccountInfo" resultType="com.antmillion.mypage.dto.AccountInfoDTO">
 	    SELECT 
 	        m.nickname AS "nickname",
