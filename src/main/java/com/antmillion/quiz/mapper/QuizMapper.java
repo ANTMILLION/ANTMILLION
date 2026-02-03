@@ -3,7 +3,6 @@ package com.antmillion.quiz.mapper;
 import com.antmillion.quiz.dto.QuizChoiceDTO;
 import com.antmillion.quiz.dto.QuizLogDTO;
 import com.antmillion.quiz.dto.QuizQuestionDTO;
-import com.antmillion.quiz.dto.QuizResultDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -26,5 +25,5 @@ public interface QuizMapper {
     int countTodaySolvedQuiz(@Param("userId") Long userId);
 
     // 퀴즈 정답, 포인트, 설명 조회
-    QuizResultDTO selectQuizResultByQuizId(@Param("quizId") Long quizId);
+    QuizQuestionDTO selectQuizResultByQuizId(@Param("quizId") Long quizId);
 }

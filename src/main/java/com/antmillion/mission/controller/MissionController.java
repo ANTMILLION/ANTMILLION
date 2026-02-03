@@ -1,6 +1,6 @@
 package com.antmillion.mission.controller;
 
-import com.antmillion.mission.dto.MissionStatusResponseDTO;
+import com.antmillion.mission.dto.MissionProgressResponseDTO;
 import com.antmillion.mission.service.MissionService;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -25,19 +25,34 @@ public class MissionController {
     public UserRankResponseDTO getUserRankInfo() {
         Long userId = currentUserId();
         if (userId == null) {
-            return new UserRankResponseDTO();
+            return UserRankResponseDTO.builder()
+                    .rankName("게스트")
+                    .rankImage("/images/defaultant.png")
+                    .currentPoint(0)
+                    .nextRankPoint(0)
+                    .neededPoint(0)
+                    .currentRankStartPoint(0)
+                    .nickName("게스트")
+                    .currentRankId(0)
+                    .build();
         }
         return missionService.getUserRankInfo(userId);
     }
 
     @GetMapping("/api/mission/today-progress")
     @ResponseBody
-    public MissionStatusResponseDTO getTodayMissionStatus() {
+    public MissionProgressResponseDTO getTodayMissionProgress() {
         Long userId = currentUserId();
         if (userId == null) {
-            return new MissionStatusResponseDTO();
+            return MissionProgressResponseDTO.builder()
+                    .totalProgress(0)
+                    .quizCount(0)
+                    .newsCount(0)
+                    .QuizCompleted(false)
+                    .NewsCompleted(false)
+                    .build();
         }
-        return missionService.getTodayMissionStatus(userId);
+        return missionService.getTodayMissionProgress(userId);
     }
 
     private Long currentUserId() {
