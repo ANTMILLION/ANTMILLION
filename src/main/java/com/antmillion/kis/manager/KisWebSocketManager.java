@@ -120,7 +120,7 @@ public class KisWebSocketManager {
         log.info("### [SUCCESS] 구독 완료: {} | TR_ID: {} ###", stockCode, trId);
     }
 
-    // 🆕 구독 해제 메소드
+    // 구독 해제 메소드
     public synchronized void unsubscribe(String stockCode, String trId) {
         Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
         if (!targetSet.contains(stockCode)) {
@@ -135,7 +135,7 @@ public class KisWebSocketManager {
         }
     }
 
-    // 🆕 전체 구독 해제
+    // 전체 구독 해제
     public synchronized void unsubscribeAll(String trId) {
         Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
         if (targetSet.isEmpty()) {
@@ -155,7 +155,7 @@ public class KisWebSocketManager {
         log.info("### [SUCCESS] {} 전체 구독 해제 완료 ###", trId);
     }
 
-    // 🆕 구독/해제 메시지 전송 (통합)
+    // 구독/해제 메시지 전송 (통합)
     private void sendSubscribeMessage(WebSocketSession session, String stockCode, String trType, String trId) {
         KisWebSocketTransactionPriceRequest request = KisWebSocketTransactionPriceRequest.builder()
                 .header(KisWebSocketTransactionPriceRequest.Header.builder()

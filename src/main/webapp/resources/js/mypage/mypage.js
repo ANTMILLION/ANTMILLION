@@ -410,14 +410,14 @@ function loadStockHoldings() {
                 currentHoldingStocks = [];
                 updateTotalAsset();
                 
-                // ✅ 주식이 없어도 심리경고는 로드
+                // 주식이 없어도 심리경고는 로드
                 loadHistoryData();
                 return;
             }
 
             // 현재 보유 종목 정보 저장 (code 포함)
             currentHoldingStocks = data;
-            console.log('✅ 주식 잔고 로드 완료:', currentHoldingStocks.length, '개');
+            console.log('주식 잔고 로드 완료:', currentHoldingStocks.length, '개');
 
             // 화면 렌더링
             renderStockHoldings(data);
@@ -502,8 +502,12 @@ function renderStockHoldings(holdings) {
         const profitClass = stock.profit > 0 ? 'positive' : stock.profit < 0 ? 'negative' : 'neutral';
         const profitSign = stock.profit > 0 ? '+' : '';
         
+        // 상세 페이지 URL 생성
+        const detailUrl = `${contextPath}/stock/detail?code=${stock.code}`;
+        
         return `
-            <div class="mypage-stock-card" data-code="${stock.code}">
+            <div class="mypage-stock-card" data-code="${stock.code}" onclick="location.href='${detailUrl}'" 
+                 style="cursor: pointer;">
                 <div class="mypage-stock-header">
                     <div>
                         <div class="mypage-stock-name">${stock.name}</div>
