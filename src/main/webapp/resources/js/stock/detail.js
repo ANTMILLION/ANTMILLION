@@ -98,25 +98,46 @@ let currentChartPeriod = 'minute';
 let stompClient = null;
 let subscribedTopics = {}; // 구독한 토픽 저장 {stockCode: subscription}
 let currentStockCodes = []; // 현재 화면에 표시된 종목 코드들
+// 타이머 변수를 전역 스코프에 선언
+let sentimentTimeout = null; 
+let hogaTimeout = null;
 
-// ======= STOMP 연결 =======
+// ======= STOMP 연결 ======
 function connectStomp() {
-    const url = contextPath + '/ws-stomp';
-    const socket = new SockJS(url);
-    stompClient = Stomp.over(socket);
+    return new Promise((resolve, reject) => {
+        const url = contextPath + '/ws-stomp';
+        const socket = new SockJS(url);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
 
-    stompClient.connect({}, function (frame) {
-        console.log('STOMP 연결 성공: ' + frame);
-
-        // 연결 성공 후 현재 화면의 종목들 구독
-        if (currentStockCodes.length > 0) {
-            subscribeCurrentStocks();
-        }
-    }, function(error) {
-        console.error('STOMP 연결 실패: ' + error);
-        // 5초 후 재연결 시도
-        setTimeout(connectStomp, 5000);
+        stompClient.connect({}, 
+            (frame) => {
+                console.log('STOMP 연결 성공: ' + frame);
+                resolve(frame); 
+            }, 
+            (error) => {
+                // 최초 연결 실패 시
+                reject(error);
+            }
+        );
     });
+}
+
+// ======= 재연결 로직 =======
+function handleReconnect() {
+    console.log('5초 후 재연결을 시도합니다...');
+    setTimeout(async () => {
+        try {
+            await connectStomp();
+            console.log('재연결 성공! 현재 종목 구독을 시작합니다.');
+            if (currentStockCodes.length > 0) {
+                subscribeCurrentStocks();
+            }
+        } catch (e) {
+            console.error('재연결 실패. 다시 시도합니다.');
+            handleReconnect(); // 반복 재연결
+        }
+    }, 5000);
 }
 
 // ======= 현재 상세 화면 종목 및 호가 구독 (시간차 적용 버전) =======
@@ -126,7 +147,7 @@ async function subscribeCurrentStocks() {
 
     if (currentStockCodes.length === 0) return;
 
-    // ✅ Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
+    // Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
     if (isMockMode) {
         console.log('Mock 모드 - STOMP 구독 진행');
         currentStockCodes.forEach(stockCode => {
@@ -172,6 +193,11 @@ async function subscribeCurrentStocks() {
 
 // ========== 개별 종목 STOMP 토픽 구독 ==========
 function subscribeStockTopic(stockCode) {
+    // 연결 안 됐으면 실행 취소
+    if (!stompClient || !stompClient.connected) {
+        console.warn('STOMP 연결 전입니다. 구독을 대기합니다.');
+        return;
+    }
     if (subscribedTopics[stockCode]) {
         console.log('이미 구독 중:', stockCode);
         return;
@@ -193,6 +219,16 @@ function subscribeStockTopic(stockCode) {
 
     subscribedTopics[stockCode] = subscription;
     console.log('토픽 구독 완료:', topic);
+    
+    // 구독 시작 후 5초간 데이터가 한 번도 안 들어오면 문구 교체
+    sentimentTimeout = setTimeout(() => {
+        const sentimentText = document.querySelector('.detail-sentiment-text');
+        // 수신된 데이터가 없을 때만 문구 변경
+        if (sentimentText && sentimentText.innerText.includes('로딩중...')) {
+            sentimentText.innerHTML = `<span>장 시간에 확인할 수 있어요</span>`;
+            console.log(`[${stockCode}] 데이터 수신 없음 - 상태 전환`);
+        }
+    }, 5000);
 }
 
 let isMarketOrder = false; 
@@ -224,34 +260,32 @@ function updateStockRealtimePrice(stockCode, tradeData) {
     
     // 매수/매도 비율 및 텍스트 업데이트
     const rawBuyRate = tradeData.shnuRate;
-    
     if (rawBuyRate !== undefined && rawBuyRate !== null) {
-        // 1. 비율 계산 (소수점이면 100 곱하기)
-        let buyRate = rawBuyRate < 1 ? (rawBuyRate * 100) : rawBuyRate;
-        buyRate = Math.round(buyRate);
-        const sellRate = 100 - buyRate;
-    
-        // 2. 바(Bar) 업데이트
-        const buyBar = document.getElementById('buy-bar');
-        const sellBar = document.getElementById('sell-bar');
-        if (buyBar && sellBar) {
-            buyBar.classList.remove('detail-sentiment-inactive');
-            sellBar.classList.remove('detail-sentiment-inactive');
-
-            buyBar.style.width = buyRate + '%';
-            sellBar.style.width = sellRate + '%';
-        }
-
         const sentimentText = document.querySelector('.detail-sentiment-text');
-        // 매수가 50% 이상이면 '매수', 아니면 '매도' 표시
+        
+        // 1. 비율 계산
+        let buyRate = Math.round(rawBuyRate < 1 ? (rawBuyRate * 100) : rawBuyRate);
+        const sellRate = 100 - buyRate;
+
+        // 2. 데이터가 수신되면 "로딩중"을 지우고 실제 내용을 넣음
         if (buyRate >= 50) {
             sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${buyRate}</span>%가 <span class="detail-red-text" id="sentiment-direction">매수</span>쪽으로 몰려요!`;
         } else {
             sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${sellRate}</span>%가 <span class="detail-blue-text" id="sentiment-direction">매도</span>쪽으로 몰려요!`;
         }
-        
+
+        // 3. 바(Bar) 활성화
+        const buyBar = document.getElementById('buy-bar');
+        const sellBar = document.getElementById('sell-bar');
         const buyText = document.getElementById('buy-percent');
         const sellText = document.getElementById('sell-percent');
+        if (buyBar && sellBar) {
+            buyBar.classList.remove('detail-sentiment-inactive');
+            sellBar.classList.remove('detail-sentiment-inactive');
+            buyBar.style.width = buyRate + '%';
+            sellBar.style.width = sellRate + '%';
+        }
+        // 4. 그래프 위에 실제 숫자 표시
         if (buyText) buyText.textContent = buyRate + '%';
         if (sellText) sellText.textContent = sellRate + '%';
     }
@@ -295,6 +329,17 @@ function initPriceTypeEvents() {
     
 // ========== 모든 구독 해제 ==========
 function unsubscribeAllStocks() {
+    // 타이머가 존재할 때만 중단시키고 null로 초기화
+    if (typeof sentimentTimeout !== 'undefined' && sentimentTimeout) {
+        clearTimeout(sentimentTimeout);
+        sentimentTimeout = null;
+    }
+    if (typeof hogaTimeout !== 'undefined' && hogaTimeout) {
+        clearTimeout(hogaTimeout);
+        hogaTimeout = null;
+    }
+    sentimentTimeout = null;
+    hogaTimeout = null;
     console.log('구독 해제 시작...');
 
     // 프론트엔드 STOMP 구독 해제
@@ -323,7 +368,7 @@ function unsubscribeAllStocks() {
                 console.error('백엔드 구독 해제 실패:', error);
             });
 
-        // ✅ 추가: 호가 (H0UNASP0) 구독 해제
+        // 호가 (H0UNASP0) 구독 해제
         fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0UNASP0', {
             method: 'POST',
             headers: {
@@ -346,6 +391,11 @@ function updateHogaUI(hogaData) {
     // 1. 호가 전용 컨테이너를 찾거나 생성함
     let hogaBox = document.querySelector('.detail-hoga-box');
     if (!hogaBox) return;
+    
+    // 데이터 수신 시 placeholder가 있으면 비우고 시작
+    if (hogaBox.querySelector('.detail-hoga-placeholder')) {
+        hogaBox.innerHTML = ''; 
+    }
 
     let hogaList = hogaBox.querySelector('.hoga-container');
     if (!hogaList) {
@@ -414,20 +464,39 @@ function subscribeStockHoga(stockCode) {
 
     const subscription = stompClient.subscribe(topic, function(message) {
         const askBidData = JSON.parse(message.body);
-        //console.log('[호가 실시간 데이터 수신]', askBidData);
+        
+        // 데이터 수신 성공
+        if (hogaTimeout) {
+            clearTimeout(hogaTimeout);
+            hogaTimeout = null;
+        }
+        
         updateHogaUI(askBidData);
     });
 
-    // ✅ subscribedTopics에 저장
+    // subscribedTopics에 저장
     subscribedTopics[hogaKey] = subscription;
-    console.log('호가 토픽 구독 완료:', topic);
+    
+    // 구독 시작 후 5초간 데이터가 안 들어오면 문구 교체
+    hogaTimeout = setTimeout(() => {
+        const hogaBox = document.querySelector('.detail-hoga-box');
+        // 여전히 placeholder가 '로딩중...' 상태라면 문구 교체
+        if (hogaBox && hogaBox.querySelector('.detail-hoga-placeholder') && 
+            hogaBox.innerText.includes('로딩중...')) {
+            
+            hogaBox.innerHTML = `
+                <div class="detail-hoga-placeholder">
+                    <span>호가는 장 시간에 볼 수 있어요</span>
+                </div>
+            `;
+            console.log(`[${stockCode}] 호가 데이터 수신 없음 - 상태 전환`);
+        }
+    }, 5000);
 }
 
 
 // ===== API 호출 함수 =====
 async function checkBiasAlert(stockCode) {
-    console.log('[API 호출] stockCode:', stockCode);
-    
     try {
         const url = contextPath + '/api/bias-alert/check?stockCode=' + stockCode;
         console.log('[API URL]', url);
@@ -862,12 +931,17 @@ function drawPeriodChart(stockCode, period) {
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code'); // ?code=005930 에서 005930 추출
+    
+    // 호가 상태 즉시 초기화
+    resetHogaToDefault();
+    // 거래 비율 즉시 초기화
+    resetSentimentToDefault();
 
     const imgUrl = contextPath + '/resources/images/stock/' + stockCode + '.png';
     const logoImg = document.getElementById('detail-stock-image');
     logoImg.src = imgUrl;
     logoImg.onerror = function () {
-        this.src = contextPath + '/resources/images/icontmp.png';
+        this.src = contextPath + '/resources/images/antmillion-logo.png';
     }
 
     scheduleMarketClose();
@@ -922,86 +996,100 @@ window.addEventListener('resize', () => {
 });
 
 // ===== DOM 로드 후 실행 =====
-document.addEventListener('DOMContentLoaded', async function() {
-// 1. URL에서 종목 코드 추출
+document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code');
-    
-    if (stockCode) {
-        // 전역 변수에 현재 종목 코드를 배열로 저장
-        currentStockCodes = [stockCode]; 
-        console.log('[실시간 설정] 구독 리스트 등록:', currentStockCodes);
 
-        // 2. STOMP 연결 시도 
-        connectStomp();
+    if (!stockCode) return;
+
+    // --- 초기화 ---
+    currentStockCodes = [stockCode];
+    resetHogaToDefault();
+    resetSentimentToDefault();
+    initPriceTypeEvents();
+    drawDetailChart(stockCode);
+    scheduleMarketClose();
+    
+    // --- STOMP 실행 (비동기 흐름 제어) ---
+    try {
+        console.log('STOMP 연결 시도...');
+        await connectStomp(); // 연결 완료까지 동기적으로 대기
+        
+        console.log('STOMP 연결 성공. 구독 시작.');
+        await subscribeCurrentStocks(); // 연결 후 구독 순차 실행
+        
+    } catch (error) {
+        // 연결이 실패했을 때만 재연결 프로세스 가동
+        handleReconnect(); 
     }
     
     checkFavoriteStatus();
     console.log('=== 매매 편향 체크 시스템 로드 완료 (API 연동) ===');
-    
-    const __loggedIn =
+        const __loggedIn =
         (typeof window.__isLoggedIn === 'function') ? window.__isLoggedIn()
         : (typeof IS_LOGGED_IN !== 'undefined' ? !!IS_LOGGED_IN : false);
     
+    
     // ===== 페이지 진입 시 편향 체크 (우선순위: 매몰비용 > 손실회피) =====
-    if (__loggedIn) {
-        try {
-            const urlParams = new URLSearchParams(window.location.search);
-            const stockCode = urlParams.get('code');
+  if (__loggedIn) {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
         
-            if (stockCode) {
-                console.log('[페이지 로드] 편향 체크 시작 - stockCode:', stockCode);
+        const stockCode = urlParams.get('code');
+        
+        if (stockCode) {
+            console.log('[페이지 로드] 편향 체크 시작 - stockCode:', stockCode);
             
-                // 우선순위 1: 매몰비용오류
-                const sunkCostData = await checkSunkCostAlert(stockCode);
-                
-                // 우선순위 2: 손실회피
-                const lossData = await checkLossAversionAlert(stockCode);
+            // 우선순위 1: 매몰비용오류
+            const sunkCostData = await checkSunkCostAlert(stockCode);
             
-                // 우선순위 4: FOMO
-                // FOMO는 WebSocket 데이터 수신 대기 (0.5초)
-                await new Promise(resolve => setTimeout(resolve, 500));
-                const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
+            // 우선순위 2: 손실회피
+            const lossData = await checkLossAversionAlert(stockCode);
             
-                // 우선순위에 따라 표시 (매몰비용 > 손실회피 > FOMO)
-                if (sunkCostData && sunkCostData.hasAlert) {
-                    console.log('[우선순위 1] 매몰비용오류 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
+            // 우선순위 4: FOMO
+            // FOMO는 WebSocket 데이터 수신 대기
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
+            
+            // 우선순위에 따라 표시 (매몰비용 > 손실회피 > FOMO)
+            if (sunkCostData && sunkCostData.hasAlert) {
+                console.log('[우선순위 1] 매몰비용오류 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
                 
-                    if (typeof showBiasAlert === 'function') {
-                        showBiasAlert('SUNK_COST');
+                if (typeof showBiasAlert === 'function') {
+                    showBiasAlert('SUNK_COST');
                     
-                        if (typeof checkUnreadAlerts === 'function') {
-                            setTimeout(() => { checkUnreadAlerts(); }, 0);
-                        }
+                    if (typeof checkUnreadAlerts === 'function') {
+                        setTimeout(() => { checkUnreadAlerts(); }, 0);
                     }
-                } else if (lossData && lossData.hasAlert) {
-                    console.log('[우선순위 2] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
-                
-                    if (typeof showBiasAlert === 'function') {
-                        showBiasAlert('LOSS_AVERSION');
-                    
-                        if (typeof checkUnreadAlerts === 'function') {
-                            setTimeout(() => { checkUnreadAlerts(); }, 0);
-                        }
-                    }
-                } else if (fomoData && fomoData.hasAlert) {
-                    console.log('[우선순위 4] FOMO 경고: ' + fomoData.stockName + ' +' + fomoData.profitRate + '% 급등');
-                
-                    if (typeof showBiasAlert === 'function') {
-                        showBiasAlert('FOMO');
-                    
-                        if (typeof checkUnreadAlerts === 'function') {
-                            setTimeout(() => { checkUnreadAlerts(); }, 0);
-                        }
-                    }
-                } else {
-                    console.log('[페이지 로드] 편향 조건 미달');
                 }
+            } else if (lossData && lossData.hasAlert) {
+                console.log('[우선순위 2] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
+                
+                if (typeof showBiasAlert === 'function') {
+                    showBiasAlert('LOSS_AVERSION');
+                    
+                    if (typeof checkUnreadAlerts === 'function') {
+                        setTimeout(() => { checkUnreadAlerts(); }, 0);
+                    }
+                }
+            } else if (fomoData && fomoData.hasAlert) {
+                console.log('[우선순위 4] FOMO 경고: ' + fomoData.stockName + ' +' + fomoData.profitRate + '% 급등');
+                
+                if (typeof showBiasAlert === 'function') {
+                    showBiasAlert('FOMO');
+                    
+                    if (typeof checkUnreadAlerts === 'function') {
+                        setTimeout(() => { checkUnreadAlerts(); }, 0);
+                    }
+                }
+            } else {
+                console.log('[페이지 로드] 편향 조건 미달');
             }
-        } catch (error) {
-        console.error('[페이지 로드] 편향 체크 에러:', error);
         }
-    } else {
+    } catch (error) {
+        console.error('[페이지 로드] 편향 체크 에러:', error);
+    }
+    }else {
         console.log('[비로그인] 편향 체크 스킵');
     }
     
@@ -1135,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             console.log('[매수 탭] 편향 조건 미달');
                         }
                         
-                        // ✅ 실시간 체크도 활성화 (이미 20% 이상이면 표시)
+                        // 실시간 체크도 활성화 (이미 20% 이상이면 표시)
                         if (window.lastFomoChangeRate >= 20 && !fomoAlertShown) {
                             console.log('[매수 탭] 실시간 등락률 20% 이상 - 경고 표시');
                             checkFomoInRealtime(window.lastFomoChangeRate);
@@ -1306,7 +1394,7 @@ function checkFavoriteStatus() {
     const btn = document.querySelector('.detail-favorite-btn');
     if (!btn) return;
 
-    // ✅ 비로그인: 서버 호출 없이 기본 상태 유지
+    // 비로그인: 서버 호출 없이 기본 상태 유지
     if (typeof window.__isLoggedIn === 'function' && !window.__isLoggedIn()) {
         btn.textContent = '♡';
         btn.classList.remove('active');
@@ -1331,7 +1419,7 @@ function checkFavoriteStatus() {
 const __favoriteBtn = document.querySelector('.detail-favorite-btn');
 if (__favoriteBtn) {
     __favoriteBtn.addEventListener('click', function(e) {
-        // ✅ 비로그인: 모달
+        // 비로그인: 모달
         if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
 
         const stockCode = this.getAttribute('data-code');
@@ -2057,13 +2145,26 @@ function resetSentimentToDefault() {
     const buyPercent = document.getElementById('buy-percent');
     const sellPercent = document.getElementById('sell-percent');
 
+    const now = new Date();
+    const day = now.getDay(); 
+    const currentTime = now.getHours() * 100 + now.getMinutes();
+    // 평일 09:00 ~ 20:00까지는 데이터를 기다리는 상태로 설정
+    const isTradingTime = day >= 1 && day <= 5 && currentTime >= 900 && currentTime <= 2000;
+
     if (sentimentText) {
-        sentimentText.innerHTML = '<span>장 시간에 확인할 수 있어요</span>';
+        // 장 중일 때만 "로딩중..." 출력
+        sentimentText.innerHTML = `<span>${isTradingTime ? '로딩중...' : '장 시간에 확인할 수 있어요'}</span>`;
     }
 
     if (buyBar && sellBar) {
-        buyBar.classList.add('detail-sentiment-inactive');
-        sellBar.classList.add('detail-sentiment-inactive');
+        // 장 중(로딩 시점)일 때만 회색(inactive) 처리, 아니면 기본 상태
+        if (isTradingTime) {
+            buyBar.classList.add('detail-sentiment-inactive');
+            sellBar.classList.add('detail-sentiment-inactive');
+        } else {
+            buyBar.classList.add('detail-sentiment-inactive');
+            sellBar.classList.add('detail-sentiment-inactive');
+        }
         buyBar.style.width = '50%';
         sellBar.style.width = '50%';
     }
@@ -2077,20 +2178,30 @@ function resetHogaToDefault() {
     console.log('호가를 초기 상태로 복원');
 
     const hogaBox = document.querySelector('.detail-hoga-box');
-    if (hogaBox) {
-        hogaBox.innerHTML = `
-            <div class="detail-hoga-placeholder">
-                <span>호가는 장 시간에 볼 수 있어요</span>
-            </div>
-        `;
-    }
+    if (!hogaBox) return;
+
+    const now = new Date();
+    const day = now.getDay(); 
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTime = hours * 100 + minutes;
+
+    // [수정] 평일 09:00 ~ 20:00까지는 '로딩중...'이 뜨게 함
+    const isTradingTime = day >= 1 && day <= 5 && currentTime >= 900 && currentTime <= 2000;
+
+    // innerHTML을 사용하여 placeholder 구조와 함께 텍스트 주입
+    hogaBox.innerHTML = `
+        <div class="detail-hoga-placeholder">
+            <span>${isTradingTime ? '로딩중...' : '호가는 장 시간에 볼 수 있어요'}</span>
+        </div>
+    `;
 }
 
 // ========== 특정 시간에 자동 실행 예약 ==========
 function scheduleMarketClose() {
     const now = new Date();
 
-    // ✅ 15:30 예약
+    // 15:30 예약
     const today1530 = new Date(now);
     today1530.setHours(15, 30, 0, 0);
     const msUntil1530 = today1530 - now;
@@ -2106,7 +2217,7 @@ function scheduleMarketClose() {
         console.log('오늘 15:30은 이미 지났습니다.');
     }
 
-    // ✅ 20:00 예약
+    // 20:00 예약
     const today2000 = new Date(now);
     today2000.setHours(20, 0, 0, 0);
     const msUntil2000 = today2000 - now;
