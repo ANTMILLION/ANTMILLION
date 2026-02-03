@@ -22,11 +22,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 웹소켓 Connection 처리
- * 
- * KisWebSocketManager → 세션 연결 → KisWebSocketHandler → 구독 요청 → KIS 서버에서 handleTextMessage로 실시간 데이터 전송함
- * 세션이 끊기면 KisWebSocketManager가 connect() 시도
- *
+ * KIS 웹소켓 세션 관리자 (KisWebSocketManager)
+ * 1. 연결: connect() 호출 시 KisWebSocketHandler를 등록하고 KIS 서버와 세션 수립
+ * 2. 구독 관리: 외부에서 subscribe() 호출 시, 내부 Set에 종목 저장 및 KIS 서버에 구독 JSON 전송
+ * 3. 생존 확인: lastHeartbeatTime을 관리하며, Handler에서 호출하는 monitorHealth()를 통해 재연결 수행
+ * 4. 세션 공유: 수립된 세션을 통해 Handler와 독립적으로 서버에 메시지(구독/해제)를 보냄
  */
 
 @Service
