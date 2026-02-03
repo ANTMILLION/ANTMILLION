@@ -3,6 +3,7 @@ package com.antmillion.kis.manager;
 import static com.antmillion.kis.constant.KisWebSocketTrId.isPresentPriceTrId;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -63,7 +64,12 @@ public class KisWebSocketManager {
         	approvalKey = kisApiService.getKisApprovalKey();
             KisWebSocketHandler handler = new KisWebSocketHandler(this, approvalKey, messagingTemplate, objectMapper, tradingEngineService);
             StandardWebSocketClient client = new StandardWebSocketClient();
-            
+
+            client.setUserProperties(new HashMap<String, Object>() {{
+                put("org.apache.tomcat.websocket.textBufferSize", 65536);
+                put("org.apache.tomcat.websocket.binaryBufferSize", 65536);
+            }});
+
             session = client.doHandshake(handler, WS_URL).get();   
             lastHeartbeatTime = System.currentTimeMillis();
             isConnected = true;
@@ -95,6 +101,17 @@ public class KisWebSocketManager {
             session = null;
             connect();
         }
+    }
+
+    // 구독 상태 초기화 메서드 추가
+    public void clearSubscriptionState() {
+        int presentCount = presentSubscribedStocks.size();
+        int askBidCount = askBidSubscribedStocks.size();
+
+        presentSubscribedStocks.clear();
+        askBidSubscribedStocks.clear();
+
+        log.info("### [CLEAR] 구독 상태 초기화 완료 (체결가: {}개, 호가: {}개) ###", presentCount, askBidCount);
     }
     
     public void updateLastHeartbeatTime() {

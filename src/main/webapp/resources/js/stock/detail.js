@@ -142,8 +142,6 @@ function handleReconnect() {
 
 // ======= 현재 상세 화면 종목 및 호가 구독 (시간차 적용 버전) =======
 async function subscribeCurrentStocks() {
-    // 기존 구독 모두 해제
-    unsubscribeAllStocks();
 
     if (currentStockCodes.length === 0) return;
 
@@ -158,30 +156,44 @@ async function subscribeCurrentStocks() {
     }
 
     try {
-        // 1. 백엔드에 현재가 구독 요청 (H0UNCNT0)
+        // 1. 현재가 구독 요청 (H0UNCNT0)
+        console.log('[1/4] 현재가 구독 요청 시작...');
         const presentRes = await fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNCNT0', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(currentStockCodes)
         });
-        console.log('현재가 백엔드 요청 완료');
 
-        // ★ 핵심: 백엔드에서 웹소켓 세션이 안정화될 때까지 대기
-        // .get()으로 블로킹되는 시간을 고려해 1.5초 정도 여유를 줌
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        if (!presentRes.ok) {
+            throw new Error('현재가 구독 실패: ' + presentRes.status);
+        }
 
-        // 2. 백엔드에 호가 구독 요청 추가 (H0UNASP0)
+        console.log('[2/4] 현재가 구독 완료. 안정화 대기 중...');
+
+        // 백엔드 안정화 대기 (순차 처리이므로 700ms면 충분)
+        await new Promise(resolve => setTimeout(resolve, 700));
+
+        // 2. 호가 구독 요청 (H0UNASP0)
+        console.log('[3/4] 호가 구독 요청 시작...');
         const hogaRes = await fetch(contextPath + '/api/kis/websocket/subscribe-multiple?trId=H0UNASP0', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(currentStockCodes)
         });
-        console.log('호가 백엔드 요청 완료');
 
-        // 3. 프론트엔드 STOMP 실제 구독 진행
+        if (!hogaRes.ok) {
+            throw new Error('호가 구독 실패: ' + hogaRes.status);
+        }
+
+        console.log('[4/4] 호가 구독 완료. STOMP 토픽 구독 시작...');
+
+        // 추가 안정화 대기
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // 3. 프론트엔드 STOMP 구독
         currentStockCodes.forEach(stockCode => {
-            subscribeStockTopic(stockCode); // /topic/kis-trade/present{stockCode}
-            subscribeStockHoga(stockCode);  // /topic/kis-trade/ask-bid{stockCode}
+            subscribeStockTopic(stockCode);
+            subscribeStockHoga(stockCode);
         });
 
         console.log('최종 STOMP 구독 프로세스 완료');
@@ -228,17 +240,24 @@ function subscribeStockTopic(stockCode) {
             sentimentText.innerHTML = `<span>장 시간에 확인할 수 있어요</span>`;
             console.log(`[${stockCode}] 데이터 수신 없음 - 상태 전환`);
         }
-    }, 5000);
+    }, 8000);
 }
 
 let isMarketOrder = false; 
 let lastRealtimePrice = "";
 
-// ========== 현재가 업데이트 함수 (확인용) ==========
+// ========== 현재가 업데이트 함수 (개선 버전) ==========
 function updateStockRealtimePrice(stockCode, tradeData) {
+    // 1. 데이터 수신 시 타이머 즉시 취소
+    if (sentimentTimeout) {
+        clearTimeout(sentimentTimeout);
+        sentimentTimeout = null;
+        console.log(`[${stockCode}] 타이머 취소 - 데이터 수신 확인`);
+    }
+
     const rawPrice = tradeData.stckPrpr;
     if (!rawPrice) return;
-    
+
     // 현재가 업데이트
     lastRealtimePrice = rawPrice;
     const currentPrice = Number(rawPrice);
@@ -257,24 +276,27 @@ function updateStockRealtimePrice(stockCode, tradeData) {
 
     // 차트에 실시간 현재가 반영
     updateChartRealtime(currentPrice);
-    
-    // 매수/매도 비율 및 텍스트 업데이트
+
+    // . 매수/매도 비율 및 텍스트 업데이트
     const rawBuyRate = tradeData.shnuRate;
     if (rawBuyRate !== undefined && rawBuyRate !== null) {
         const sentimentText = document.querySelector('.detail-sentiment-text');
-        
-        // 1. 비율 계산
+
+        // 비율 계산
         let buyRate = Math.round(rawBuyRate < 1 ? (rawBuyRate * 100) : rawBuyRate);
         const sellRate = 100 - buyRate;
 
-        // 2. 데이터가 수신되면 "로딩중"을 지우고 실제 내용을 넣음
-        if (buyRate >= 50) {
-            sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${buyRate}</span>%가 <span class="detail-red-text" id="sentiment-direction">매수</span>쪽으로 몰려요!`;
-        } else {
-            sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${sellRate}</span>%가 <span class="detail-blue-text" id="sentiment-direction">매도</span>쪽으로 몰려요!`;
+        // 3. 무조건 실제 데이터로 덮어쓰기 (조건 없음)
+        if (sentimentText) {
+            if (buyRate >= 50) {
+                sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${buyRate}</span>%가 <span class="detail-red-text" id="sentiment-direction">매수</span>쪽으로 몰려요!`;
+            } else {
+                sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${sellRate}</span>%가 <span class="detail-blue-text" id="sentiment-direction">매도</span>쪽으로 몰려요!`;
+            }
+            console.log(`[${stockCode}] 거래비율 업데이트: 매수 ${buyRate}% / 매도 ${sellRate}%`);
         }
 
-        // 3. 바(Bar) 활성화
+        // 바(Bar) 활성화
         const buyBar = document.getElementById('buy-bar');
         const sellBar = document.getElementById('sell-bar');
         const buyText = document.getElementById('buy-percent');
@@ -285,7 +307,6 @@ function updateStockRealtimePrice(stockCode, tradeData) {
             buyBar.style.width = buyRate + '%';
             sellBar.style.width = sellRate + '%';
         }
-        // 4. 그래프 위에 실제 숫자 표시
         if (buyText) buyText.textContent = buyRate + '%';
         if (sellText) sellText.textContent = sellRate + '%';
     }
@@ -386,29 +407,36 @@ function unsubscribeAllStocks() {
     }
 }
 
-// ========== 호가 데이터 수신 및 UI 업데이트 ==========
+// ========== 호가 데이터 수신 및 UI 업데이트 (개선 버전) ==========
 function updateHogaUI(hogaData) {
-    // 1. 호가 전용 컨테이너를 찾거나 생성함
+    // 1. 데이터 수신 시 타이머 즉시 취소
+    if (hogaTimeout) {
+        clearTimeout(hogaTimeout);
+        hogaTimeout = null;
+        console.log('호가 타이머 취소 - 데이터 수신 확인');
+    }
+
     let hogaBox = document.querySelector('.detail-hoga-box');
     if (!hogaBox) return;
-    
-    // 데이터 수신 시 placeholder가 있으면 비우고 시작
+
+    // 2. placeholder가 있으면 무조건 비우기
     if (hogaBox.querySelector('.detail-hoga-placeholder')) {
-        hogaBox.innerHTML = ''; 
+        hogaBox.innerHTML = '';
+        console.log('호가 placeholder 제거 - 실제 데이터 표시');
     }
 
     let hogaList = hogaBox.querySelector('.hoga-container');
     if (!hogaList) {
-        hogaBox.innerHTML = ''; // 처음 한 번만 비움
+        hogaBox.innerHTML = '';
         hogaList = document.createElement('div');
         hogaList.className = 'hoga-container';
         hogaList.style.height = '100%';
         hogaBox.appendChild(hogaList);
     }
 
-    hogaList.innerHTML = ''; // 호가 리스트만 초기화 (상단 현재가는 보존)
+    hogaList.innerHTML = '';
 
-    // 2. 매도/매수 행 생성
+    // 매도/매수 행 생성
     for (let i = 5; i >= 1; i--) {
         hogaList.appendChild(createHogaRow(hogaData[`askP${i}`], hogaData[`askPrsqn${i}`], 'ask'));
     }
@@ -491,7 +519,7 @@ function subscribeStockHoga(stockCode) {
             `;
             console.log(`[${stockCode}] 호가 데이터 수신 없음 - 상태 전환`);
         }
-    }, 5000);
+    }, 8000);
 }
 
 
@@ -927,157 +955,131 @@ function drawPeriodChart(stockCode, period) {
         .catch(err => console.error("API 호출 에러:", err));
 }
 
-// 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stockCode = urlParams.get('code'); // ?code=005930 에서 005930 추출
-    
-    // 호가 상태 즉시 초기화
-    resetHogaToDefault();
-    // 거래 비율 즉시 초기화
-    resetSentimentToDefault();
-
-    const imgUrl = contextPath + '/resources/images/stock/' + stockCode + '.png';
-    const logoImg = document.getElementById('detail-stock-image');
-    logoImg.src = imgUrl;
-    logoImg.onerror = function () {
-        this.src = contextPath + '/resources/images/antmillion-logo.png';
-    }
-
-    scheduleMarketClose();
-    
-    updateDetailTrafficSignal();
-    
-    setInterval(() => {
-        console.log('[Auto Update] 상세페이지 신호등 상태 갱신');
-        updateDetailTrafficSignal();
-    }, 600000);
-
-    initPriceTypeEvents();
-    if (stockCode) {
-        drawDetailChart(stockCode);
-
-        // 차트 기간 버튼 이벤트 리스너 추가
-        const periodButtons = document.querySelectorAll('.detail-period-btn');
-        periodButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // 모든 버튼에서 active 클래스 제거
-                periodButtons.forEach(b => b.classList.remove('detail-period-active'));
-
-                // 클릭된 버튼에 active 클래스 추가
-                this.classList.add('detail-period-active');
-
-                const period = this.getAttribute('data-period');
-
-                // 차트 전환 시 currentCandleData 초기화
-                currentCandleData = null;
-                lastCandleUpdateTime = null;
-
-                if (period === 'minute') {
-                    // 분봉 차트
-                    drawDetailChart(stockCode);
-                } else {
-                    // 일/주/월/년봉 차트
-                    drawPeriodChart(stockCode, period);
-                }
-            });
-        });
-    } else {
-        console.error("URL에 종목 코드가 없습니다.");
-    }
-});
-
-// 반응형 대응
-window.addEventListener('resize', () => {
-    if (stockChart) {
-        const container = document.querySelector('#detail-stockChart');
-        stockChart.resize(container.clientWidth, container.clientHeight);
-    }
-});
-
 // ===== DOM 로드 후 실행 =====
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const stockCode = urlParams.get('code');
 
-    if (!stockCode) return;
+    if (!stockCode) {
+        console.error("URL에 종목 코드가 없습니다.");
+        return;
+    }
 
-    // --- 초기화 ---
+    // --- 초기화 (한 번만!) ---
+    console.log('[페이지 초기화] 시작...');
+
     currentStockCodes = [stockCode];
+
+    // UI 초기화
     resetHogaToDefault();
     resetSentimentToDefault();
     initPriceTypeEvents();
+
+    // 로고 이미지 설정
+    const imgUrl = contextPath + '/resources/images/stock/' + stockCode + '.png';
+    const logoImg = document.getElementById('detail-stock-image');
+    if (logoImg) {
+        logoImg.src = imgUrl;
+        logoImg.onerror = function () {
+            this.src = contextPath + '/resources/images/antmillion-logo.png';
+        }
+    }
+
+    // 차트 그리기
     drawDetailChart(stockCode);
+
+    // 차트 기간 버튼 이벤트
+    const periodButtons = document.querySelectorAll('.detail-period-btn');
+    periodButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            periodButtons.forEach(b => b.classList.remove('detail-period-active'));
+            this.classList.add('detail-period-active');
+
+            const period = this.getAttribute('data-period');
+            currentCandleData = null;
+            lastCandleUpdateTime = null;
+
+            if (period === 'minute') {
+                drawDetailChart(stockCode);
+            } else {
+                drawPeriodChart(stockCode, period);
+            }
+        });
+    });
+
+    // 반응형 대응
+    window.addEventListener('resize', () => {
+        if (stockChart) {
+            const container = document.querySelector('#detail-stockChart');
+            if (container) {
+                stockChart.resize(container.clientWidth, container.clientHeight);
+            }
+        }
+    });
+
+    // 신호등 초기 업데이트
     scheduleMarketClose();
-    
+    updateDetailTrafficSignal();
+    setInterval(() => {
+        console.log('[Auto Update] 상세페이지 신호등 상태 갱신');
+        updateDetailTrafficSignal();
+    }, 600000);
+
+    // 탭 전환 리스너 등록
+    setupTabListeners();
+
     // --- STOMP 실행 (비동기 흐름 제어) ---
     try {
         console.log('STOMP 연결 시도...');
-        await connectStomp(); // 연결 완료까지 동기적으로 대기
-        
+        await connectStomp();
+
         console.log('STOMP 연결 성공. 구독 시작.');
-        await subscribeCurrentStocks(); // 연결 후 구독 순차 실행
-        
+        await subscribeCurrentStocks();
+
     } catch (error) {
-        // 연결이 실패했을 때만 재연결 프로세스 가동
-        handleReconnect(); 
+        console.error('STOMP 연결 실패:', error);
+        handleReconnect();
     }
-    
+
+    // 관심종목 상태 확인
     checkFavoriteStatus();
+
     console.log('=== 매매 편향 체크 시스템 로드 완료 (API 연동) ===');
-        const __loggedIn =
+    const __loggedIn =
         (typeof window.__isLoggedIn === 'function') ? window.__isLoggedIn()
-        : (typeof IS_LOGGED_IN !== 'undefined' ? !!IS_LOGGED_IN : false);
-    
-    
-    // ===== 페이지 진입 시 편향 체크 (우선순위: 매몰비용 > 손실회피) =====
-  if (__loggedIn) {
-    try {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        const stockCode = urlParams.get('code');
-        
-        if (stockCode) {
+            : (typeof IS_LOGGED_IN !== 'undefined' ? !!IS_LOGGED_IN : false);
+
+    // ===== 페이지 진입 시 편향 체크 =====
+    if (__loggedIn) {
+        try {
             console.log('[페이지 로드] 편향 체크 시작 - stockCode:', stockCode);
-            
-            // 우선순위 1: 매몰비용오류
+
             const sunkCostData = await checkSunkCostAlert(stockCode);
-            
-            // 우선순위 2: 손실회피
             const lossData = await checkLossAversionAlert(stockCode);
-            
-            // 우선순위 4: FOMO
-            // FOMO는 WebSocket 데이터 수신 대기
+
             await new Promise(resolve => setTimeout(resolve, 1000));
             const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
-            
-            // 우선순위에 따라 표시 (매몰비용 > 손실회피 > FOMO)
+
             if (sunkCostData && sunkCostData.hasAlert) {
-                console.log('[우선순위 1] 매몰비용오류 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
-                
+                console.log('[우선순위 1] 매몰비용오류 경고');
                 if (typeof showBiasAlert === 'function') {
                     showBiasAlert('SUNK_COST');
-                    
                     if (typeof checkUnreadAlerts === 'function') {
                         setTimeout(() => { checkUnreadAlerts(); }, 0);
                     }
                 }
             } else if (lossData && lossData.hasAlert) {
-                console.log('[우선순위 2] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
-                
+                console.log('[우선순위 2] 손실회피 경고');
                 if (typeof showBiasAlert === 'function') {
                     showBiasAlert('LOSS_AVERSION');
-                    
                     if (typeof checkUnreadAlerts === 'function') {
                         setTimeout(() => { checkUnreadAlerts(); }, 0);
                     }
                 }
             } else if (fomoData && fomoData.hasAlert) {
-                console.log('[우선순위 4] FOMO 경고: ' + fomoData.stockName + ' +' + fomoData.profitRate + '% 급등');
-                
+                console.log('[우선순위 4] FOMO 경고');
                 if (typeof showBiasAlert === 'function') {
                     showBiasAlert('FOMO');
-                    
                     if (typeof checkUnreadAlerts === 'function') {
                         setTimeout(() => { checkUnreadAlerts(); }, 0);
                     }
@@ -1085,55 +1087,49 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 console.log('[페이지 로드] 편향 조건 미달');
             }
+        } catch (error) {
+            console.error('[페이지 로드] 편향 체크 에러:', error);
         }
-    } catch (error) {
-        console.error('[페이지 로드] 편향 체크 에러:', error);
-    }
-    }else {
+    } else {
         console.log('[비로그인] 편향 체크 스킵');
     }
-    
-    // 탭 요소 확인
+});
+
+// ===== 탭 전환 함수 (별도 함수로 분리) =====
+function setupTabListeners() {
     const tabs = document.querySelectorAll('.detail-tab, .detail-tab-active');
-    console.log('[탭 개수]', tabs.length);
-    
-    if (tabs.length === 0) {
-        console.error('탭을 찾을 수 없습니다!');
-        return;
-    }
-    
-    // ===== 탭 전환 기능 =====
+
     tabs.forEach(function(tab) {
         tab.addEventListener('click', async function(e) {
             if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
             const type = this.dataset.type;
             console.log('[탭 클릭]', type);
-            
+
             // 모든 탭에서 active 클래스 제거
             document.querySelectorAll('.detail-tab, .detail-tab-active').forEach(function(t) {
                 t.classList.remove('detail-tab-active');
                 t.classList.add('detail-tab');
             });
-            
+
             // 현재 클릭된 탭에 active 클래스 추가
             this.classList.remove('detail-tab');
             this.classList.add('detail-tab-active');
-            
+
             const btn = document.getElementById('submit-btn');
             const inputCard = document.querySelector('.detail-input-card');
             const resultArea = document.querySelector('.detail-order-result');
             const sentimentSection = document.querySelector('.detail-sentiment-section');
             const pendingArea = document.getElementById('pending-list-area');
-            
+
             const totalMoney = document.getElementById('total-money');
             const availableLabel = document.getElementById('available-label');
             const sentimentDir = document.getElementById('sentiment-direction');
-    		const sentimentPercent = document.getElementById('sentiment-percent');
+            const sentimentPercent = document.getElementById('sentiment-percent');
             const buyPercent = document.getElementById('buy-percent');
             const sellPercent = document.getElementById('sell-percent');
             const buyBar = document.getElementById('buy-bar');
             const sellBar = document.getElementById('sell-bar');
-            
+
             // 1. 대기(Pending) 탭 처리
             if (type === 'pending') {
                 console.log('[UI 변경] 대기 목록 모드');
@@ -1142,24 +1138,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if(resultArea) resultArea.style.display = 'none';
                 if(sentimentSection) sentimentSection.style.display = 'none';
                 if(btn) btn.style.display = 'none';
-                
+
                 // 대기 리스트 영역 보이기
                 if(pendingArea) {
                     pendingArea.style.display = 'flex';
                 }
-    
+
                 // AJAX 데이터 로드 함수 호출
-                loadPendingOrders(); 
+                loadPendingOrders();
                 return; // 대기 탭일 경우 아래 매수/매도 로직 실행 방지
             }
-    
+
             // 2. 매수/매도 탭 공통 처리 (대기 영역 숨기기)
             if(pendingArea) pendingArea.style.display = 'none';
             if(inputCard) inputCard.style.display = 'flex';
             if(resultArea) resultArea.style.display = 'flex';
             if(sentimentSection) sentimentSection.style.display = 'block';
             if(btn) btn.style.display = 'block';
-    
+
             // 3. 매수(Buy) 모드 로직
             if (type === 'buy') {
                 console.log('[UI 변경] 매수 모드');
@@ -1169,52 +1165,51 @@ document.addEventListener('DOMContentLoaded', async () => {
                 availableLabel.textContent = '구매 가능 금액';
                 sentimentDir.textContent = '매수';
                 sentimentDir.className = 'detail-red-text';
-                
-                
+
                 // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > 손실회피 > FOMO)
                 const urlParams = new URLSearchParams(window.location.search);
                 const stockCode = urlParams.get('code');
                 console.log('[종목 코드]', stockCode);
-                
+
                 if (stockCode) {
                     try {
                         // 우선순위 1: 매몰비용
                         const sunkCostData = await checkSunkCostAlert(stockCode);
-                        
+
                         // 우선순위 2: 손실회피
                         const lossData = await checkLossAversionAlert(stockCode);
-                        
+
                         // 우선순위 4: FOMO
                         // FOMO는 WebSocket 데이터 수신 대기 (0.5초)
-            await new Promise(resolve => setTimeout(resolve, 500));
-            const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
-                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
+
                         if (sunkCostData && sunkCostData.hasAlert) {
                             console.log('[매수 탭] 매몰비용 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('SUNK_COST');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
                             }
                         } else if (lossData && lossData.hasAlert) {
                             console.log('[매수 탭] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('LOSS_AVERSION');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
                             }
                         } else if (fomoData && fomoData.hasAlert) {
                             console.log('[매수 탭] FOMO 경고: ' + fomoData.stockName + ' +' + fomoData.profitRate + '% 급등');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('FOMO');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
@@ -1222,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         } else {
                             console.log('[매수 탭] 편향 조건 미달');
                         }
-                        
+
                         // 실시간 체크도 활성화 (이미 20% 이상이면 표시)
                         if (window.lastFomoChangeRate >= 20 && !fomoAlertShown) {
                             console.log('[매수 탭] 실시간 등락률 20% 이상 - 경고 표시');
@@ -1234,7 +1229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     console.warn('URL에 종목 코드(code) 없음');
                 }
-                   
+
             } else if (type === 'sell') {
                 console.log('[UI 변경] 매도 모드');
                 btn.textContent = '매도';
@@ -1244,22 +1239,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sentimentDir.textContent = '매도';
                 sentimentDir.className = 'detail-blue-text';
 
-                
                 // 매도 탭 클릭 시 위험회피 체크
                 const urlParams2 = new URLSearchParams(window.location.search);
                 const stockCode2 = urlParams2.get('code');
                 console.log('[종목 코드]', stockCode2);
-                
+
                 if (stockCode2) {
                     try {
                         const riskData = await checkBiasAlert(stockCode2);
-                        
+
                         if (riskData && riskData.hasAlert) {
                             console.log('위험회피 경고: ' + riskData.stockName + ' +' + riskData.profitRate + '% 수익 중 (' + riskData.holdingDays + '일 보유)');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('RISK_AVERSION');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
@@ -1281,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     });
-});
+}
 
 // 대기 목록 로드 함수
 function loadPendingOrders() {

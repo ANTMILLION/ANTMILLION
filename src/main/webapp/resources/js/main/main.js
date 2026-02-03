@@ -301,6 +301,7 @@ function attachMainStockItemListeners() {
             }
 
             const stockId = this.getAttribute('data-id');
+
             // contextPath는 JSP에서 전역 변수로 설정되어 있음
             window.location.href = contextPath + '/stock/detail?code=' + stockId;
         });
@@ -929,3 +930,48 @@ async function updateAllTrafficSignals() {
         await new Promise(resolve => setTimeout(resolve, 50));
     }
 }
+
+// ========== 모든 구독 해제 (백엔드 + 프론트엔드) ==========
+function unsubscribeAllStocks() {
+    console.log('[main.js] 전체 구독 해제 시작...');
+
+    // 프론트엔드 STOMP 구독 해제
+    Object.keys(subscribedTopics).forEach(stockCode => {
+        if (subscribedTopics[stockCode]) {
+            subscribedTopics[stockCode].unsubscribe();
+            console.log('[main.js] 토픽 구독 해제:', stockCode);
+        }
+    });
+    subscribedTopics = {};
+
+    // 백엔드 구독 해제 - keepalive 옵션으로 페이지 이동 시에도 요청 완료 보장
+    fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0UNCNT0', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        keepalive: true  // 페이지 종료되어도 요청 완료
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log('[main.js] 백엔드 구독 해제 완료:', response);
+        })
+        .catch(error => {
+            console.error('[main.js] 백엔드 구독 해제 실패:', error);
+        });
+}
+
+// ========== 페이지 떠날 때 전체 구독 해제 ==========
+window.addEventListener('beforeunload', function(e) {
+    unsubscribeAllStocks();
+
+    if (stompClient && stompClient.connected) {
+        stompClient.disconnect(function() {
+            console.log('[main.js] STOMP 연결 종료');
+        });
+    }
+});
+
+window.addEventListener('pagehide', function(e) {
+    unsubscribeAllStocks();
+});
