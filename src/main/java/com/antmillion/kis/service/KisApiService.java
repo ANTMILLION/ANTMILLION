@@ -536,27 +536,28 @@ public class KisApiService {
      * 한국투자증권 외인기관 추정가집계 API 호출 (내부 메서드)
      */
     private KisForeignerOrganizationResponse foreignerOrganizationAPI(String stockCode) {
-        // 1. 접근 토큰 얻기
-        String token = getKisAccessToken();
-        
-        // 2. 헤더 설정 (이미지 명세 실전 TR ID: HHPTJ04160200)
-        HttpHeaders headers = createApiHeader(token, "HHPTJ04160200");
-        
-        // 3. URL 생성
-        String url = buildForeignerOrganizationUrl(stockCode);
-        
-        // 4. API 호출
-        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<KisForeignerOrganizationResponse> response = 
-            restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisForeignerOrganizationResponse.class);
-        
-        // 5. 응답 처리
-        KisForeignerOrganizationResponse responseBody = response.getBody();
-        if (responseBody != null && responseBody.getOutput2() != null) {
-            return responseBody;
-        }
-        
-        throw new RuntimeException("외인기관 가집계 데이터 조회 실패");
+        return rateLimitedClient.callWithCache(
+                null,
+                () -> {
+                    // 1. 접근 토큰 얻기
+                    String token = getKisAccessToken();
+                    // 2. 헤더 설정 (이미지 명세 실전 TR ID: HHPTJ04160200)
+                    HttpHeaders headers = createApiHeader(token, "HHPTJ04160200");
+                    // 3. URL 생성
+                    String url = buildForeignerOrganizationUrl(stockCode);
+                    // 4. API 호출
+                    HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+                    ResponseEntity<KisForeignerOrganizationResponse> response =
+                            restTemplate.exchange(url, HttpMethod.GET, httpEntity, KisForeignerOrganizationResponse.class);
+                    // 5. 응답 처리
+                    KisForeignerOrganizationResponse responseBody = response.getBody();
+                    if (responseBody != null && responseBody.getOutput2() != null) {
+                        return responseBody;
+                    }
+                    throw new RuntimeException("외인기관 가집계 데이터 조회 실패");
+                },
+                60
+        );
     }
 
     /**

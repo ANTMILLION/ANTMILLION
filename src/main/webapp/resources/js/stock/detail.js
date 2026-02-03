@@ -1013,10 +1013,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- STOMP 실행 (비동기 흐름 제어) ---
     try {
         console.log('STOMP 연결 시도...');
-        await connectStomp(); // ✅ 연결 완료까지 동기적으로 대기
+        await connectStomp(); // 연결 완료까지 동기적으로 대기
         
         console.log('STOMP 연결 성공. 구독 시작.');
-        await subscribeCurrentStocks(); // ✅ 연결 후 구독 순차 실행
+        await subscribeCurrentStocks(); // 연결 후 구독 순차 실행
         
     } catch (error) {
         // 연결이 실패했을 때만 재연결 프로세스 가동

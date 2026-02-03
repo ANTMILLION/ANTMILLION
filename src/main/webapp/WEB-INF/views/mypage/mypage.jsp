@@ -181,31 +181,31 @@
                         </div>
                     </div>
 
-                    <!-- ✅✅✅ 심리경고 카드 - 수정된 부분 ✅✅✅ -->
+                    <!-- 심리경고 카드 - 수정된 부분 -->
                     <div class="mypage-alert-card">
                         <div class="mypage-alert-header">
                             <h3 class="mypage-alert-title">심리경고</h3>
                         </div>
                         
-                        <!-- ✅ 기간 선택 - id 변경 -->
+                        <!-- 기간 선택 - id 변경 -->
                         <div class="mypage-date-filter">
                             <label class="mypage-date-label">기간</label>
                             <div class="mypage-date-inputs">
                                 <div class="mypage-date-input-wrapper">
-                                    <!-- ✅ id를 alertStartDate로 변경, value 제거 -->
+                                    <!-- id를 alertStartDate로 변경, value 제거 -->
                                     <input type="date" class="mypage-date-input" id="alertStartDate">
                                     <button class="mypage-date-clear" data-target="alertStartDate">×</button>
                                 </div>
                                 <span class="mypage-date-separator">~</span>
                                 <div class="mypage-date-input-wrapper">
-                                    <!-- ✅ id를 alertEndDate로 변경, value 제거 -->
+                                    <!-- id를 alertEndDate로 변경, value 제거 -->
                                     <input type="date" class="mypage-date-input" id="alertEndDate">
                                     <button class="mypage-date-clear" data-target="alertEndDate">×</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ✅ 심리경고 목록 - JavaScript로 동적 생성됨 -->
+                        <!-- 심리경고 목록 - JavaScript로 동적 생성됨 -->
                         <div class="mypage-alert-content">
                             <div class="mypage-alert-list">
                                 <!-- JavaScript의 loadHistoryData()가 여기에 동적으로 추가함 -->
