@@ -7,7 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class NewsProgressResponseDTO {
-    private int readCount;       // 오늘 읽은 개수
-    private int progress;        // 달성률
+public class NewsRewardResponseDTO {
+    private int progress;
+    private int earnedPoint;
+    private UserRankResponseDTO updatedRank;
 }

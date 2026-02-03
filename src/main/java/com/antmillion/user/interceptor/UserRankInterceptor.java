@@ -1,9 +1,8 @@
 package com.antmillion.user.interceptor;
 
-import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.service.AntRankService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -13,12 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Component
+@RequiredArgsConstructor
 public class UserRankInterceptor implements HandlerInterceptor {
-    @Autowired
-    private MemberMapper memberMapper;
-
-    @Autowired
-    private AntRankService antRankService;
+    private final AntRankService antRankService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

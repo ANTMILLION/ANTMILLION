@@ -1,5 +1,6 @@
 package com.antmillion.quiz.controller;
 
+import com.antmillion.quiz.dto.QuizProgressResponseDTO;
 import com.antmillion.quiz.dto.QuizQuestionResponseDTO;
 import com.antmillion.quiz.dto.QuizSubmissionRequestDTO;
 import com.antmillion.quiz.dto.QuizSubmissionResponseDTO;
@@ -27,9 +28,9 @@ public class QuizController {
     @GetMapping("/api/mission/quiz/daily")
     @ResponseBody
     public List<QuizQuestionResponseDTO> getDailyQuizData() {
-        Long userId = currentUserId(); // 1. 여기서 ID 꺼내기
+        Long userId = currentUserId();
         if (userId == null) {
-            return new ArrayList<>(); // 비로그인이면 빈 리스트
+            return new ArrayList<>();
         }
         return quizService.getDailyQuiz(userId);
     }
@@ -39,9 +40,29 @@ public class QuizController {
     public QuizSubmissionResponseDTO checkAnswer(@RequestBody QuizSubmissionRequestDTO requestDTO) {
         Long userId = currentUserId();
         if (userId == null) {
-            return QuizSubmissionResponseDTO.builder().isCorrect(false).message("로그인이 필요합니다.").build();
+            return QuizSubmissionResponseDTO.builder()
+                    .isCorrect(false)
+                    .point(0)
+                    .message("로그인이 필요합니다.")
+                    .build();
         }
         return quizService.checkAndLogAnswer(userId, requestDTO);
+    }
+
+    // 현재 달성률 조회
+    @GetMapping("/api/mission/quiz/progress")
+    @ResponseBody
+    public QuizProgressResponseDTO getQuizProgress() {
+        Long userId = currentUserId();
+
+        if (userId == null) {
+            return QuizProgressResponseDTO.builder()
+                    .solvedCount(0)
+                    .totalCount(2)
+                    .progress(0)
+                    .build();
+        }
+        return quizService.getQuizProgress(userId);
     }
 
     private Long currentUserId() {
