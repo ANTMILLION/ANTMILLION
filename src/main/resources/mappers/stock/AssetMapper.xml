@@ -65,4 +65,27 @@
           AND quantity &lt;= 0
     </delete>
 
+    <select id="getAssetForSell" resultType="com.antmillion.stock.dto.AssetDTO">
+        SELECT
+            account_id AS accountId,
+            stock_code AS stockCode,
+            quantity,
+            purchase_amount AS purchaseAmount,
+            avg_price AS avgPrice
+        FROM asset
+        WHERE account_id = #{accountId}
+          AND stock_code = #{stockCode}
+    </select>
+
+    <update id="updateAssetSellWithCostBasis">
+        UPDATE asset
+        SET
+            quantity = quantity - #{quantity},
+            purchase_amount = purchase_amount - #{costBasis},
+            updated_at = NOW()
+        WHERE account_id = #{accountId}
+          AND stock_code = #{stockCode}
+          AND quantity >= #{quantity}
+    </update>
+
 </mapper>

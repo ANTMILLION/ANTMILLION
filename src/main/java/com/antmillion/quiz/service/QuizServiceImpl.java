@@ -3,13 +3,13 @@ package com.antmillion.quiz.service;
 import com.antmillion.auth.mapper.MemberMapper;
 import com.antmillion.quiz.dto.*;
 import com.antmillion.quiz.mapper.QuizMapper;
+import com.antmillion.user.dto.UserRankResponseDTO;
 import com.antmillion.user.service.AntRankService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +21,9 @@ public class QuizServiceImpl implements QuizService {
     private final QuizMapper quizMapper;
     private final MemberMapper memberMapper;
     private final AntRankService antRankService;
+
+    private static final int TOTAL_QUIZ_COUNT = 2;
+    private static final int PROGRESS_PER_QUIZ = 50;
 
     @Override
     public List<QuizQuestionResponseDTO> getDailyQuiz(Long userId) {
@@ -56,52 +59,66 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional
     public QuizSubmissionResponseDTO checkAndLogAnswer(Long userId, QuizSubmissionRequestDTO requestDTO) {
-        if (userId == null) {
-            throw new IllegalStateException("로그인이 필요한 서비스입니다.");
-        }
-
         // 해당 퀴즈의 정답 조회
-        QuizResultDTO resultInfo = quizMapper.selectQuizResultByQuizId(requestDTO.getQuizId());
+        QuizQuestionDTO resultInfo = quizMapper.selectQuizResultByQuizId(requestDTO.getQuizId());
         if (resultInfo == null || resultInfo.getAnswer() == null) {
             throw new IllegalArgumentException("존재하지 않는 퀴즈입니다.");
         }
 
         // 채점
         boolean isCorrect = resultInfo.getAnswer().equals(requestDTO.getChoiceNo());
-        if(isCorrect) {
-            try {
-                int count = quizMapper.countSolvedHistory(userId, requestDTO.getQuizId());
-                if (count == 0) {
-                    QuizLogDTO logDTO = QuizLogDTO.builder()
-                            .userId(userId)
-                            .quizId(requestDTO.getQuizId())
-                            .build();
-                    quizMapper.insertQuizLog(logDTO);
-
-                    // 포인트 지급
-                    memberMapper.updateUserPoint(userId, resultInfo.getPoint());
-
-                    // 랭크 갱신
-                    int newPoint = memberMapper.selectUserPoint(userId);
-                    antRankService.updateUserRank(userId, newPoint);
-                }
-                // 정답 응답
-                return QuizSubmissionResponseDTO.builder()
-                        .isCorrect(true)
-                        .point(resultInfo.getPoint())
-                        .message(resultInfo.getExplanation())
-                        .build();
-            } catch (Exception e) {
-                System.err.println("퀴즈 로그 저장 중 오류: " + e.getMessage());
-                e.printStackTrace();
-                throw new RuntimeException("퀴즈 처리 중 오류가 발생했습니다.", e);
-            }
-        }
         // 오답 응답
+        if (!isCorrect) {
+            return QuizSubmissionResponseDTO.builder()
+                    .isCorrect(false)
+                    .point(0)
+                    .message("다시 한번 생각해 보세요.")
+                    .progress(0)
+                    .build();
+        }
+        int count = quizMapper.countSolvedHistory(userId, requestDTO.getQuizId());
+        if (count == 0) {
+            QuizLogDTO logDTO = QuizLogDTO.builder()
+                    .userId(userId)
+                    .quizId(requestDTO.getQuizId())
+                    .build();
+            quizMapper.insertQuizLog(logDTO);
+
+            // 포인트 지급
+            memberMapper.updateUserPoint(userId, resultInfo.getPoint());
+
+            // 랭크 갱신
+            int newPoint = memberMapper.selectUserPoint(userId);
+            antRankService.updateUserRank(userId, newPoint);
+        }
+        UserRankResponseDTO updatedRank = antRankService.getUserRankInfo(userId);
+
+        int progress = calculateQuizProgress(userId);
+
+        // 정답 응답
         return QuizSubmissionResponseDTO.builder()
-                .isCorrect(false)
-                .point(0)
-                .message("다시 한번 생각해 보세요.")
+                .isCorrect(true)
+                .point(resultInfo.getPoint())
+                .message(resultInfo.getExplanation())
+                .updatedRank(updatedRank)
+                .progress(progress)
                 .build();
+    }
+
+    @Override
+    public QuizProgressResponseDTO getQuizProgress(Long userId) {
+        int solvedCount = quizMapper.countTodaySolvedQuiz(userId);
+        int progress = calculateQuizProgress(userId);
+
+        return QuizProgressResponseDTO.builder()
+                .solvedCount(solvedCount)
+                .totalCount(TOTAL_QUIZ_COUNT)
+                .progress(progress)
+                .build();
+    }
+
+    private int calculateQuizProgress(Long userId) {
+        int solvedCount = quizMapper.countTodaySolvedQuiz(userId);
+        return Math.min((solvedCount * PROGRESS_PER_QUIZ), 100);
     }
 }
