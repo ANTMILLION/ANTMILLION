@@ -45,21 +45,10 @@ public class SecurityConfig {
 			.httpBasic(basic -> basic.disable())
 			.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
-					// 로그인 불필요
-					.requestMatchers(new AntPathRequestMatcher("/resources/**")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/signup/**")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/kakao/**")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/logout")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/404")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/500")).permitAll()
-					.requestMatchers(new AntPathRequestMatcher("/")).permitAll()
 					// 로그인 필요
-					// .requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
-					// .requestMatchers(new AntPathRequestMatcher("/trade/**")).authenticated()
-					// .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+					.requestMatchers(new AntPathRequestMatcher("/mypage/**")).authenticated()
+					.requestMatchers(new AntPathRequestMatcher("/mission/**")).authenticated()
+					.requestMatchers(new AntPathRequestMatcher("/myinfo/**")).authenticated()
 					.anyRequest().permitAll())
 			.exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
 	            final String ctx = req.getContextPath();

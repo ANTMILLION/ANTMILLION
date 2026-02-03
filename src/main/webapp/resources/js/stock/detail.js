@@ -1025,10 +1025,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     checkFavoriteStatus();
     console.log('=== 매매 편향 체크 시스템 로드 완료 (API 연동) ===');
+        const __loggedIn =
+        (typeof window.__isLoggedIn === 'function') ? window.__isLoggedIn()
+        : (typeof IS_LOGGED_IN !== 'undefined' ? !!IS_LOGGED_IN : false);
+    
     
     // ===== 페이지 진입 시 편향 체크 (우선순위: 매몰비용 > 손실회피) =====
+  if (__loggedIn) {
     try {
         const urlParams = new URLSearchParams(window.location.search);
+        
         const stockCode = urlParams.get('code');
         
         if (stockCode) {
@@ -1082,6 +1088,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (error) {
         console.error('[페이지 로드] 편향 체크 에러:', error);
+    }
+    }else {
+        console.log('[비로그인] 편향 체크 스킵');
     }
     
     // 탭 요소 확인
