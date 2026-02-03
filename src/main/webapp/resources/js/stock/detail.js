@@ -1564,10 +1564,6 @@ window.enableMockMode = enableMockMode;
 window.disableMockMode = disableMockMode;
 window.checkMockStatus = checkMockStatus;
 
-// =========================================
-// 주문 UI 기능 (완전 수정 버전)
-// detail.js 파일 맨 끝에 추가하세요
-// =========================================
 
 (function() {
     console.log('=== 주문 UI 초기화 시작 ===');
