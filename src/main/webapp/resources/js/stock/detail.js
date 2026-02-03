@@ -126,7 +126,7 @@ async function subscribeCurrentStocks() {
 
     if (currentStockCodes.length === 0) return;
 
-    // ✅ Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
+    // Mock 모드일 때는 한투 백엔드 구독 건너뛰고 STOMP만 구독
     if (isMockMode) {
         console.log('Mock 모드 - STOMP 구독 진행');
         currentStockCodes.forEach(stockCode => {
@@ -323,7 +323,7 @@ function unsubscribeAllStocks() {
                 console.error('백엔드 구독 해제 실패:', error);
             });
 
-        // ✅ 추가: 호가 (H0UNASP0) 구독 해제
+        //추가: 호가 (H0UNASP0) 구독 해제
         fetch(contextPath + '/api/kis/websocket/unsubscribe-all?trId=H0UNASP0', {
             method: 'POST',
             headers: {
@@ -418,7 +418,7 @@ function subscribeStockHoga(stockCode) {
         updateHogaUI(askBidData);
     });
 
-    // ✅ subscribedTopics에 저장
+    // subscribedTopics에 저장
     subscribedTopics[hogaKey] = subscription;
     console.log('호가 토픽 구독 완료:', topic);
 }
@@ -959,8 +959,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const lossData = await checkLossAversionAlert(stockCode);
             
                 // 우선순위 4: FOMO
-                // FOMO는 WebSocket 데이터 수신 대기 (0.5초)
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // FOMO는 WebSocket 데이터 수신 대기 
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
             
                 // 우선순위에 따라 표시 (매몰비용 > 손실회피 > FOMO)
@@ -1135,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             console.log('[매수 탭] 편향 조건 미달');
                         }
                         
-                        // ✅ 실시간 체크도 활성화 (이미 20% 이상이면 표시)
+                        // 실시간 체크도 활성화 (이미 20% 이상이면 표시)
                         if (window.lastFomoChangeRate >= 20 && !fomoAlertShown) {
                             console.log('[매수 탭] 실시간 등락률 20% 이상 - 경고 표시');
                             checkFomoInRealtime(window.lastFomoChangeRate);
@@ -1306,7 +1306,7 @@ function checkFavoriteStatus() {
     const btn = document.querySelector('.detail-favorite-btn');
     if (!btn) return;
 
-    // ✅ 비로그인: 서버 호출 없이 기본 상태 유지
+    // 비로그인: 서버 호출 없이 기본 상태 유지
     if (typeof window.__isLoggedIn === 'function' && !window.__isLoggedIn()) {
         btn.textContent = '♡';
         btn.classList.remove('active');
@@ -1331,7 +1331,7 @@ function checkFavoriteStatus() {
 const __favoriteBtn = document.querySelector('.detail-favorite-btn');
 if (__favoriteBtn) {
     __favoriteBtn.addEventListener('click', function(e) {
-        // ✅ 비로그인: 모달
+        // 비로그인: 모달
         if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
 
         const stockCode = this.getAttribute('data-code');
@@ -2090,7 +2090,7 @@ function resetHogaToDefault() {
 function scheduleMarketClose() {
     const now = new Date();
 
-    // ✅ 15:30 예약
+    // 15:30 예약
     const today1530 = new Date(now);
     today1530.setHours(15, 30, 0, 0);
     const msUntil1530 = today1530 - now;
@@ -2106,7 +2106,7 @@ function scheduleMarketClose() {
         console.log('오늘 15:30은 이미 지났습니다.');
     }
 
-    // ✅ 20:00 예약
+    // 20:00 예약
     const today2000 = new Date(now);
     today2000.setHours(20, 0, 0, 0);
     const msUntil2000 = today2000 - now;
