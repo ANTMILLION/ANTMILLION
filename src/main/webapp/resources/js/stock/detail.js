@@ -1025,6 +1025,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateDetailTrafficSignal();
     }, 600000);
 
+    // 탭 전환 리스너 등록
+    setupTabListeners();
+
     // --- STOMP 실행 (비동기 흐름 제어) ---
     try {
         console.log('STOMP 연결 시도...');
@@ -1090,42 +1093,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         console.log('[비로그인] 편향 체크 스킵');
     }
+});
 
-    // ===== 탭 요소 가져오기 =====
+// ===== 탭 전환 함수 (별도 함수로 분리) =====
+function setupTabListeners() {
     const tabs = document.querySelectorAll('.detail-tab, .detail-tab-active');
-    
-    // ===== 탭 전환 기능 =====
+
     tabs.forEach(function(tab) {
         tab.addEventListener('click', async function(e) {
             if (typeof window.requireLogin === 'function' && !window.requireLogin(e)) return;
             const type = this.dataset.type;
             console.log('[탭 클릭]', type);
-            
+
             // 모든 탭에서 active 클래스 제거
             document.querySelectorAll('.detail-tab, .detail-tab-active').forEach(function(t) {
                 t.classList.remove('detail-tab-active');
                 t.classList.add('detail-tab');
             });
-            
+
             // 현재 클릭된 탭에 active 클래스 추가
             this.classList.remove('detail-tab');
             this.classList.add('detail-tab-active');
-            
+
             const btn = document.getElementById('submit-btn');
             const inputCard = document.querySelector('.detail-input-card');
             const resultArea = document.querySelector('.detail-order-result');
             const sentimentSection = document.querySelector('.detail-sentiment-section');
             const pendingArea = document.getElementById('pending-list-area');
-            
+
             const totalMoney = document.getElementById('total-money');
             const availableLabel = document.getElementById('available-label');
             const sentimentDir = document.getElementById('sentiment-direction');
-    		const sentimentPercent = document.getElementById('sentiment-percent');
+            const sentimentPercent = document.getElementById('sentiment-percent');
             const buyPercent = document.getElementById('buy-percent');
             const sellPercent = document.getElementById('sell-percent');
             const buyBar = document.getElementById('buy-bar');
             const sellBar = document.getElementById('sell-bar');
-            
+
             // 1. 대기(Pending) 탭 처리
             if (type === 'pending') {
                 console.log('[UI 변경] 대기 목록 모드');
@@ -1134,24 +1138,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if(resultArea) resultArea.style.display = 'none';
                 if(sentimentSection) sentimentSection.style.display = 'none';
                 if(btn) btn.style.display = 'none';
-                
+
                 // 대기 리스트 영역 보이기
                 if(pendingArea) {
                     pendingArea.style.display = 'flex';
                 }
-    
+
                 // AJAX 데이터 로드 함수 호출
-                loadPendingOrders(); 
+                loadPendingOrders();
                 return; // 대기 탭일 경우 아래 매수/매도 로직 실행 방지
             }
-    
+
             // 2. 매수/매도 탭 공통 처리 (대기 영역 숨기기)
             if(pendingArea) pendingArea.style.display = 'none';
             if(inputCard) inputCard.style.display = 'flex';
             if(resultArea) resultArea.style.display = 'flex';
             if(sentimentSection) sentimentSection.style.display = 'block';
             if(btn) btn.style.display = 'block';
-    
+
             // 3. 매수(Buy) 모드 로직
             if (type === 'buy') {
                 console.log('[UI 변경] 매수 모드');
@@ -1161,52 +1165,51 @@ document.addEventListener('DOMContentLoaded', async () => {
                 availableLabel.textContent = '구매 가능 금액';
                 sentimentDir.textContent = '매수';
                 sentimentDir.className = 'detail-red-text';
-                
-                
+
                 // 매수 탭 클릭 시 편향 체크 (우선순위: 매몰비용 > 손실회피 > FOMO)
                 const urlParams = new URLSearchParams(window.location.search);
                 const stockCode = urlParams.get('code');
                 console.log('[종목 코드]', stockCode);
-                
+
                 if (stockCode) {
                     try {
                         // 우선순위 1: 매몰비용
                         const sunkCostData = await checkSunkCostAlert(stockCode);
-                        
+
                         // 우선순위 2: 손실회피
                         const lossData = await checkLossAversionAlert(stockCode);
-                        
+
                         // 우선순위 4: FOMO
                         // FOMO는 WebSocket 데이터 수신 대기 (0.5초)
-            await new Promise(resolve => setTimeout(resolve, 500));
-            const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
-                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        const fomoData = await checkFomoAlert(stockCode, window.lastFomoChangeRate || 0);
+
                         if (sunkCostData && sunkCostData.hasAlert) {
                             console.log('[매수 탭] 매몰비용 경고: ' + sunkCostData.stockName + ' ' + sunkCostData.profitRate + '% 손실, ' + sunkCostData.holdingDays + '일 보유');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('SUNK_COST');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
                             }
                         } else if (lossData && lossData.hasAlert) {
                             console.log('[매수 탭] 손실회피 경고: ' + lossData.stockName + ' ' + lossData.profitRate + '% 손실 중');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('LOSS_AVERSION');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
                             }
                         } else if (fomoData && fomoData.hasAlert) {
                             console.log('[매수 탭] FOMO 경고: ' + fomoData.stockName + ' +' + fomoData.profitRate + '% 급등');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('FOMO');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
@@ -1214,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         } else {
                             console.log('[매수 탭] 편향 조건 미달');
                         }
-                        
+
                         // 실시간 체크도 활성화 (이미 20% 이상이면 표시)
                         if (window.lastFomoChangeRate >= 20 && !fomoAlertShown) {
                             console.log('[매수 탭] 실시간 등락률 20% 이상 - 경고 표시');
@@ -1226,7 +1229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     console.warn('URL에 종목 코드(code) 없음');
                 }
-                   
+
             } else if (type === 'sell') {
                 console.log('[UI 변경] 매도 모드');
                 btn.textContent = '매도';
@@ -1236,22 +1239,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sentimentDir.textContent = '매도';
                 sentimentDir.className = 'detail-blue-text';
 
-                
                 // 매도 탭 클릭 시 위험회피 체크
                 const urlParams2 = new URLSearchParams(window.location.search);
                 const stockCode2 = urlParams2.get('code');
                 console.log('[종목 코드]', stockCode2);
-                
+
                 if (stockCode2) {
                     try {
                         const riskData = await checkBiasAlert(stockCode2);
-                        
+
                         if (riskData && riskData.hasAlert) {
                             console.log('위험회피 경고: ' + riskData.stockName + ' +' + riskData.profitRate + '% 수익 중 (' + riskData.holdingDays + '일 보유)');
-                            
+
                             if (typeof showBiasAlert === 'function') {
                                 showBiasAlert('RISK_AVERSION');
-                                
+
                                 if (typeof checkUnreadAlerts === 'function') {
                                     setTimeout(() => { checkUnreadAlerts(); }, 0);
                                 }
@@ -1273,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     });
-});
+}
 
 // 대기 목록 로드 함수
 function loadPendingOrders() {
