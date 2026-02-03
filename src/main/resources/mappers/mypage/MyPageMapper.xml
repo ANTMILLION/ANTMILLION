@@ -24,7 +24,7 @@
 			r.avg_price AS "buyPrice",
 			(r.sell_amount / r.sell_quantity) AS "sellPrice",
 			r.realized_profit AS "profit",
-			(r.realized_profit / r.cost_basis) AS "profitRate",
+			(r.realized_profit / r.cost_basis) * 100 AS "profitRate",
 			r.sell_date AS "tradeDate"
 		FROM realized_pnl r
 				 JOIN stock s ON r.stock_code = s.stock_code
