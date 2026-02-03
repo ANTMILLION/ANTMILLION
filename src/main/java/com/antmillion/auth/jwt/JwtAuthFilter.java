@@ -30,26 +30,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // AT 인증
         String token = TokenResolver.resolveAccessToken(req);
 
-        if (token == null || token.isBlank()) {
-            chain.doFilter(req, res);
-            return;
-        }
-
-        if (!jwtProvider.isValid(token)) {
-            SecurityContextHolder.clearContext();
-            chain.doFilter(req, res);
-            return;
-        }
+        if (token == null || token.isBlank()) { chain.doFilter(req, res); return;}
+        if (!jwtProvider.isValid(token)) { SecurityContextHolder.clearContext(); chain.doFilter(req, res); return; }
 
         Claims claims = jwtProvider.parseClaims(token);
         Long userId = Long.valueOf(claims.getSubject());
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
-
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        var auth = new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+        SecurityContextHolder.getContext().setAuthentication(auth);
         chain.doFilter(req, res);
     }
 }
