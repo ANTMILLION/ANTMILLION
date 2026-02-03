@@ -1,5 +1,6 @@
 package com.antmillion.stock.mapper;
 
+import com.antmillion.stock.dto.AssetDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -38,4 +39,17 @@ public interface AssetMapper {
      * 수량이 0이 된 주식 데이터 제거
      */
     int deleteZeroQuantityAsset(@Param("accountId") Long accountId, @Param("stockCode") String stockCode);
+
+    /**
+     * 매도 전 보유 정보 조회 (실현손익 계산용)
+     */
+    AssetDTO getAssetForSell(@Param("accountId") Long accountId, @Param("stockCode") String stockCode);
+
+    /**
+     * 매도: 차감원가를 직접 받아서 처리
+     */
+    int updateAssetSellWithCostBasis(@Param("accountId") Long accountId,
+                                     @Param("stockCode") String stockCode,
+                                     @Param("quantity") Integer quantity,
+                                     @Param("costBasis") Long costBasis);
 }

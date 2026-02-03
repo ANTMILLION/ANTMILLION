@@ -20,5 +20,5 @@ public class AssetDTO {
     private Integer quantity;
     private LocalDateTime updatedAt;
     private Long purchaseAmount;
-    private BigDecimal avgPrice;   // DECIMAL(15,2)
+    private double avgPrice;   // DECIMAL(15,2)
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antmillion.stock.mapper.RealizedPnlMapper">
+
+    <insert id="insertRealizedPnl">
+        INSERT INTO realized_pnl (
+            stock_code,
+            trade_id,
+            account_id,
+            sell_date,
+            sell_quantity,
+            sell_amount,
+            cost_basis,
+            realized_profit,
+            avg_price
+        ) VALUES (
+                     #{stockCode},
+                     #{tradeId},
+                     #{accountId},
+                     #{sellDate},
+                     #{sellQuantity},
+                     #{sellAmount},
+                     #{costBasis},
+                     #{realizedProfit},
+                     #{avgPrice}
+                 )
+    </insert>
+
+</mapper>

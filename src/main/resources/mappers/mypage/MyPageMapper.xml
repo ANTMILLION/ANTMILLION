@@ -16,40 +16,22 @@
 	    WHERE
 	        a.account_id = #{accountId}
     </select>
-    
-    <select id="selectRealizedProfit" resultType="com.antmillion.mypage.dto.RealizedProfitDTO">
-	    SELECT 
-	        s.stock_name AS "name",
-	        tl.trade_quantity AS "shares",
-	        COALESCE(
-	            (SELECT a.avg_price FROM asset a 
-	             WHERE a.account_id = #{accountId} AND a.stock_code = so.stock_code),
-	            (SELECT tl_buy.trade_price FROM trade_log tl_buy 
-	             JOIN stock_order so_buy ON tl_buy.order_id = so_buy.order_id
-	             WHERE so_buy.account_id = #{accountId} 
-	               AND so_buy.stock_code = so.stock_code 
-	               AND so_buy.transaction_type = 'BUY'
-	             ORDER BY tl_buy.trade_date DESC LIMIT 1)
-	        ) AS "buyPrice",
-	        tl.trade_price AS "sellPrice",
-	        (tl.trade_price - (SELECT buyPrice)) * tl.trade_quantity AS "profit",
-	        CASE 
-	            WHEN (SELECT buyPrice) = 0 THEN 0
-	            ELSE ROUND(((tl.trade_price - (SELECT buyPrice)) / (SELECT buyPrice)) * 100, 2)
-	        END AS "profitRate",
-	        DATE_FORMAT(tl.trade_date, '%Y-%m-%d %H:%i:%s') AS "tradeDate"
-	    FROM trade_log tl
-	    JOIN stock_order so ON tl.order_id = so.order_id
-	    JOIN stock s ON so.stock_code = s.stock_code
-	    WHERE so.account_id = #{accountId}
-	      AND so.transaction_type = 'SELL'
-	      <if test="startDate != null and startDate != ''">
-	          AND tl.trade_date &gt;= #{startDate}
-	      </if>
-	      <if test="endDate != null and endDate != ''">
-	          AND tl.trade_date &lt;= STR_TO_DATE(CONCAT(#{endDate}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
-	      </if>
-	    ORDER BY tl.trade_date DESC
+
+	<select id="selectRealizedProfit" resultType="com.antmillion.mypage.dto.RealizedProfitDTO">
+		SELECT
+			s.stock_name AS "name",
+			r.sell_quantity AS "shares",
+			r.avg_price AS "buyPrice",
+			(r.sell_amount / r.sell_quantity) AS "sellPrice",
+			r.realized_profit AS "profit",
+			(r.realized_profit / r.cost_basis) * 100 AS "profitRate",
+			r.sell_date AS "tradeDate"
+		FROM realized_pnl r
+				 JOIN stock s ON r.stock_code = s.stock_code
+		WHERE r.account_id = #{accountId}
+		  AND r.sell_date >= STR_TO_DATE(#{startDate}, '%Y-%m-%d')
+		  AND r.sell_date &lt; DATE_ADD(STR_TO_DATE(#{endDate}, '%Y-%m-%d'), INTERVAL 1 DAY)
+		ORDER BY r.sell_date DESC
 	</select>
 	
 	<select id="selectExecutedOrders" resultType="com.antmillion.mypage.dto.ExecutedOrdersDTO">
