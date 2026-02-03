@@ -7,7 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.antmillion.stock.mapper.StockOrderMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrderScheduler {
@@ -19,6 +21,6 @@ public class OrderScheduler {
     public void cancelOldOrders() {
         // WAIT, PARTIAL 상태인 모든 주문을 CANCEL로 변경
         int count = stockOrderMapper.cancelRemainingOrders();
-        System.out.println("장 시작 전 미체결 주문 {}건을 자동 취소 처리했습니다.");
+        log.info("### [ACTION] 장 시작 전 미체결 주문 {}건을 자동 취소 처리했습니다. ###", count);
     }
 }

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 웹소켓 Connection 처리
@@ -29,6 +30,7 @@ import lombok.Setter;
  *
  */
 
+@Slf4j
 @Service
 public class KisWebSocketManager {
     private final KisApiService kisApiService;
@@ -65,10 +67,10 @@ public class KisWebSocketManager {
             session = client.doHandshake(handler, WS_URL).get();   
             lastHeartbeatTime = System.currentTimeMillis();
             isConnected = true;
-            System.out.println("KIS 서버와 웹소켓 연결 완료");
+            log.info("### KIS 서버와 웹소켓 연결 완료 ###");
         } catch (Exception e) {
         	isConnected = false;
-            System.err.println("웹소켓 연결 실패: " + e.getMessage());
+        	log.error("### [ERROR] 웹소켓 연결 실패: {} ###", e.getMessage());
         }
     }
     
@@ -77,7 +79,7 @@ public class KisWebSocketManager {
         if (session != null && session.isOpen()) {
             try {
                 session.close();
-                System.out.println("브라우저 종료로 인한 KIS 세션 종료");
+                log.info("### 브라우저 종료로 인한 KIS 세션 종료 ###");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -89,7 +91,7 @@ public class KisWebSocketManager {
     // 웹소켓 재연결
     public void monitorHealth() {
         if (session == null || !session.isOpen()) {
-            System.out.println("세션이 끊겼으므로 재연결 시도");
+        	log.info("### [RECONNECT] 세션 끊김 - 재연결 시도 ###");
             session = null;
             connect();
         }
@@ -104,33 +106,32 @@ public class KisWebSocketManager {
         Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
         // 중복 구독 방지
         if (targetSet.contains(stockCode)) {
-            System.out.println("이미 " + trId + " 구독 중인 종목: " + stockCode);
+        	log.info("### [SKIP] 이미 {} 구독 중인 종목: {} ###", trId, stockCode);
             return;
         }
 
         if (session == null || !session.isOpen()) {
-            System.out.println("웹소켓 세션 연결");
+        	log.info("### [KIS 웹소켓] 연결 시도 중... ###");
             connect();
         }
         
         this.sendSubscribeMessage(this.session, stockCode, "1", trId);  // 실제 구독 메시지 전송
         targetSet.add(stockCode);
-
-        System.out.println("구독 완료: " + stockCode + " trId: " + trId);
+        log.info("### [SUCCESS] 구독 완료: {} | TR_ID: {} ###", stockCode, trId);
     }
 
     // 구독 해제 메소드
     public synchronized void unsubscribe(String stockCode, String trId) {
         Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
         if (!targetSet.contains(stockCode)) {
-            System.out.println(trId + " 구독 중이 아닌 종목: " + stockCode);
+        	log.info("### [INFO] {} 구독 중이 아닌 종목: {} ###", trId, stockCode);
             return;
         }
 
         if (this.session != null && this.session.isOpen()) {
             sendSubscribeMessage(this.session, stockCode, "2", trId);  // "2" = 구독 해제
             targetSet.remove(stockCode);
-            System.out.println("구독 해제: " + stockCode + " trId: " + trId);
+            log.info("### [SUCCESS] 구독 해제: {} | TR_ID: {} ###", stockCode, trId);
         }
     }
 
@@ -138,11 +139,11 @@ public class KisWebSocketManager {
     public synchronized void unsubscribeAll(String trId) {
         Set<String> targetSet = isPresentPriceTrId(trId) ?  presentSubscribedStocks : askBidSubscribedStocks;
         if (targetSet.isEmpty()) {
-            System.out.println(trId + " 구독 중인 종목이 없습니다.");
+        	log.info("### [INFO] {} 구독 중인 종목이 없습니다. ###", trId);
             return;
         }
 
-        System.out.println(trId + " 전체 구독 해제 시작");
+        log.info("### [PROCESS] {} 전체 구독 해제 시작 ###", trId);
         // 복사본으로 반복 (ConcurrentModificationException 방지)
         Set<String> stocksToUnsubscribe = ConcurrentHashMap.newKeySet();
         stocksToUnsubscribe.addAll(targetSet);
@@ -151,7 +152,7 @@ public class KisWebSocketManager {
             unsubscribe(stockCode, trId);
         }
 
-        System.out.println(trId + " 전체 구독 해제 완료");
+        log.info("### [SUCCESS] {} 전체 구독 해제 완료 ###", trId);
     }
 
     // 구독/해제 메시지 전송 (통합)
@@ -176,7 +177,8 @@ public class KisWebSocketManager {
             session.sendMessage(new TextMessage(json));
 
             String dataType = isPresentPriceTrId(trId) ? "체결가" : "호가";
-            System.out.println(dataType + (trType.equals("1") ? "구독" : "해제") + " 요청 전송: " + stockCode);
+            log.info("### [REQUEST] {} {} 요청 전송: {} ###", 
+                    dataType, (trType.equals("1") ? "구독" : "해제"), stockCode);
         } catch (IOException e) {
             System.err.println("메시지 전송 실패: " + e.getMessage());
         }
