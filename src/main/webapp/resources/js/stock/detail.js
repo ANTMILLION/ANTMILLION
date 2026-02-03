@@ -1090,6 +1090,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         console.log('[비로그인] 편향 체크 스킵');
     }
+
+    // ===== 탭 요소 가져오기 =====
+    const tabs = document.querySelectorAll('.detail-tab, .detail-tab-active');
     
     // ===== 탭 전환 기능 =====
     tabs.forEach(function(tab) {
