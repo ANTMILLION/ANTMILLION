@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class MissionStatusResponseDTO {
+public class MissionProgressResponseDTO {
     private int totalProgress;
     private int quizCount;
     private int newsCount;

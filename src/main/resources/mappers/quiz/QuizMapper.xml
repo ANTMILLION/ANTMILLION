@@ -63,13 +63,7 @@
         AND DATE(solved_at) = CURDATE()
     </select>
 
-    <resultMap id="quizResultMap" type="com.antmillion.quiz.dto.QuizResultDTO">
-        <result property="answer" column="answer"/>
-        <result property="explanation" column="explanation"/>
-        <result property="point" column="point"/>
-    </resultMap>
-
-    <select id="selectQuizResultByQuizId" resultMap="quizResultMap">
+    <select id="selectQuizResultByQuizId" resultMap="quizQuestionMap">
         SELECT answer, explanation, point
         FROM quiz_question
         WHERE quiz_id = #{quizId}

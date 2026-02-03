@@ -605,7 +605,7 @@ function renderRealizedProfit(data) {
     
     // 월별로 반복
     Object.values(groupedData).sort((a, b) => b.month.localeCompare(a.month)).forEach(group => {
-        const isMonthProfitable = group.totalProfit >= 0;
+        const isMonthProfitable = group.totalProfit > 0;
         const monthClass = isMonthProfitable ? 'positive' : 'negative';
         const monthSign = isMonthProfitable ? '+' : '';
 

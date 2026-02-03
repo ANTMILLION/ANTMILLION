@@ -118,7 +118,9 @@ function handleNewsClick(url, cardElement) {
                     $header.append(`<span class="news-points-badge">+${data.earnedPoint}P</span>`);
                 }
             }
-            // 달성률 업데이트
+            if (data.updatedRank) {
+                updateHeaderUI(data.updatedRank);
+            }
             updateProgressBar(data.progress);
         },
         error: function(xhr, status, error) {
@@ -129,6 +131,28 @@ function handleNewsClick(url, cardElement) {
             }
         }
     });
+}
+
+// 헤더(상단바) UI 업데이트
+function updateHeaderUI(data) {
+    // 헤더 상단 닉네임
+    const headerName = document.querySelector('.header-user-name');
+    if (headerName) headerName.textContent = data.nickName;
+
+    // 헤더 드롭다운 닉네임
+    const profileName = document.querySelector('.header-profile-nickname');
+    if (profileName) profileName.textContent = data.nickName;
+
+    // 헤더 드롭다운 티어
+    const rankName = document.querySelector('.header-profile-tier');
+    if (rankName) rankName.textContent = data.rankName + " 개미";
+
+    // 헤더 드롭다운 아바타 이미지
+    const rankImg = document.querySelector('.header-profile-avatar');
+    if (rankImg) {
+        rankImg.src = cpath + '/' + data.rankImage;
+        rankImg.alt = data.rankName;
+    }
 }
 
 function renderPagination() {
