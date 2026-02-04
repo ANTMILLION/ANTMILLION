@@ -12,7 +12,6 @@ public class WebSocketBufferConfig {
         ServletServerContainerFactoryBean container =
                 new ServletServerContainerFactoryBean();
 
-        // KIS 데이터는 꽤 큼 → 5MB 이상 권장
         container.setMaxTextMessageBufferSize(5 * 1024 * 1024);
         container.setMaxBinaryMessageBufferSize(5 * 1024 * 1024);
 

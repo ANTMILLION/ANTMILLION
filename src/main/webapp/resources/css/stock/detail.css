@@ -73,7 +73,6 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;           /* 내부 요소를 유연하게 배치 */
     flex-direction: column;  /* 위에서 아래로 쌓음 */
-    /* 높이는 이미 잡혀있거나 부모에 따름 */
     overflow: hidden;
 }
 
@@ -191,13 +190,11 @@ body {
     margin-bottom: 16px;
 }
 
-/* =========================================
-   4. 오른쪽 패널 (주문하기)
-   ========================================= */
+/* 주문하기 */
 .detail-right-panel {
     width: 380px;
     position: sticky;
-    top: 80px; /* 헤더 높이 고려 */
+    top: 80px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -239,7 +236,7 @@ body {
 
 .detail-hoga-placeholder span {
     font-size: 14px;
-    color: var(--text-tertiary); /* 회색 */
+    color: var(--text-tertiary);
     font-weight: 500;
 }
 
@@ -396,7 +393,6 @@ body {
     transition: width 0.3s ease;
 }
 
-
 /* 호가 */
 .detail-hoga-box {
     display: flex;
@@ -550,7 +546,7 @@ body {
 
     .detail-hoga-box,
     .detail-community-box {
-        min-height: 400px; /* 충분한 높이 확보 */
+        min-height: 400px;
     }
 
     /* 폰트 사이즈 조정 (MyPage 스타일) */

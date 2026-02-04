@@ -52,7 +52,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 		log.info("### [KIS 웹소켓] 핸드셰이크 성공 및 연결 완료 ###");
 	}
 
-	// 숫자를 안전하게 추출하는 헬퍼 메서드 (클래스 내부에 추가)
+	// 숫자를 안전하게 추출하는 메서드
 	private int parseSafeInt(String val) {
 		if (val == null || val.trim().isEmpty())
 			return 0;
@@ -74,7 +74,6 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 			manager.updateLastHeartbeatTime(); // 수신 시간 갱신
 			log.info("### PINGPONG 수신 완료 ###");
 			try {
-				// 한투 가이드: 받은 PINGPONG 메시지를 그대로 다시 보내야 연결이 유지됨
 				session.sendMessage(new TextMessage(payload));
 			} catch (IOException e) {
 				System.err.println("PINGPONG 응답 전송 실패: " + e.getMessage());
