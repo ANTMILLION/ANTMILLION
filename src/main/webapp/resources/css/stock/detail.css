@@ -25,7 +25,7 @@ body {
 }
 
 /* =========================================
-   2. 메인 레이아웃 (Sidebar 대응)
+   2. 메인 레이아웃
    ========================================= */
 .detail-container {
     display: flex;
@@ -170,11 +170,11 @@ body {
     display: none !important;
 }
 
-/* 하단 분할 영역 (호가/커뮤니티) */
+/* 호가/커뮤니티 */
 .detail-bottom-split {
     display: flex;
     gap: 20px;
-    height: 400px; /* 높이 고정 혹은 auto */
+    height: 400px;
 }
 
 .detail-hoga-box,
@@ -327,7 +327,6 @@ body {
     color: var(--color-positive); /* 매수일 때 색상 */
 }
 
-/* 감정(Sentiment) 바 */
 .detail-sentiment-section {
     margin-top: 10px;
 }
@@ -424,7 +423,6 @@ body {
     border-bottom: none;
 }
 
-/* 각 컬럼 공통 */
 .hoga-col {
     flex: 1;
     padding: 0 8px;
@@ -1083,7 +1081,6 @@ body {
 }
 
 /*주문 대기 */
-/* 전체 컨테이너 */
 .detail-pending-card {
     background: #F9FAFB;
     border: 1px solid var(--border-color);
@@ -1094,7 +1091,6 @@ body {
     overflow: hidden;
 }
 
-/* 제목 영역 간소화 */
 .detail-pending-header {
     font-size: 11px;
     font-weight: 700;
@@ -1110,7 +1106,6 @@ body {
     padding: 0 8px 8px 8px;
 }
 
-/* 테이블 압축 */
 .detail-pending-table {
     width: 100%;
     table-layout: fixed;

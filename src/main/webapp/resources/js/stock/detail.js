@@ -2214,7 +2214,6 @@ function scheduleMarketClose() {
     }
 }
 
-
 // FOMO 실시간 체크
 let fomoAlertShown = false;
 let fomoConditionMet = false;
