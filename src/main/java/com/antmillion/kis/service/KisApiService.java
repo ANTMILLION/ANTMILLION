@@ -480,7 +480,6 @@ public class KisApiService {
 				.queryParam("FID_PW_DATA_INCU_YN", request.getPwDataIncuYn()) // 과거 데이터 포함 여부 (당일 실시간 N 고정)
 				.queryParam("FID_FAKE_TICK_INCU_YN", request.getFakeTickIncuYn()) // 허봉 포함 여부 (공백 필수 입력)
 				.build().toUriString();
-
     }
 
     public Integer getCurrentPrice(CurrentPriceRequest request) {
@@ -521,7 +520,7 @@ public class KisApiService {
             return cached.get();
         }
         
-        // 1. API 호출 (패턴 준수)
+        // 1. API 호출
     	log.info("한국투자증권 외인/기관 추정가집계 api 호출: {}", stockCode);
         KisForeignerOrganizationResponse response = foreignerOrganizationAPI(stockCode);
         if(response.getOutput2().size() ==0){
@@ -592,9 +591,6 @@ public class KisApiService {
 	    return new FrgnOrgnTrafficSignal(color);
 	}
     
-    
-    
-
     public CurrentPrice getCurrentPriceDetail(CurrentPriceRequest request) {
         String cacheKey = "current:price:detail:" + request.getStockCode();
 

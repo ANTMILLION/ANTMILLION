@@ -20,13 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 웹소켓 통로를 통해 데이터(메시지) 처리
- * 
- * afterConnectionEstablished: KIS 서버에게 구독 메시지 보냄 
- * handleTextMessage: KIS 서버가 정보를
- * 보낼 때마다 자동으로 실행되는 메서드
- *
- * KIS 서버 → JSON 메시지 → ObjectMapper → DTO(자바 객체) → 메모리 저장 → STOMP 전송
+ * KIS 웹소켓 데이터 처리 (KisWebSocketHandler)
+ * 1. afterConnectionEstablished: 연결 성공 로그 출력 (구독 메시지는 여기서 보내지 않음)
+ * 2. handleTextMessage: 서버로부터 메시지 수신 시 자동 실행
+ * - PINGPONG: 수신 즉시 에코(Echo) 응답을 보내 세션 유지 및 Manager의 하트비트 갱신
+ * - 실시간 데이터: 파이프(|)와 캐럿(^) 기호로 분리된 문자열을 파싱
+ * 3. 데이터 전파:
+ * - 파싱된 Map 데이터를 SimpMessagingTemplate을 통해 프론트엔드(STOMP)로 즉시 전송
+ * - TradingEngineService를 호출하여 실시간 체결 로직(매매 확인) 실행
  */
 
 @Slf4j
@@ -51,7 +52,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 		log.info("### [KIS 웹소켓] 핸드셰이크 성공 및 연결 완료 ###");
 	}
 
-	// 숫자를 안전하게 추출하는 헬퍼 메서드 (클래스 내부에 추가)
+	// 숫자를 안전하게 추출하는 메서드
 	private int parseSafeInt(String val) {
 		if (val == null || val.trim().isEmpty())
 			return 0;
@@ -73,7 +74,6 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 			manager.updateLastHeartbeatTime(); // 수신 시간 갱신
 			log.info("### PINGPONG 수신 완료 ###");
 			try {
-				// 한투 가이드: 받은 PINGPONG 메시지를 그대로 다시 보내야 연결이 유지됨
 				session.sendMessage(new TextMessage(payload));
 			} catch (IOException e) {
 				System.err.println("PINGPONG 응답 전송 실패: " + e.getMessage());

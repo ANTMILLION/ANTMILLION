@@ -131,9 +131,6 @@
                         </div>
                     </div>
 
-
-
-
     <!-- 주문 확인 팝업 -->
     <div class="detail-order-modal" id="order-modal">
         <div class="detail-modal-content">
@@ -171,8 +168,6 @@
             </div>
         </div>
     </div>
-
-
 
     <div class="detail-order-result">
         <div class="detail-row">
