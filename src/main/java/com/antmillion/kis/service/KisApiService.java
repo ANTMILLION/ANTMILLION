@@ -272,8 +272,7 @@ public class KisApiService {
      * @return 한국투자증권 api 반환값
      */
     private KisMarketIndexPriceResponse marketIndexPricesAPI(MarketIndexPriceRequest request) {
-        return rateLimitedClient.callWithCache(
-                null,
+        return rateLimitedClient.callWithoutCache(
                 () -> {
                     String token = getKisAccessToken();
                     HttpHeaders headers = createApiHeader(token, "FHPUP02120000");
@@ -285,8 +284,7 @@ public class KisApiService {
                         return responseBody;
                     }
                     throw new RuntimeException("국내 시장 지수 차트 데이터 조회 실패");
-                },
-                60
+                }
         );
     }
 
