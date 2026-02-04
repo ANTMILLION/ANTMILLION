@@ -354,6 +354,34 @@ function initializeCharts() {
     setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
     }, 100);
+    
+    // window resize 이벤트 핸들러 등록
+    window.addEventListener('resize', handleChartResize);
+}
+
+// 차트 리사이즈 핸들러
+function handleChartResize() {
+    // 코스피 차트 리사이즈
+    const kospiChart = document.querySelector('#main-kospi-chart');
+    if (kospiChart && kospiChart._chart) {
+        const kospiContainer = kospiChart.parentElement;
+        kospiChart._chart.resize(kospiContainer.clientWidth, kospiContainer.clientHeight);
+    }
+    
+    // 코스닥 차트 리사이즈
+    const kosdaqChart = document.querySelector('#main-kosdaq-chart');
+    if (kosdaqChart && kosdaqChart._chart) {
+        const kosdaqContainer = kosdaqChart.parentElement;
+        kosdaqChart._chart.resize(kosdaqContainer.clientWidth, kosdaqContainer.clientHeight);
+    }
+    
+    // 종목 차트 리사이즈
+    if (stockChart) {
+        const chartContainer = document.getElementById('main-stockChart');
+        if (chartContainer) {
+            stockChart.resize(chartContainer.clientWidth, chartContainer.clientHeight);
+        }
+    }
 }
 
 //코스피/코스닥 차트
@@ -970,8 +998,12 @@ window.addEventListener('beforeunload', function(e) {
             console.log('[main.js] STOMP 연결 종료');
         });
     }
+    
+    // resize 이벤트 핸들러 제거
+    window.removeEventListener('resize', handleChartResize);
 });
 
 window.addEventListener('pagehide', function(e) {
     unsubscribeAllStocks();
+    window.removeEventListener('resize', handleChartResize);
 });
