@@ -246,7 +246,7 @@ function subscribeStockTopic(stockCode) {
 let isMarketOrder = false; 
 let lastRealtimePrice = "";
 
-// ========== 현재가 업데이트 함수 (개선 버전) ==========
+// ========== 현재가 업데이트 함수 ==========
 function updateStockRealtimePrice(stockCode, tradeData) {
     // 1. 데이터 수신 시 타이머 즉시 취소
     if (sentimentTimeout) {
@@ -286,7 +286,6 @@ function updateStockRealtimePrice(stockCode, tradeData) {
         let buyRate = Math.round(rawBuyRate < 1 ? (rawBuyRate * 100) : rawBuyRate);
         const sellRate = 100 - buyRate;
 
-        // 3. 무조건 실제 데이터로 덮어쓰기 (조건 없음)
         if (sentimentText) {
             if (buyRate >= 50) {
                 sentimentText.innerHTML = `🔥 현재 투자자 <span id="sentiment-percent">${buyRate}</span>%가 <span class="detail-red-text" id="sentiment-direction">매수</span>쪽으로 몰려요!`;
@@ -342,9 +341,6 @@ function initPriceTypeEvents() {
         tabLimit.classList.add('detail-active-type');
         tabMarket.style.color = '#6B7280';
         tabMarket.classList.remove('detail-active-type');
-        
-        // 지정가는 보통 초기값이나 사용자가 입력할 수 있는 상태로 둠 (원하는 값으로 세팅 가능)
-        // bigPriceElement.textContent = "원래 지정가 값"; 
     });
 }
     
@@ -407,7 +403,7 @@ function unsubscribeAllStocks() {
     }
 }
 
-// ========== 호가 데이터 수신 및 UI 업데이트 (개선 버전) ==========
+// ========== 호가 데이터 수신 및 UI 업데이트 ==========
 function updateHogaUI(hogaData) {
     // 1. 데이터 수신 시 타이머 즉시 취소
     if (hogaTimeout) {
@@ -521,7 +517,6 @@ function subscribeStockHoga(stockCode) {
         }
     }, 8000);
 }
-
 
 // ===== API 호출 함수 =====
 async function checkBiasAlert(stockCode) {
@@ -965,7 +960,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // --- 초기화 (한 번만!) ---
+    // --- 초기화 ---
     console.log('[페이지 초기화] 시작...');
 
     currentStockCodes = [stockCode];
@@ -1379,10 +1374,6 @@ function openEditModal(orderId, currentPrice, currentQty) {
     }
 }
 
-
-
-
-
 // 페이지 로드 시 관심종목 상태 확인
 function checkFavoriteStatus() {
     const btn = document.querySelector('.detail-favorite-btn');
@@ -1437,7 +1428,6 @@ if (__favoriteBtn) {
             });
     });
 }
-
 
 // ========== 페이지 떠날 때 구독 해제 ==========
 window.addEventListener('beforeunload', function(e) {
@@ -2176,7 +2166,7 @@ function resetHogaToDefault() {
     const minutes = now.getMinutes();
     const currentTime = hours * 100 + minutes;
 
-    // [수정] 평일 09:00 ~ 20:00까지는 '로딩중...'이 뜨게 함
+    // 평일 09:00 ~ 20:00까지는 '로딩중...'이 뜨게 함
     const isTradingTime = day >= 1 && day <= 5 && currentTime >= 900 && currentTime <= 2000;
 
     // innerHTML을 사용하여 placeholder 구조와 함께 텍스트 주입
@@ -2223,7 +2213,6 @@ function scheduleMarketClose() {
         console.log('오늘 20:00은 이미 지났습니다.');
     }
 }
-
 
 // FOMO 실시간 체크
 let fomoAlertShown = false;

@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
-//@Controller // 테스트를 위해서 @Controller 활성화 했습니다.
 @RequestMapping("/api/kis")
 public class KisController {
 
@@ -31,7 +30,7 @@ public class KisController {
 
     /**
      * 한국투자증권 api의 응답을 확인하기위한 컨트롤러
-     * 실제로 사용할 때는 KisService만 사욯하면 될듯
+     * 실제로 사용할 때는 KisService만 사용함
      */
 
     @GetMapping("/auth")

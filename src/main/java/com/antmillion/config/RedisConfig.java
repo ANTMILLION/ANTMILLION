@@ -38,7 +38,7 @@ public class RedisConfig {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(host, port);
         // redisConfig.setPassword(password); // 비밀번호 설정 시 주석 해제
 
-        // 2. [핵심] RESP2 프로토콜 강제 설정
+        // 2. RESP2 프로토콜 강제 설정
         // Redis 8.4.0은 기본이 RESP3지만, 이걸로 RESP2를 강제합니다.
         ClientOptions clientOptions = ClientOptions.builder()
                 .protocolVersion(ProtocolVersion.RESP2)
