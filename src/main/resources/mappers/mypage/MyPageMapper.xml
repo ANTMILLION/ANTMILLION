@@ -61,14 +61,16 @@
                         ), 0)
                  ) * o.order_price) AS "unexecutedAmount",
             tl.trade_price AS "executedPrice",
-            DATE_FORMAT(o.updated_at, '%Y-%m-%d %H:%i:%s') AS "executedTime"
+            DATE_FORMAT(o.updated_at, '%Y-%m-%d %H:%i:%s') AS "executedTime",
+            o.status AS "status"
         FROM stock_order o
                  JOIN stock s ON o.stock_code = s.stock_code
                  LEFT JOIN trade_log tl ON o.order_id = tl.order_id
         WHERE o.account_id = #{accountId}
           AND o.created_at >= STR_TO_DATE(#{startDate}, '%Y-%m-%d')
           AND o.created_at &lt; DATE_ADD(STR_TO_DATE(#{endDate}, '%Y-%m-%d'), INTERVAL 1 DAY)
-        ORDER BY tl.trade_date DESC
+          AND o.status &lt;&gt; 'CANCEL'
+        ORDER BY COALESCE(tl.trade_date, o.updated_at) DESC
     </select>
 	
 	<select id="selectAccountInfo" resultType="com.antmillion.mypage.dto.AccountInfoDTO">

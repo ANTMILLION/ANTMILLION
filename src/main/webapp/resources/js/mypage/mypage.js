@@ -684,9 +684,9 @@ function renderExecutedOrders(filter) {
     // 1. 필터링 로직 (ExecutedOrdersDTO의 unexecutedQty 기준)
     let filtered = window.executedOrderData;
     if (filter === 'executed') {
-        filtered = window.executedOrderData.filter(o => o.unexecutedQty === 0);
+        filtered = window.executedOrderData.filter(o => o.status === 'COMPLETED');
     } else if (filter === 'unexecuted') {
-        filtered = window.executedOrderData.filter(o => o.unexecutedQty > 0);
+        filtered = window.executedOrderData.filter(o => o.status === "WAIT" || o.status === "PARTIAL");
     }
 
     if (filtered.length === 0) {

@@ -21,4 +21,7 @@ public class ExecutedOrdersDTO {
     private long orderAmount;          // 주문금액
     private String stockCode;          // 종목코드
     private String executedTime;       // 체결시간
+
+    // 주문 상태 필드 (COMPLETED, WAIT, CANCEL, PARTIAL)
+    private String status;
 }

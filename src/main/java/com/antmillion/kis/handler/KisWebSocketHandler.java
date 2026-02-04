@@ -138,7 +138,7 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 
 				String stockCode = data[0];
 				messagingTemplate.convertAndSend("/topic/kis-trade/ask-bid" + stockCode, askBidData);
-				log.info("### [실시간 호가] 종목: {} ###\n{}", stockCode, askBidData);
+				//log.info("### [실시간 호가] 종목: {} ###\n{}", stockCode, askBidData);
 				int bestBidPrice = parseSafeInt(data[13]); // 매수 1호가
 				int bestBidQty = parseSafeInt(data[33]); // 매수 1호가 잔량
 
@@ -163,7 +163,19 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+		int closeCode = status.getCode();
+		String closeReason = status.getReason();
 		log.info("### KIS 연결 종료: {} ###", status.getReason());
+
+		if (closeCode == CloseStatus.NORMAL.getCode() || closeCode == CloseStatus.GOING_AWAY.getCode()) {
+			log.info("### [NORMAL] 정상적인 연결 종료 - 재연결 안 함 ###");
+		} else if (closeCode == CloseStatus.TOO_BIG_TO_PROCESS.getCode()) {
+			log.info("### [TOO_BIG] 메시지 크기 초과로 연결 종료 - 재연결 ###");
+			manager.clearSubscriptionState();
+			manager.monitorHealth();
+		}
+
+
 	}
 
 }
