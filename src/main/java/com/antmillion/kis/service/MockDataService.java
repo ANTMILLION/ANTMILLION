@@ -144,10 +144,12 @@ public class MockDataService {
         int prevPrice = mockData.getPreviousPrice();
         int prdyVrss = newPrice - prevPrice;
         double prdyCtrt = prevPrice != 0 ? ((double) prdyVrss / prevPrice) * 100 : 0;
-        String prdySign = prdyVrss > 0 ? "+" : (prdyVrss < 0 ? "-" : "");
+        String prdySign = prdyVrss > 0 ? "1" : (prdyVrss < 0 ? "4" : "3");
 
-        // 매수 비율 (40~60%)
-        int shnuRate = 40 + random.nextInt(21);
+//        // 매수 비율 (40~60%)
+//        int shnuRate = 40 + random.nextInt(21);
+
+        double shnuRate = Math.round((0.4 + random.nextDouble() * 0.2) * 100.0) / 100.0;
 
         Map<String, String> tradeData = new HashMap<>();
         tradeData.put("mkscShrnIscd", stockCode);
