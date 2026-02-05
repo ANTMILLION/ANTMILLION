@@ -782,6 +782,8 @@ function enableMockMode() {
     isMockMode = true;
     console.log('Mock 모드 활성화');
 
+    unsubscribeAllStocks();
+
     // 현재 화면에 표시된 종목 리스트 가져오기
     const stockItems = document.querySelectorAll('.main-stocklist-item');
     const mockStocks = [];
